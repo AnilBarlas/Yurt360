@@ -6,3 +6,7 @@ sealed class TopUser {
     abstract val surname: String
     abstract val email: String
 }
+
+
+
+

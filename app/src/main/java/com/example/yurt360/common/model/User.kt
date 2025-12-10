@@ -1,6 +1,6 @@
 package com.example.yurt360.common.model
 
-import com.example.yurt360.common.model.TopUser
+
 
 data class User(
     override val id: Int,
@@ -15,4 +15,6 @@ data class User(
     val address: String,
     val location: String,
     val roomNo: String
-) : TopUser()
+) : TopUser(){
+
+}

@@ -5,4 +5,6 @@ data class Admin(
     override val name: String,
     override val surname: String,
     override val email: String
-) : TopUser()
+) : TopUser(){
+
+}
