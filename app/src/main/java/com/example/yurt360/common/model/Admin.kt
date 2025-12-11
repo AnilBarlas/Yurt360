@@ -1,6 +1,6 @@
 package com.example.yurt360.common.model
 
-import kotlinx.serialization.descriptors.PrimitiveKind
+
 
 data class Admin(
     override val id: String,
