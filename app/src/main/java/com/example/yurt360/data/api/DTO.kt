@@ -1,26 +1,46 @@
 package com.example.yurt360.data.api
 
-import com.google.gson.annotations.SerializedName
+import com.example.yurt360.common.model.Admin
+import com.example.yurt360.common.model.TopUser
+import com.example.yurt360.common.model.User
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-// API'ye gidecek istek
 data class LoginRequest(
-    @SerializedName("email") val email: String,
-    @SerializedName("password") val password: String
-)
-
-// API'den gelen Ham Cevap
-// Not: API bize "role" diye bir alan dönmeli ki Admin mi User mı anlayalım.
-data class LoginResponse(
-    val success: Boolean,
-    val message: String,
-    val data: UserDto?
-)
-
-// Gelen Ham Kullanıcı Verisi
-data class UserDto(
-    val id: Int,
-    val name: String,
     val email: String,
-    val role: String,        // "admin" veya "user"
-
+    val pass: String
 )
+
+@Serializable
+data class ProfileDto(
+    val id: String,
+    val created_at: String? = "",
+    val name: String? = "",
+    val surname: String? = "",
+    val email: String? = "",
+
+    @SerialName("type")
+    val isAdmin: Boolean = false,
+
+    val phone: String? = null,
+    val tc: String? = null,
+    val gender: String? = null,
+    val bloodType: String? = null,
+    val birthDate: String? = null,
+    val address: String? = null,
+    val location: String? = null,
+    val roomNo: String? = null,
+    val image_url: String? = null
+) {
+    fun toTopUser(): TopUser {
+        return if (isAdmin) {
+            Admin(id, name ?: "", surname ?: "", email ?: "")
+        } else {
+            User(
+                id, name ?: "", surname ?: "", email ?: "",
+                phone ?: "", tc ?: "", gender ?: "", bloodType ?: "",
+                birthDate ?: "", address ?: "", location ?: "", roomNo ?: "", image_url ?: ""
+            )
+        }
+    }
+}

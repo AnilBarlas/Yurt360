@@ -1,5 +1,6 @@
 package com.example.yurt360.common.components
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -22,18 +24,36 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yurt360.R
+import com.example.yurt360.common.model.TopUser
 
-
-// --- Renk Paleti ---
 val OrangePrimary = Color(0xFFFF8C42)
 val TextGray = Color(0xFF4A4A4A)
 
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = viewModel()
+    viewModel: LoginViewModel = viewModel(),
+    onLoginSuccess: (TopUser) -> Unit
 ) {
     val username by viewModel.username.collectAsState()
     val password by viewModel.password.collectAsState()
+    val loginState by viewModel.loginState.collectAsState()
+
+    val context = LocalContext.current
+
+    LaunchedEffect(loginState) {
+        when (val state = loginState) {
+            is LoginState.Success -> {
+                Toast.makeText(context, "Giriş Başarılı!", Toast.LENGTH_SHORT).show()
+                onLoginSuccess(state.user)
+                viewModel.resetLoginState()
+            }
+            is LoginState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+                viewModel.resetLoginState()
+            }
+            else -> {} //Yükleme ekranı gelebilir.
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -57,7 +77,6 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // Logo Resmi
             Image(
                 painter = painterResource(id = R.drawable.daire),
                 contentDescription = "Logo",
@@ -80,7 +99,7 @@ fun LoginScreen(
             CustomLoginTextField(
                 value = username,
                 onValueChange = { viewModel.onUsernameChange(it) },
-                placeholder = "Kullanıcı Adı"
+                placeholder = "Kullanıcı Maili"
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -95,7 +114,11 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(30.dp))
 
             Button(
-                onClick = { viewModel.onLoginClick() },
+                onClick = {
+                    if (loginState !is LoginState.Loading) {
+                        viewModel.onLoginClick()
+                    }
+                },
                 modifier = Modifier
                     .width(200.dp)
                     .height(50.dp)
@@ -103,7 +126,11 @@ fun LoginScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
                 shape = RoundedCornerShape(25.dp)
             ) {
-                Text(text = "Giriş", fontSize = 18.sp, color = Color.White)
+                Text(
+                    text = if (loginState is LoginState.Loading) "Giriş Yapılıyor..." else "Giriş",
+                    fontSize = 18.sp,
+                    color = Color.White
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -147,7 +174,7 @@ fun CustomLoginTextField(
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White,
-                focusedIndicatorColor = Color.Transparent,g't'
+                focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 cursorColor = OrangePrimary
             ),
