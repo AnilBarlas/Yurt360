@@ -13,6 +13,8 @@ import com.example.yurt360.user.mainScreen.UserHomeScreen
 import com.example.yurt360.common.model.Admin
 import com.example.yurt360.common.model.TopUser
 import com.example.yurt360.common.model.User
+import androidx.compose.material3.Scaffold
+import com.example.yurt360.common.components.CustomBottomNavigationBar
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
