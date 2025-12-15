@@ -16,12 +16,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import androidx.compose.ui.zIndex
 @Composable
 fun CustomBottomNavigationBar(
     modifier: Modifier = Modifier,
@@ -30,13 +31,15 @@ fun CustomBottomNavigationBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(100.dp),
+            .height(100.dp)
+            .background(Color.Transparent),
         contentAlignment = Alignment.BottomCenter
     ) {
+        // Turuncu Alt Bar
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(70.dp),
+                .height(100.dp),
             color = OrangePrimary
         ) {
             Row(
@@ -46,27 +49,32 @@ fun CustomBottomNavigationBar(
             ) {
                 NavIconItem(
                     icon = Icons.Default.Home,
-                    label = "Ana Sayfa",
+                    label = "",
                     onClick = { onNavigate("home") }
                 )
 
-                Spacer(modifier = Modifier.width(60.dp))
-
                 NavIconItem(
                     icon = Icons.Default.Person,
-                    label = "Profil",
+                    label = "",
                     onClick = { onNavigate("profile") }
                 )
             }
         }
 
+        // Takvim Butonu
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .offset(y = 10.dp)
-                .size(80.dp)
+                .offset(y = (-50).dp)
+                .zIndex(1f)
+                .size(100.dp)
                 .clip(CircleShape)
-                .background(Color.White)
+                .background(
+                    brush = Brush.verticalGradient(
+                        0.5f to Color.Transparent,
+                        0.5f to Color.White
+                    )
+                )
                 .padding(6.dp)
                 .clip(CircleShape)
                 .background(OrangePrimary)
@@ -77,7 +85,7 @@ fun CustomBottomNavigationBar(
                 imageVector = Icons.Default.DateRange,
                 contentDescription = "Takvim",
                 tint = Color.White,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(50.dp)
             )
         }
     }
@@ -91,16 +99,16 @@ fun NavIconItem(icon: ImageVector, label: String, onClick: () -> Unit) {
     ) {
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .background(Color.White, shape = RoundedCornerShape(10.dp)),
+                .size(60.dp)
+                .background(Color.White, shape = RoundedCornerShape(16.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = label,
-                tint = OrangePrimary
+                tint = OrangePrimary,
+                modifier = Modifier.size(32.dp)
             )
         }
-        Text(text = label, fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold)
     }
 }

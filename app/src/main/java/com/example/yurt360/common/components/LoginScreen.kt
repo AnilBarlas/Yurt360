@@ -26,7 +26,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yurt360.R
 import com.example.yurt360.common.model.TopUser
 
-val OrangePrimary = Color(0xFFFF8C42)
+val OrangePrimary = Color(0xFFFF8838)
 val TextGray = Color(0xFF4A4A4A)
 
 @Composable
@@ -38,7 +38,6 @@ fun LoginScreen(
     val password by viewModel.password.collectAsState()
     val loginState by viewModel.loginState.collectAsState()
 
-    // YENİ STATE: Dialog yerine ekran gösterimini kontrol ediyoruz.
     var showResetScreen by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
