@@ -34,7 +34,7 @@ fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
     onLoginSuccess: (TopUser) -> Unit
 ) {
-    val username by viewModel.username.collectAsState()
+    val username by viewModel.userMail.collectAsState()
     val password by viewModel.password.collectAsState()
     val loginState by viewModel.loginState.collectAsState()
 

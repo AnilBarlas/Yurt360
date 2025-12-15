@@ -24,8 +24,8 @@ sealed class LoginState {
 }
 
 class LoginViewModel : ViewModel() {
-    private val _username = MutableStateFlow("")
-    val username: StateFlow<String> = _username.asStateFlow()
+    private val _userMail = MutableStateFlow("")
+    val userMail: StateFlow<String> = _userMail.asStateFlow()
 
     private val _password = MutableStateFlow("")
     val password: StateFlow<String> = _password.asStateFlow()
@@ -33,11 +33,11 @@ class LoginViewModel : ViewModel() {
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
 
-    fun onUsernameChange(newText: String) { _username.value = newText }
+    fun onUsernameChange(newText: String) { _userMail.value = newText }
     fun onPasswordChange(newText: String) { _password.value = newText }
 
     fun onLoginClick() {
-        val emailInput = _username.value.trim()
+        val emailInput = _userMail.value.trim()
         val passInput = _password.value.trim()
 
         if (emailInput.isBlank() || passInput.isBlank()) {
