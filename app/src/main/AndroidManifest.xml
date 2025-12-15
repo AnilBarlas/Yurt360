@@ -16,7 +16,10 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.example.yurt360" android:host="reset-callback" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
