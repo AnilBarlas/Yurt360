@@ -34,10 +34,12 @@ fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
     onLoginSuccess: (TopUser) -> Unit
 ) {
-    val username by viewModel.userMail.collectAsState()
+    val username by viewModel.username.collectAsState()
     val password by viewModel.password.collectAsState()
     val loginState by viewModel.loginState.collectAsState()
 
+    // YENİ STATE: Dialog yerine ekran gösterimini kontrol ediyoruz.
+    var showResetScreen by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     LaunchedEffect(loginState) {
@@ -51,97 +53,120 @@ fun LoginScreen(
                 Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
                 viewModel.resetLoginState()
             }
-            else -> {} //Yükleme ekranı gelebilir.
+            else -> {} //Yükleme ekranı
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        Image(
-            painter = painterResource(id=R.drawable.bina),
-            contentDescription = "Bina Görseli",
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(250.dp)
-                .align(Alignment.BottomCenter),
-            contentScale = ContentScale.Crop
+    if (showResetScreen) {
+        ResetPasswordScreen(
+            onSendClick = { email ->
+                viewModel.resetPassword(
+                    email = email,
+                    onSuccess = {
+                        Toast.makeText(context, "Sıfırlama bağlantısı e-postana gönderildi!", Toast.LENGTH_LONG).show()
+                        showResetScreen = false // Ana ekrana dön
+                    },
+                    onError = { msg ->
+                        Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+                    }
+                )
+            },
+            onBackClick = {
+                showResetScreen = false // Ana ekrana dön
+            }
         )
+    } else {
 
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 80.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(Color.White)
         ) {
-
             Image(
-                painter = painterResource(id = R.drawable.daire),
-                contentDescription = "Logo",
-                modifier = Modifier.size(150.dp),
-                contentScale = ContentScale.Fit
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text(
-                text = "KULLANICI GİRİŞİ",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = TextGray,
-                letterSpacing = 1.sp
-            )
-
-            Spacer(modifier = Modifier.height(30.dp))
-
-            CustomLoginTextField(
-                value = username,
-                onValueChange = { viewModel.onUsernameChange(it) },
-                placeholder = "Kullanıcı Maili"
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            CustomLoginTextField(
-                value = password,
-                onValueChange = { viewModel.onPasswordChange(it) },
-                placeholder = "Parola",
-                isPassword = true
-            )
-
-            Spacer(modifier = Modifier.height(30.dp))
-
-            Button(
-                onClick = {
-                    if (loginState !is LoginState.Loading) {
-                        viewModel.onLoginClick()
-                    }
-                },
+                painter = painterResource(id = R.drawable.bina),
+                contentDescription = "Bina Görseli",
                 modifier = Modifier
-                    .width(200.dp)
-                    .height(50.dp)
-                    .shadow(8.dp, RoundedCornerShape(25.dp)),
-                colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
-                shape = RoundedCornerShape(25.dp)
+                    .fillMaxWidth()
+                    .height(250.dp)
+                    .align(Alignment.BottomCenter),
+                contentScale = ContentScale.Crop
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 80.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
+                Image(
+                    painter = painterResource(id = R.drawable.daire),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(150.dp),
+                    contentScale = ContentScale.Fit
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
                 Text(
-                    text = if (loginState is LoginState.Loading) "Giriş Yapılıyor..." else "Giriş",
-                    fontSize = 18.sp,
-                    color = Color.White
+                    text = "KULLANICI GİRİŞİ",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextGray,
+                    letterSpacing = 1.sp
+                )
+
+                Spacer(modifier = Modifier.height(30.dp))
+
+                CustomLoginTextField(
+                    value = username,
+                    onValueChange = { viewModel.onUsernameChange(it) },
+                    placeholder = "Kullanıcı Maili"
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                CustomLoginTextField(
+                    value = password,
+                    onValueChange = { viewModel.onPasswordChange(it) },
+                    placeholder = "Parola",
+                    isPassword = true
+                )
+
+                Spacer(modifier = Modifier.height(30.dp))
+
+                Button(
+                    onClick = {
+                        if (loginState !is LoginState.Loading) {
+                            viewModel.onLoginClick()
+                        }
+                    },
+                    modifier = Modifier
+                        .width(200.dp)
+                        .height(50.dp)
+                        .shadow(8.dp, RoundedCornerShape(25.dp)),
+                    colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
+                    shape = RoundedCornerShape(25.dp)
+                ) {
+                    Text(
+                        text = if (loginState is LoginState.Loading) "Giriş Yapılıyor..." else "Giriş",
+                        fontSize = 18.sp,
+                        color = Color.White
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Parolamı Unuttum",
+                    color = OrangePrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.clickable {
+                        showResetScreen = true
+                    }
                 )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Parolamı Unuttum",
-                color = OrangePrimary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.clickable { }
-            )
         }
     }
 }

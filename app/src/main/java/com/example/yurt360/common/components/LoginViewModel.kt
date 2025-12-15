@@ -3,9 +3,7 @@ package com.example.yurt360.common.components
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.yurt360.common.model.Admin
 import com.example.yurt360.common.model.TopUser
-import com.example.yurt360.common.model.User
 import com.example.yurt360.data.api.ProfileDto
 import com.example.yurt360.data.api.SupabaseClient
 import io.github.jan.supabase.gotrue.auth
@@ -24,8 +22,8 @@ sealed class LoginState {
 }
 
 class LoginViewModel : ViewModel() {
-    private val _userMail = MutableStateFlow("")
-    val userMail: StateFlow<String> = _userMail.asStateFlow()
+    private val _username = MutableStateFlow("")
+    val username: StateFlow<String> = _username.asStateFlow()
 
     private val _password = MutableStateFlow("")
     val password: StateFlow<String> = _password.asStateFlow()
@@ -33,11 +31,11 @@ class LoginViewModel : ViewModel() {
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
 
-    fun onUsernameChange(newText: String) { _userMail.value = newText }
+    fun onUsernameChange(newText: String) { _username.value = newText }
     fun onPasswordChange(newText: String) { _password.value = newText }
 
     fun onLoginClick() {
-        val emailInput = _userMail.value.trim()
+        val emailInput = _username.value.trim()
         val passInput = _password.value.trim()
 
         if (emailInput.isBlank() || passInput.isBlank()) {
@@ -52,7 +50,7 @@ class LoginViewModel : ViewModel() {
                 val supabase = SupabaseClient.client
 
                 supabase.auth.signInWith(Email) {
-                    email = emailInput
+                    email = emailInput.trim()
                     password = passInput
                 }
 
@@ -70,12 +68,7 @@ class LoginViewModel : ViewModel() {
 
                     if (profile != null) {
                         Log.d("LoginTypeControl", "Gelen Veri (Raw): ${profile.isAdmin}")
-                        Log.d("LoginTypeControl", "Kullanıcı ID: ${profile.id}")
-                        Log.d("LoginTypeControl", "Kullanıcı Name: ${profile.name}")
-                        Log.d("LoginTypeControl", "Kullanıcı Surname: ${profile.surname}")
-                        Log.d("LoginTypeControl", "Kullanıcı Gender: ${profile.gender}")
                         val topUser = profile.toTopUser()
-                        Log.d("LoginTypeControl", "Oluşan Sınıf: ${topUser::class.java.simpleName}")
                         _loginState.value = LoginState.Success(topUser)
                     } else {
                         Log.e("LoginTypeControl", "HATA: Profil null geldi!")
@@ -94,6 +87,42 @@ class LoginViewModel : ViewModel() {
             }
         }
     }
+    fun resetPassword(email: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        if (email.isBlank()) {
+            onError("Lütfen e-posta adresinizi girin.")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val supabase = SupabaseClient.client
+
+                supabase.auth.resetPasswordForEmail(
+                    email = email,
+                    redirectUrl = "com.example.yurt360://reset-callback"
+                )
+                onSuccess()
+            } catch (e: Exception) {
+                Log.e("SupabaseReset", "Error: ${e.message}")
+                onError("Mail gönderilemedi: ${e.message}")
+            }
+        }
+    }
 
     fun resetLoginState() { _loginState.value = LoginState.Idle }
+
+    fun updatePassword(newPass: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val supabase = SupabaseClient.client
+                supabase.auth.modifyUser {
+                    password = newPass
+                }
+                onSuccess()
+            } catch (e: Exception) {
+                Log.e("UpdatePass", "Hata: ${e.message}")
+                onError("Şifre güncellenemedi: ${e.message}")
+            }
+        }
+    }
 }
