@@ -11,7 +11,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,10 +18,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+
 @Composable
 fun CustomBottomNavigationBar(
     modifier: Modifier = Modifier,
@@ -47,15 +45,17 @@ fun CustomBottomNavigationBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
+                // Home İkonu: Tıklandığında "home" bilgisini yollar
                 NavIconItem(
                     icon = Icons.Default.Home,
-                    label = "",
+                    label = "home",
                     onClick = { onNavigate("home") }
                 )
 
+                // Profil İkonu: Tıklandığında "profile" bilgisini yollar
                 NavIconItem(
                     icon = Icons.Default.Person,
-                    label = "",
+                    label = "profile",
                     onClick = { onNavigate("profile") }
                 )
             }

@@ -29,20 +29,23 @@ val LightGrayBackground = Color(0xFFF5F5F5)
 @Composable
 fun UserHomeScreen(
     user: User,
-    onMenuClick: (String) -> Unit = {}
+    onMenuClick: (String) -> Unit = {},
+    // Navigasyon tıklamalarını dışarı aktarmak için yeni parametre
+    onNavigation: (String) -> Unit = {}
 ) {
 
     Scaffold(
         bottomBar = {
             CustomBottomNavigationBar(
                 onNavigate = { route ->
-
+                    // Alt bardan gelen 'home', 'profile' gibi istekleri yukarı ilet
+                    onNavigation(route)
                 }
             )
         },
         containerColor = LightGrayBackground
     ) { innerPadding ->
-
+        // ... (İçerik kodları orijinal haliyle aynı) ...
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -121,6 +124,7 @@ fun UserHomeScreen(
     }
 }
 
+// ... (DuyuruItem ve LargeMenuCard orijinal haliyle aynı) ...
 @Composable
 fun DuyuruItem(title: String, desc: String) {
     Column(modifier = Modifier.fillMaxWidth()) {
