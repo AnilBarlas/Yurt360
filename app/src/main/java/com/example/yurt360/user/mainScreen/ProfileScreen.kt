@@ -11,7 +11,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,226 +22,185 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
-import com.example.yurt360.R
-import com.example.yurt360.common.components.OrangePrimary
+import com.example.yurt360.R // Kendi R dosyanıza göre güncelleyin
+import com.example.yurt360.common.components.CustomBottomNavigationBar
 import com.example.yurt360.common.model.User
+
+// Renk Tanımları (Proje renklerinize göre düzenleyebilirsiniz)
+val OrangePrimary = Color(0xFFFF8A65) // Örnek Turuncu
+val CardBackground = Color.White
+val TextColorSecondary = Color.Gray
 
 @Composable
 fun ProfileScreen(
-    user: User,
-    onPasswordChangeClick: () -> Unit = {}
+    user: User, // User modelini parametre olarak alıyoruz
+    onNavigate: (String) -> Unit
 ) {
-    var expandedSection by remember { mutableStateOf<ProfileSection?>(null) }
+    // Hangi kartın açık olduğunu tutan state (null = hepsi kapalı)
+    var expandedCard by remember { mutableStateOf<String?>(null) }
 
-    // Header yüksekliği ve Profil resmi boyut tanımları
-    val headerImageHeight = 220.dp
-    val profilePicSize = 120.dp
-    val profilePicOffset = 60.dp
+    // Ekran boyutunu alarak dinamik boşluklar yaratabiliriz
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+    val scrollState = rememberScrollState()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
-    ) {
-        // --- 0. ARKA PLAN İÇİN BEYAZ BLOK ---
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.55f)
-                .align(Alignment.BottomCenter)
-                .background(Color.White)
-        )
-
-        // --- 1. SABİT ÜST KISIM (Header + Profil Resmi) ---
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(headerImageHeight + profilePicOffset)
-                .align(Alignment.TopCenter),
-            contentAlignment = Alignment.TopCenter
-        ) {
-            // Kampüs Resmi
-            Image(
-                painter = painterResource(id = R.drawable.bina),
-                contentDescription = "Kampüs",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(headerImageHeight)
+    Scaffold(
+        bottomBar = {
+            // Senin attığın BottomNavigationBar bileşeni
+            CustomBottomNavigationBar(
+                onNavigate = onNavigate,
+               // modifier = Modifier.zIndex(10f) // En üstte durması için
             )
-
-            // Profil Resmi
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(profilePicSize)
-                    .align(Alignment.BottomCenter)
-                    .background(Color.White, CircleShape)
-                    .padding(4.dp)
-                    .clip(CircleShape)
-            ) {
-                if (user.image_url.isNotEmpty()) {
-                    Image(
-                        painter = painterResource(id = android.R.drawable.sym_def_app_icon),
-                        contentDescription = "Profil",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    Box(modifier = Modifier.fillMaxSize().background(Color.LightGray))
-                }
-            }
         }
-
-        // --- 2. HAREKETLİ İÇERİK (Buton + Kartlar) ---
-        Column(
+    ) { paddingValues ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .align(Alignment.TopCenter)
-                .padding(top = headerImageHeight + profilePicOffset)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+                .padding(paddingValues)
         ) {
+            // 1. KATMAN: Arka Plan Resmi
+            Image(
+                painter = painterResource(id = R.drawable.ic_launcher_background), // Buraya kendi yurt resmini (drawable) koy
+                contentDescription = "Background",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
 
-            // Parola Güncelle Butonu
-            Surface(
-                onClick = onPasswordChangeClick,
-                shape = RoundedCornerShape(20.dp),
-                color = Color.White,
-                modifier = Modifier.padding(bottom = 0.dp)
-            ) {
-                Text(
-                    text = "Parola Güncelle",
-                    color = OrangePrimary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
+            // Hamburger Menü İkonu (Sol Üst)
+            Icon(
+                imageVector = Icons.Default.Menu,
+                contentDescription = "Menu",
+                tint = Color.White,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(32.dp)
+                    .align(Alignment.TopStart)
+            )
 
-            // KARTLAR DESTESİ
+            // 2. KATMAN: Kaydırılabilir İçerik
+            // İçeriği ortalamak ve aşağıdan yukarı açılma hissi için
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 0.dp),
-                // Kartları daha sıkı üst üste bindirmek için negatif boşluğu artırdık
-                verticalArrangement = Arrangement.spacedBy((-40).dp)
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(bottom = 20.dp), // BottomBar'ın hemen üstünde bitmesi için boşluk
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom // İçeriği aşağıya yasla
             ) {
+                // Üstteki boşluk (Resmin görünmesi için esnek alan)
+                // Kartlar açıldığında bu alan daralacak ve içerik yukarı kayacak
+                Spacer(modifier = Modifier.weight(1f))
 
-                // KART 1: İletişim Bilgileri (Altta kalacak olan)
-                val isContactExpanded = expandedSection == ProfileSection.CONTACT
+                // Profil Resmi ve Parola Butonu Alanı
+                ProfileHeaderSection(user.image_url)
 
-                // Z-Index Mantığı: Eğer bu kart açıksa en üste çıkar (10f).
-                // Kapalıysa, diğer kartın altında kalması için düşük bir değer alır (1f).
-                val contactZIndex = if (isContactExpanded) 10f else 1f
+                Spacer(modifier = Modifier.height(20.dp))
 
-                ExpandableProfileCard(
+                // İletişim Bilgileri Kartı
+                ExpandableCard(
                     title = "İletişim Bilgileri",
-                    isExpanded = isContactExpanded,
-                    zIndex = contactZIndex,
-                    // Altta kaldığı için daha az yuvarlak ve daha az gölgeli
-                    topCornerRadius = 30.dp,
-                    shadowElevation = 4.dp,
-                    onClick = {
-                        expandedSection = if (isContactExpanded) null else ProfileSection.CONTACT
+                    isExpanded = expandedCard == "contact",
+                    onHeaderClick = {
+                        // Eğer zaten açıksa kapat, değilse aç ve diğerini kapat
+                        expandedCard = if (expandedCard == "contact") null else "contact"
                     }
                 ) {
-                    ProfileInfoRow("Telefon", user.phone)
-                    ProfileInfoRow("E-posta", user.email)
-                    // İçerik açıldığında alttaki karta yer açmak için boşluk
-                    Spacer(modifier = Modifier.height(40.dp))
+                    ContactInfoContent(user)
                 }
 
-                // KART 2: Kişisel Bilgiler (Üstte duracak olan)
-                val isPersonalExpanded = expandedSection == ProfileSection.PERSONAL
+                Spacer(modifier = Modifier.height(10.dp))
 
-                // Z-Index Mantığı: Eğer bu kart açıksa en üste çıkar (10f).
-                // Kapalıysa bile, İletişim kartının (1f) üzerinde durması için daha yüksek bir temel değer alır (5f).
-                val personalZIndex = if (isPersonalExpanded) 10f else 5f
-
-                ExpandableProfileCard(
+                // Kişisel Bilgiler Kartı
+                ExpandableCard(
                     title = "Kişisel Bilgiler",
-                    isExpanded = isPersonalExpanded,
-                    zIndex = personalZIndex,
-                    // İSTEĞİNİZ ÜZERİNE: Daha yuvarlak üst köşeler ve daha belirgin gölge
-                    topCornerRadius = 60.dp,
-                    shadowElevation = 12.dp,
-                    onClick = {
-                        expandedSection = if (isPersonalExpanded) null else ProfileSection.PERSONAL
+                    isExpanded = expandedCard == "personal",
+                    onHeaderClick = {
+                        expandedCard = if (expandedCard == "personal") null else "personal"
                     }
                 ) {
-                    ProfileInfoRow("Kimlik No", user.tc)
-                    ProfileInfoRow("Ad", user.name)
-                    ProfileInfoRow("Soyad", user.surname)
-                    ProfileInfoRow("Cinsiyet", user.gender)
-                    ProfileInfoRow("Kan Grubu", user.bloodType)
-                    ProfileInfoRow("Doğum Tarihi", user.birthDate)
-                    ProfileInfoRow("Ülke", user.address)
-                    Spacer(modifier = Modifier.height(60.dp))
+                    PersonalInfoContent(user)
                 }
-            }
 
-            if(expandedSection == null) {
-                Spacer(modifier = Modifier.height(200.dp))
+                // BottomBar'ın arkasında kalmaması için ekstra boşluk
+                Spacer(modifier = Modifier.height(100.dp))
             }
         }
     }
 }
 
-enum class ProfileSection {
-    CONTACT, PERSONAL
+@Composable
+fun ProfileHeaderSection(imageUrl: String) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Profil Resmi
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .background(Color.White)
+                .border(2.dp, OrangePrimary, CircleShape)
+        ) {
+            // Gerçek resim yükleme kütüphanesi (Coil/Glide) kullanıyorsan burayı güncelle
+            // Örnek: AsyncImage(model = imageUrl ...)
+            Text(text = "fotoğrafı", color = Color.Black)
+        }
+
+        Spacer(modifier = Modifier.height((-15).dp)) // Butonu resmin içine biraz gömmek için
+
+        // Parola Güncelle Butonu
+        Button(
+            onClick = { /* Parola Güncelle */ },
+            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+            shape = RoundedCornerShape(20.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
+            modifier = Modifier.height(35.dp)
+        ) {
+            Text(
+                text = "Parola Güncelle",
+                color = OrangePrimary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
 }
 
-// GÜNCELLENMİŞ KART BİLEŞENİ
 @Composable
-fun ExpandableProfileCard(
+fun ExpandableCard(
     title: String,
     isExpanded: Boolean,
-    zIndex: Float,
-    // YENİ PARAMETRELER: Köşe yarıçapı ve gölge miktarı artık dışarıdan ayarlanabilir
-    topCornerRadius: Dp = 40.dp,
-    shadowElevation: Dp = 30.dp,
-    onClick: () -> Unit,
-    content: @Composable ColumnScope.() -> Unit
+    onHeaderClick: () -> Unit,
+    content: @Composable () -> Unit
 ) {
     Card(
-        // Parametreden gelen köşe yarıçapını kullan
-        shape = RoundedCornerShape(
-            topStart = topCornerRadius,
-            topEnd = topCornerRadius,
-            bottomStart = 0.dp,
-            bottomEnd = 0.dp
-        ),
+        shape = RoundedCornerShape(30.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        // Parametreden gelen gölge miktarını kullan
-        elevation = CardDefaults.cardElevation(defaultElevation = shadowElevation),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 0.dp)
-            .zIndex(zIndex)
+            .padding(horizontal = 16.dp)
             .animateContentSize(
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    dampingRatio = Spring.DampingRatioLowBouncy,
                     stiffness = Spring.StiffnessLow
                 )
-            )
-            .clickable { onClick() }
+            ) // Büyüme/Küçülme animasyonu
     ) {
         Column(
-            modifier = Modifier
-                .padding(24.dp)
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         ) {
-            // Başlık
+            // Header (Her zaman görünür)
             Box(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp) // Kapalıyken görünecek yükseklik
+                    .clickable { onHeaderClick() },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -249,38 +211,69 @@ fun ExpandableProfileCard(
                 )
             }
 
+            // İçerik (Sadece expanded ise görünür)
             if (isExpanded) {
-                Spacer(modifier = Modifier.height(16.dp))
-                content()
-            } else {
-                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 10.dp)
+                ) {
+                    content()
+                    Spacer(modifier = Modifier.height(20.dp)) // Alttan biraz boşluk
+                }
             }
         }
     }
 }
 
+// İletişim Bilgileri İçeriği
 @Composable
-fun ProfileInfoRow(label: String, value: String) {
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+fun ContactInfoContent(user: User) {
+    InfoRow(label = "Telefon", value = user.phone)
+    Spacer(modifier = Modifier.height(10.dp))
+    InfoRow(label = "E-posta", value = user.email)
+}
+
+// Kişisel Bilgiler İçeriği
+@Composable
+fun PersonalInfoContent(user: User) {
+    InfoRow(label = "Kimlik No", value = user.tc)
+    InfoRow(label = "Ad", value = user.name)
+    InfoRow(label = "Soyad", value = user.surname)
+    InfoRow(label = "Cinsiyet", value = user.gender)
+    InfoRow(label = "Kan Grubu", value = user.bloodType)
+    InfoRow(label = "Uyruk", value = "T.C.") // Modelde yoksa statik veya ekle
+    InfoRow(label = "Doğum Tarihi", value = user.birthDate)
+    InfoRow(label = "Ülke", value = user.location) // Location ülke olarak varsayıldı
+}
+
+@Composable
+fun InfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(
             text = label,
-            fontSize = 12.sp,
+            modifier = Modifier.width(100.dp),
             color = Color.Gray,
-            modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+            fontSize = 14.sp
         )
+
+        // Input benzeri görünüm için Box ve Text
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(44.dp)
-                .background(Color(0xFFF9F9F9), RoundedCornerShape(12.dp))
-                .border(0.5.dp, Color.LightGray.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-                .padding(horizontal = 16.dp),
-            contentAlignment = Alignment.CenterStart
+                .weight(1f)
+                .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(10.dp))
+                .padding(vertical = 12.dp, horizontal = 16.dp)
         ) {
             Text(
                 text = value,
+                color = Color.Black,
                 fontSize = 15.sp,
-                color = Color.Black
+                fontWeight = FontWeight.Medium
             )
         }
     }

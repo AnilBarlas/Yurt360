@@ -4,16 +4,23 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.yurt360.common.components.CustomBottomNavigationBar
 import com.example.yurt360.common.components.LoginScreen
 import com.example.yurt360.common.components.LoginViewModel
 import com.example.yurt360.common.components.NewPasswordScreen
 import com.example.yurt360.user.mainScreen.UserHomeScreen
+import com.example.yurt360.user.mainScreen.ProfileScreen
 import com.example.yurt360.common.model.Admin
 import com.example.yurt360.common.model.TopUser
 import com.example.yurt360.common.model.User
@@ -24,11 +31,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Supabase Deep Link Kontrolü (Mailden gelen linki yakalar)
         val supabase = SupabaseClient.client
         supabase.handleDeeplinks(intent = intent)
 
-        // Linkin türünü kontrol et: "reset-callback" mi?
         val isResetLink = intent?.data?.host == "reset-callback"
 
         setContent {
@@ -39,22 +44,20 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val viewModel: LoginViewModel = viewModel()
 
-                    // Linkten geldiysek bu state TRUE başlar
                     var showNewPasswordScreen by remember { mutableStateOf(isResetLink) }
-
-                    // Mevcut kullanıcı durumu
                     var currentUser by remember { mutableStateOf<TopUser?>(null) }
 
-                    // EKRAN YÖNETİMİ
+                    // Başlangıç rotası
+                    var currentScreenRoute by remember { mutableStateOf("home") }
+
                     if (showNewPasswordScreen) {
-                        //Şifre Yenileme Ekranı (Linkten gelindiyse)
                         NewPasswordScreen(
                             onConfirmClick = { newPass ->
                                 viewModel.updatePassword(
                                     newPass = newPass,
                                     onSuccess = {
                                         Toast.makeText(this@MainActivity, "Şifreniz güncellendi! Giriş yapabilirsiniz.", Toast.LENGTH_LONG).show()
-                                        showNewPasswordScreen = false // Login ekranına dön
+                                        showNewPasswordScreen = false
                                     },
                                     onError = { msg ->
                                         Toast.makeText(this@MainActivity, msg, Toast.LENGTH_LONG).show()
@@ -63,20 +66,68 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     } else {
-                        //Normal (Login veya Ana Sayfa)
                         if (currentUser == null) {
                             LoginScreen(
                                 onLoginSuccess = { topUser ->
                                     currentUser = topUser
+                                    currentScreenRoute = "home"
                                 }
                             )
                         } else {
                             when (val user = currentUser) {
                                 is Admin -> {
-                                    //Admin ekranı buraya gelecek
+                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                        Text("Admin Paneli")
+                                    }
                                 }
                                 is User -> {
-                                    UserHomeScreen(user = user)
+                                    // Navigation yönetimi
+                                    when (currentScreenRoute) {
+                                        "home" -> {
+                                            UserHomeScreen(
+                                                user = user,
+                                                onMenuClick = { menuTitle ->
+                                                    Toast.makeText(this@MainActivity, "$menuTitle seçildi", Toast.LENGTH_SHORT).show()
+                                                },
+                                                onNavigation = { route ->
+                                                    currentScreenRoute = route
+                                                }
+                                            )
+                                        }
+                                        "profile" -> {
+                                            // DÜZELTME:
+                                            // ProfileScreen kendi içinde Scaffold ve BottomBar barındırdığı için
+                                            // burada tekrar sarmalamıyoruz. Doğrudan çağırıyoruz.
+                                            ProfileScreen(
+                                                user = user,
+                                                onNavigate = { route ->
+                                                    currentScreenRoute = route
+                                                }
+                                            )
+                                        }
+                                        "calendar" -> {
+                                            // Calendar henüz hazır olmadığı için geçici Scaffold kullanabiliriz
+                                            Scaffold(
+                                                bottomBar = {
+                                                    CustomBottomNavigationBar(
+                                                        onNavigate = { route -> currentScreenRoute = route }
+                                                    )
+                                                }
+                                            ) { innerPadding ->
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .padding(innerPadding),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Text("Takvim Ekranı Yapım Aşamasında")
+                                                }
+                                            }
+                                        }
+                                        else -> {
+                                            currentScreenRoute = "home"
+                                        }
+                                    }
                                 }
                                 else -> {}
                             }
