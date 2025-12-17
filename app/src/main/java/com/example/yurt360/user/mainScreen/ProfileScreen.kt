@@ -1,8 +1,11 @@
 package com.example.yurt360.user.mainScreen
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,7 +14,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -20,261 +22,267 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.yurt360.R // Kendi R dosyanıza göre güncelleyin
+import androidx.compose.ui.zIndex
+import com.example.yurt360.R
 import com.example.yurt360.common.components.CustomBottomNavigationBar
 import com.example.yurt360.common.model.User
 
-// Renk Tanımları (Proje renklerinize göre düzenleyebilirsiniz)
-val OrangePrimary = Color(0xFFFF8A65) // Örnek Turuncu
-val CardBackground = Color.White
-val TextColorSecondary = Color.Gray
+// Renk Tanımları
+val OrangePrimary = Color(0xFFFF8A65)
+val InputBackground = Color(0xFFFAFAFA)
 
 @Composable
 fun ProfileScreen(
-    user: User, // User modelini parametre olarak alıyoruz
+    user: User,
     onNavigate: (String) -> Unit
 ) {
-    // Hangi kartın açık olduğunu tutan state (null = hepsi kapalı)
     var expandedCard by remember { mutableStateOf<String?>(null) }
 
-    // Ekran boyutunu alarak dinamik boşluklar yaratabiliriz
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-    val scrollState = rememberScrollState()
+    // --- DEĞİŞİKLİK 1: Kartlar arası boşluk animasyonu ---
+    // Eğer iletişim bilgileri açıksa, alttaki kartın yukarı kayma miktarını azalt (-20.dp).
+    // Kapalıysa, standart üst üste binme miktarını koru (-60.dp).
+    val personalInfoOffset by animateDpAsState(
+        targetValue = if (expandedCard == "contact") (-20).dp else (-60).dp,
+        label = "personalInfoOffset"
+    )
 
-    Scaffold(
-        bottomBar = {
-            // Senin attığın BottomNavigationBar bileşeni
-            CustomBottomNavigationBar(
-                onNavigate = onNavigate,
-               // modifier = Modifier.zIndex(10f) // En üstte durması için
-            )
-        }
-    ) { paddingValues ->
+    // Fotoğrafın bittiği yer hesabı (Butonun duracağı tavan noktası)
+    val contentTopPadding = 240.dp
+
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        // 1. KATMAN: ARKA PLAN
+        Image(
+            painter = painterResource(id = R.drawable.ic_launcher_background),
+            contentDescription = "Background",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // 2. KATMAN: PROFİL FOTOĞRAFI (SABİT)
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+                .align(Alignment.TopCenter)
+                .padding(top = 80.dp)
+                .zIndex(1f)
         ) {
-            // 1. KATMAN: Arka Plan Resmi
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_background), // Buraya kendi yurt resmini (drawable) koy
-                contentDescription = "Background",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
+            ProfilePhotoSection(user.image_url)
+        }
 
-            // Hamburger Menü İkonu (Sol Üst)
-            Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = "Menu",
-                tint = Color.White,
-                modifier = Modifier
-                    .padding(16.dp)
-                    .size(32.dp)
-                    .align(Alignment.TopStart)
-            )
+        // 3. KATMAN: KARTLAR (SABİT KAP, KAYDIRILABİLİR İÇERİK)
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxSize() // Tüm ekranı kapla
+                .padding(top = contentTopPadding) // İçeriğin en tepe noktası
+                .verticalScroll(rememberScrollState(), enabled = false) // Dış scroll KAPALI
+                .padding(bottom = 0.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom // Elemanları en alta yasla
+        ) {
 
-            // 2. KATMAN: Kaydırılabilir İçerik
-            // İçeriği ortalamak ve aşağıdan yukarı açılma hissi için
-            Column(
+            // --- PAROLA GÜNCELLE BUTONU (SABİT) ---
+            Button(
+                onClick = { /* Parola aksiyonu */ },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFF0E0)),
+                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 0.dp, bottomEnd = 0.dp),
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
                 modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .padding(bottom = 20.dp), // BottomBar'ın hemen üstünde bitmesi için boşluk
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Bottom // İçeriği aşağıya yasla
+                    .height(32.dp)
+                    .zIndex(0f)
             ) {
-                // Üstteki boşluk (Resmin görünmesi için esnek alan)
-                // Kartlar açıldığında bu alan daralacak ve içerik yukarı kayacak
-                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "Parola Güncelle",
+                    color = OrangePrimary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
 
-                // Profil Resmi ve Parola Butonu Alanı
-                ProfileHeaderSection(user.image_url)
+            Spacer(modifier = Modifier.height(0.dp))
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // İletişim Bilgileri Kartı
-                ExpandableCard(
-                    title = "İletişim Bilgileri",
-                    isExpanded = expandedCard == "contact",
-                    onHeaderClick = {
-                        // Eğer zaten açıksa kapat, değilse aç ve diğerini kapat
-                        expandedCard = if (expandedCard == "contact") null else "contact"
-                    }
-                ) {
-                    ContactInfoContent(user)
+            // --- İLETİŞİM BİLGİLERİ KARTI (SABİT) ---
+            ProfileSectionCard(
+                title = "İletişim Bilgileri",
+                isExpanded = expandedCard == "contact",
+                modifier = Modifier.zIndex(0f),
+                contentPaddingBottom = 60.dp,
+                onHeaderClick = {
+                    expandedCard = if (expandedCard == "contact") null else "contact"
                 }
+            ) {
+                // İletişim bilgileri genelde kısa olduğu için scroll'a gerek yok
+                ContactInfoContent(user)
+            }
 
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Kişisel Bilgiler Kartı
-                ExpandableCard(
-                    title = "Kişisel Bilgiler",
-                    isExpanded = expandedCard == "personal",
-                    onHeaderClick = {
-                        expandedCard = if (expandedCard == "personal") null else "personal"
-                    }
+            // --- KİŞİSEL BİLGİLER KARTI (ESNEK VE İÇİ KAYDIRILABİLİR) ---
+            ProfileSectionCard(
+                title = "Kişisel Bilgiler",
+                isExpanded = expandedCard == "personal",
+                modifier = Modifier
+                    // --- DEĞİŞİKLİK 2: Dinamik Offset Kullanımı ---
+                    .offset(y = personalInfoOffset)
+                    .zIndex(1f)
+                    .weight(1f, fill = false)
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+                        spotColor = Color.Black,
+                        ambientColor = Color.Black
+                    )
+                    .border(
+                        width = 0.5.dp,
+                        color = Color.Black.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
+                    ),
+                // Alt boşluk scroll'un en sonunda görünecek
+                contentPaddingBottom = 130.dp,
+                onHeaderClick = {
+                    expandedCard = if (expandedCard == "personal") null else "personal"
+                }
+            ) {
+                // Sadece bu kartın içi kaydırılabilir.
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState())
                 ) {
                     PersonalInfoContent(user)
                 }
-
-                // BottomBar'ın arkasında kalmaması için ekstra boşluk
-                Spacer(modifier = Modifier.height(100.dp))
             }
         }
-    }
-}
 
-@Composable
-fun ProfileHeaderSection(imageUrl: String) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Profil Resmi
-        Box(
-            contentAlignment = Alignment.Center,
+        // 4. KATMAN: MENÜ
+        Icon(
+            imageVector = Icons.Default.Menu,
+            contentDescription = "Menu",
+            tint = Color.White,
             modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(Color.White)
-                .border(2.dp, OrangePrimary, CircleShape)
-        ) {
-            // Gerçek resim yükleme kütüphanesi (Coil/Glide) kullanıyorsan burayı güncelle
-            // Örnek: AsyncImage(model = imageUrl ...)
-            Text(text = "fotoğrafı", color = Color.Black)
-        }
+                .padding(16.dp)
+                .size(32.dp)
+                .align(Alignment.TopStart)
+                .clickable { /* Menü aksiyonu */ }
+        )
 
-        Spacer(modifier = Modifier.height((-15).dp)) // Butonu resmin içine biraz gömmek için
-
-        // Parola Güncelle Butonu
-        Button(
-            onClick = { /* Parola Güncelle */ },
-            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-            shape = RoundedCornerShape(20.dp),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
-            modifier = Modifier.height(35.dp)
+        // 5. KATMAN: BOTTOM BAR
+        Box(
+            modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-            Text(
-                text = "Parola Güncelle",
-                color = OrangePrimary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
-            )
+            CustomBottomNavigationBar(onNavigate = onNavigate)
         }
     }
 }
 
+// --- Yardımcı Bileşenler ---
+
 @Composable
-fun ExpandableCard(
+fun ProfilePhotoSection(imageUrl: String) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(130.dp)
+            .clip(CircleShape)
+            .background(Color.White)
+            .padding(4.dp)
+            .clip(CircleShape)
+            .background(Color.White)
+            .shadow(elevation = 10.dp, shape = CircleShape)
+    ) {
+        Text(text = "fotoğrafı", color = Color.Black, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+fun ProfileSectionCard(
     title: String,
     isExpanded: Boolean,
+    modifier: Modifier = Modifier,
+    contentPaddingBottom: androidx.compose.ui.unit.Dp = 32.dp,
     onHeaderClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    Card(
-        shape = RoundedCornerShape(30.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            ) // Büyüme/Küçülme animasyonu
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+        color = Color.White,
+        shadowElevation = 0.dp
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // Header (Her zaman görünür)
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // BAŞLIK
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(60.dp) // Kapalıyken görünecek yükseklik
-                    .clickable { onHeaderClick() },
+                    .clickable { onHeaderClick() }
+                    .padding(vertical = 24.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = title,
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
             }
 
-            // İçerik (Sadece expanded ise görünür)
-            if (isExpanded) {
+            // İÇERİK ANİMASYONU (Önceki düzenleme korundu)
+            // Kapanırken alt taraf sabit, üst taraf aşağı iniyor.
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+                exit = shrinkVertically(shrinkTowards = Alignment.Bottom) + fadeOut()
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 10.dp)
+                        .padding(horizontal = 24.dp)
                 ) {
                     content()
-                    Spacer(modifier = Modifier.height(20.dp)) // Alttan biraz boşluk
                 }
+            }
+
+            // SABİT ALT BOŞLUK
+            if (contentPaddingBottom > 0.dp) {
+                Spacer(modifier = Modifier.height(contentPaddingBottom))
             }
         }
     }
 }
 
-// İletişim Bilgileri İçeriği
 @Composable
 fun ContactInfoContent(user: User) {
-    InfoRow(label = "Telefon", value = user.phone)
-    Spacer(modifier = Modifier.height(10.dp))
-    InfoRow(label = "E-posta", value = user.email)
+    ProfileInfoRow(label = "Telefon", value = user.phone)
+    Spacer(modifier = Modifier.height(12.dp))
+    ProfileInfoRow(label = "E-posta", value = user.email)
 }
 
-// Kişisel Bilgiler İçeriği
 @Composable
 fun PersonalInfoContent(user: User) {
-    InfoRow(label = "Kimlik No", value = user.tc)
-    InfoRow(label = "Ad", value = user.name)
-    InfoRow(label = "Soyad", value = user.surname)
-    InfoRow(label = "Cinsiyet", value = user.gender)
-    InfoRow(label = "Kan Grubu", value = user.bloodType)
-    InfoRow(label = "Uyruk", value = "T.C.") // Modelde yoksa statik veya ekle
-    InfoRow(label = "Doğum Tarihi", value = user.birthDate)
-    InfoRow(label = "Ülke", value = user.location) // Location ülke olarak varsayıldı
+    ProfileInfoRow(label = "Kimlik No", value = user.tc)
+    ProfileInfoRow(label = "Ad", value = user.name)
+    ProfileInfoRow(label = "Soyad", value = user.surname)
+    ProfileInfoRow(label = "Cinsiyet", value = user.gender)
+    ProfileInfoRow(label = "Kan Grubu", value = user.bloodType)
+    ProfileInfoRow(label = "Doğum Tarihi", value = user.birthDate)
+    ProfileInfoRow(label = "Yurt", value = user.location)
+
 }
 
 @Composable
-fun InfoRow(label: String, value: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            modifier = Modifier.width(100.dp),
-            color = Color.Gray,
-            fontSize = 14.sp
-        )
-
-        // Input benzeri görünüm için Box ve Text
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .background(Color(0xFFF5F5F5), shape = RoundedCornerShape(10.dp))
-                .padding(vertical = 12.dp, horizontal = 16.dp)
+fun ProfileInfoRow(label: String, value: String) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+        Text(text = label, color = Color.Gray, fontSize = 12.sp, modifier = Modifier.padding(start = 4.dp, bottom = 4.dp))
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = InputBackground,
+            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0)),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = value,
-                color = Color.Black,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium
-            )
+            Text(text = value, color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(16.dp))
         }
     }
 }
