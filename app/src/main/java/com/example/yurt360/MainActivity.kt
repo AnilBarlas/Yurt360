@@ -25,6 +25,8 @@ import com.example.yurt360.common.model.Admin
 import com.example.yurt360.common.model.TopUser
 import com.example.yurt360.common.model.User
 import com.example.yurt360.data.api.SupabaseClient
+import com.example.yurt360.user.mainScreen.CalendarScreen
+import com.example.yurt360.user.mainScreen.PasswordUpdateScreen
 import io.github.jan.supabase.gotrue.handleDeeplinks
 
 class MainActivity : ComponentActivity() {
@@ -47,7 +49,6 @@ class MainActivity : ComponentActivity() {
                     var showNewPasswordScreen by remember { mutableStateOf(isResetLink) }
                     var currentUser by remember { mutableStateOf<TopUser?>(null) }
 
-                    // Başlangıç rotası
                     var currentScreenRoute by remember { mutableStateOf("home") }
 
                     if (showNewPasswordScreen) {
@@ -81,7 +82,6 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                                 is User -> {
-                                    // Navigation yönetimi
                                     when (currentScreenRoute) {
                                         "home" -> {
                                             UserHomeScreen(
@@ -95,9 +95,6 @@ class MainActivity : ComponentActivity() {
                                             )
                                         }
                                         "profile" -> {
-                                            // DÜZELTME:
-                                            // ProfileScreen kendi içinde Scaffold ve BottomBar barındırdığı için
-                                            // burada tekrar sarmalamıyoruz. Doğrudan çağırıyoruz.
                                             ProfileScreen(
                                                 user = user,
                                                 onNavigate = { route ->
@@ -105,24 +102,36 @@ class MainActivity : ComponentActivity() {
                                                 }
                                             )
                                         }
-                                        "calendar" -> {
-                                            // Calendar henüz hazır olmadığı için geçici Scaffold kullanabiliriz
-                                            Scaffold(
-                                                bottomBar = {
-                                                    CustomBottomNavigationBar(
-                                                        onNavigate = { route -> currentScreenRoute = route }
+                                        "update_password" -> {
+                                            PasswordUpdateScreen(
+                                                onNavigateBack = {
+                                                    currentScreenRoute = "profile"
+                                                },
+                                                onNavigateHome = {
+                                                    currentScreenRoute = "home"
+                                                },
+                                                onNavigate = { route ->
+                                                    currentScreenRoute = route
+                                                },
+                                                onUpdatePassword = { newPassword, resultCallback ->
+                                                    viewModel.updatePassword(
+                                                        newPass = newPassword,
+                                                        onSuccess = {
+                                                            resultCallback(null)
+                                                        },
+                                                        onError = { errorMsg ->
+                                                            resultCallback(errorMsg)
+                                                        }
                                                     )
                                                 }
-                                            ) { innerPadding ->
-                                                Box(
-                                                    modifier = Modifier
-                                                        .fillMaxSize()
-                                                        .padding(innerPadding),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Text("Takvim Ekranı Yapım Aşamasında")
+                                            )
+                                        }
+                                        "calendar" -> {
+                                            CalendarScreen(
+                                                onNavigate = { route ->
+                                                    currentScreenRoute = route
                                                 }
-                                            }
+                                            )
                                         }
                                         else -> {
                                             currentScreenRoute = "home"

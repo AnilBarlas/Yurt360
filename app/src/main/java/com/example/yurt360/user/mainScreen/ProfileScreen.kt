@@ -83,14 +83,14 @@ fun ProfileScreen(
                 .fillMaxSize() // Tüm ekranı kapla
                 .padding(top = contentTopPadding) // İçeriğin en tepe noktası
                 .verticalScroll(rememberScrollState(), enabled = false) // Dış scroll KAPALI
-                .padding(bottom = 0.dp),
+                .padding(bottom = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Bottom // Elemanları en alta yasla
         ) {
 
             // --- PAROLA GÜNCELLE BUTONU (SABİT) ---
             Button(
-                onClick = { /* Parola aksiyonu */ },
+                onClick = { onNavigate("update_password") }, // Bu satırı bu şekilde güncelleyin
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFF0E0)),
                 shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 0.dp, bottomEnd = 0.dp),
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),

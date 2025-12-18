@@ -72,16 +72,12 @@ fun UserHomeScreen(
                 )
             }
 
-            // --- 2. İçerik Alanı (Duyurular + Menü) ---
-            // Görselin üzerine binmesi için yukarı kaydırıyoruz
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .offset(y = (-50).dp)
             ) {
 
-                // --- A) DUYURULAR BAŞLIĞI (SEKME GÖRÜNÜMÜ) ---
-                // Sadece sağ üst köşesi kavisli, küçültülmüş sekme
                 Surface(
                     color = Color.White,
                     shape = RoundedCornerShape(topEnd = 20.dp),
