@@ -41,19 +41,18 @@ val InputBackground = Color(0xFFFAFAFA)
 @Composable
 fun ProfileScreen(
     user: User,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    onMenuClick: () -> Unit // Yan menüyü açmak için eklenen callback
 ) {
     var expandedCard by remember { mutableStateOf<String?>(null) }
 
-    // --- DEĞİŞİKLİK 1: Kartlar arası boşluk animasyonu ---
-    // Eğer iletişim bilgileri açıksa, alttaki kartın yukarı kayma miktarını azalt (-20.dp).
-    // Kapalıysa, standart üst üste binme miktarını koru (-60.dp).
+    // Kartlar arası boşluk animasyonu
     val personalInfoOffset by animateDpAsState(
         targetValue = if (expandedCard == "contact") (-20).dp else (-60).dp,
         label = "personalInfoOffset"
     )
 
-    // Fotoğrafın bittiği yer hesabı (Butonun duracağı tavan noktası)
+    // Fotoğrafın bittiği yer hesabı
     val contentTopPadding = 240.dp
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -66,7 +65,7 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // 2. KATMAN: PROFİL FOTOĞRAFI (SABİT)
+        // 2. KATMAN: PROFİL FOTOĞRAFI
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -76,21 +75,21 @@ fun ProfileScreen(
             ProfilePhotoSection(user.image_url)
         }
 
-        // 3. KATMAN: KARTLAR (SABİT KAP, KAYDIRILABİLİR İÇERİK)
+        // 3. KATMAN: KARTLAR
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .fillMaxSize() // Tüm ekranı kapla
-                .padding(top = contentTopPadding) // İçeriğin en tepe noktası
-                .verticalScroll(rememberScrollState(), enabled = false) // Dış scroll KAPALI
+                .fillMaxSize()
+                .padding(top = contentTopPadding)
+                .verticalScroll(rememberScrollState(), enabled = false)
                 .padding(bottom = 10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Bottom // Elemanları en alta yasla
+            verticalArrangement = Arrangement.Bottom
         ) {
 
-            // --- PAROLA GÜNCELLE BUTONU (SABİT) ---
+            // --- PAROLA GÜNCELLE BUTONU ---
             Button(
-                onClick = { onNavigate("update_password") }, // Bu satırı bu şekilde güncelleyin
+                onClick = { onNavigate("update_password") },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFF0E0)),
                 shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 0.dp, bottomEnd = 0.dp),
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
@@ -108,7 +107,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(0.dp))
 
-            // --- İLETİŞİM BİLGİLERİ KARTI (SABİT) ---
+            // --- İLETİŞİM BİLGİLERİ KARTI ---
             ProfileSectionCard(
                 title = "İletişim Bilgileri",
                 isExpanded = expandedCard == "contact",
@@ -118,16 +117,14 @@ fun ProfileScreen(
                     expandedCard = if (expandedCard == "contact") null else "contact"
                 }
             ) {
-                // İletişim bilgileri genelde kısa olduğu için scroll'a gerek yok
                 ContactInfoContent(user)
             }
 
-            // --- KİŞİSEL BİLGİLER KARTI (ESNEK VE İÇİ KAYDIRILABİLİR) ---
+            // --- KİŞİSEL BİLGİLER KARTI ---
             ProfileSectionCard(
                 title = "Kişisel Bilgiler",
                 isExpanded = expandedCard == "personal",
                 modifier = Modifier
-                    // --- DEĞİŞİKLİK 2: Dinamik Offset Kullanımı ---
                     .offset(y = personalInfoOffset)
                     .zIndex(1f)
                     .weight(1f, fill = false)
@@ -142,13 +139,11 @@ fun ProfileScreen(
                         color = Color.Black.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
                     ),
-                // Alt boşluk scroll'un en sonunda görünecek
                 contentPaddingBottom = 130.dp,
                 onHeaderClick = {
                     expandedCard = if (expandedCard == "personal") null else "personal"
                 }
             ) {
-                // Sadece bu kartın içi kaydırılabilir.
                 Column(
                     modifier = Modifier.verticalScroll(rememberScrollState())
                 ) {
@@ -157,16 +152,16 @@ fun ProfileScreen(
             }
         }
 
-        // 4. KATMAN: MENÜ
+        // 4. KATMAN: SOL ÜST MENÜ İKONU
         Icon(
             imageVector = Icons.Default.Menu,
             contentDescription = "Menu",
             tint = Color.White,
             modifier = Modifier
-                .padding(16.dp)
+                .padding(top = 50.dp, start = 20.dp)
                 .size(32.dp)
                 .align(Alignment.TopStart)
-                .clickable { /* Menü aksiyonu */ }
+                .clickable { onMenuClick() } // Callback buraya bağlandı
         )
 
         // 5. KATMAN: BOTTOM BAR
@@ -177,8 +172,6 @@ fun ProfileScreen(
         }
     }
 }
-
-// --- Yardımcı Bileşenler ---
 
 @Composable
 fun ProfilePhotoSection(imageUrl: String) {
@@ -213,7 +206,6 @@ fun ProfileSectionCard(
         shadowElevation = 0.dp
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // BAŞLIK
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -229,8 +221,6 @@ fun ProfileSectionCard(
                 )
             }
 
-            // İÇERİK ANİMASYONU (Önceki düzenleme korundu)
-            // Kapanırken alt taraf sabit, üst taraf aşağı iniyor.
             AnimatedVisibility(
                 visible = isExpanded,
                 enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
@@ -245,7 +235,6 @@ fun ProfileSectionCard(
                 }
             }
 
-            // SABİT ALT BOŞLUK
             if (contentPaddingBottom > 0.dp) {
                 Spacer(modifier = Modifier.height(contentPaddingBottom))
             }
@@ -269,7 +258,6 @@ fun PersonalInfoContent(user: User) {
     ProfileInfoRow(label = "Kan Grubu", value = user.bloodType)
     ProfileInfoRow(label = "Doğum Tarihi", value = user.birthDate)
     ProfileInfoRow(label = "Yurt", value = user.location)
-
 }
 
 @Composable

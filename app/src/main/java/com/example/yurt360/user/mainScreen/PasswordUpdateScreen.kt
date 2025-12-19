@@ -89,7 +89,7 @@ fun PasswordUpdateScreen(
                                 if (error == null) isSuccess = true else errorMessage = error
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF8A65)),
+                        colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
                         shape = RoundedCornerShape(20.dp),
                         modifier = Modifier.fillMaxWidth(0.7f).height(50.dp)
                     ) {

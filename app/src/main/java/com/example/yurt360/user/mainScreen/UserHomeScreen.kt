@@ -8,39 +8,47 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yurt360.R
 import com.example.yurt360.common.components.CustomBottomNavigationBar
 import com.example.yurt360.common.model.User
 
-// Renk Tanımları
+// Renk Tanımlar
 val TextDark = Color(0xFF1F1F1F)
-val BackgroundColor = Color.White
 val MenuCardColor = Color.White
 
 @Composable
 fun UserHomeScreen(
     user: User,
-    onMenuClick: (String) -> Unit = {},
-    onNavigation: (String) -> Unit = {}
+    onMenuClick: () -> Unit,
+    onNavigation: (String) -> Unit = {},
+    viewModel: AnnouncementViewModel = viewModel()
 ) {
+    val context = LocalContext.current
+    val announcementList = viewModel.announcements
+
+    // Sayfa açıldığında ViewModel'deki dinleyiciyi başlatır
+    LaunchedEffect(Unit) {
+        viewModel.observeAnnouncements(context)
+    }
+
     Scaffold(
         bottomBar = {
-            CustomBottomNavigationBar(
-                onNavigate = { route -> onNavigation(route) }
-            )
+            CustomBottomNavigationBar(onNavigate = { route -> onNavigation(route) })
         },
-        containerColor = BackgroundColor
+        containerColor = Color.White
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -61,6 +69,7 @@ fun UserHomeScreen(
                     modifier = Modifier.fillMaxSize()
                 )
 
+                // Menü İkonu
                 Icon(
                     painter = painterResource(id = android.R.drawable.ic_menu_sort_by_size),
                     contentDescription = "Menü",
@@ -68,7 +77,7 @@ fun UserHomeScreen(
                     modifier = Modifier
                         .padding(top = 40.dp, start = 20.dp)
                         .size(32.dp)
-                        .clickable { }
+                        .clickable { onMenuClick() }
                 )
             }
 
@@ -77,70 +86,94 @@ fun UserHomeScreen(
                     .fillMaxWidth()
                     .offset(y = (-50).dp)
             ) {
-
+                // Duyurular Başlık Kartı
                 Surface(
                     color = Color.White,
                     shape = RoundedCornerShape(topEnd = 20.dp),
-                    modifier = Modifier.wrapContentWidth() // Sadece yazı kadar yer kaplar
+                    modifier = Modifier.wrapContentWidth()
                 ) {
                     Text(
                         text = "DUYURULAR",
-                        fontSize = 14.sp, // Daha kibar yazı boyutu
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextDark,
-                        modifier = Modifier
-                            .padding(horizontal = 20.dp, vertical = 8.dp) // Daha kompakt boşluklar
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
                     )
                 }
 
-                // --- B) DUYURU LİSTESİ (GÖVDE) ---
-                // Tam genişlikte beyaz zemin
+                // --- 2. Dinamik Duyuru Listesi ---
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color.White)
                         .padding(top = 10.dp)
                 ) {
-                    repeat(3) { index ->
-                        Box(modifier = Modifier.padding(horizontal = 20.dp)) {
-                            DuyuruItem("Ana Duyuru", "Altında duyurunun açıklaması her ne hakkında ise")
-                        }
+                    if (announcementList.isEmpty()) {
+                        Text(
+                            "Duyurular yükleniyor...",
+                            modifier = Modifier.padding(20.dp),
+                            color = Color.Gray,
+                            fontSize = 13.sp
+                        )
+                    } else {
+                        announcementList.forEachIndexed { index, announcement ->
+                            Box(modifier = Modifier.padding(horizontal = 20.dp)) {
+                                DuyuruItem(
+                                    title = announcement.title,
+                                    desc = announcement.description
+                                )
+                            }
 
-                        if (index < 2) {
-                            Divider(
-                                color = Color.LightGray,
-                                thickness = 0.5.dp,
-                                modifier = Modifier
-                                    .padding(vertical = 12.dp)
-                                    .padding(start = 20.dp)
-                            )
+                            if (index < announcementList.size - 1) {
+                                HorizontalDivider(
+                                    color = Color.LightGray,
+                                    thickness = 0.5.dp,
+                                    modifier = Modifier
+                                        .padding(vertical = 12.dp)
+                                        .padding(start = 20.dp)
+                                )
+                            }
                         }
                     }
-
-                    // Listenin altı ile kartlar arasında biraz boşluk
                     Spacer(modifier = Modifier.height(20.dp))
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 // --- 3. Menü Kartları ---
-                val menuItems = listOf(
-                    "YEMEKHANE", "ÇALIŞMA ALANI", "ODA DEĞİŞİMİ", "ÇAMAŞIR YIKAMA"
-                )
+                val menuItems = listOf("YEMEKHANE", "ÇALIŞMA ALANI", "ODA DEĞİŞİMİ", "ÇAMAŞIR YIKAMA")
 
                 menuItems.forEachIndexed { index, title ->
-                    val isTextOnRight = (index % 2 == 0)
-
                     AlternatingMenuCard(
                         title = title,
-                        isTextOnRight = isTextOnRight,
-                        onClick = { onMenuClick(title) }
+                        isTextOnRight = (index % 2 == 0),
+                        onClick = { /* Menü tıklama aksiyonu */ }
                     )
-
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
+    }
+}
+
+// --- YARDIMCI COMPONENTLER ---
+
+@Composable
+fun DuyuruItem(title: String, desc: String) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = title,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 15.sp,
+            color = TextDark
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = desc,
+            fontSize = 13.sp,
+            color = Color.Gray,
+            lineHeight = 16.sp
+        )
     }
 }
 
@@ -151,8 +184,6 @@ fun AlternatingMenuCard(
     onClick: () -> Unit
 ) {
     val cardHeight = 162.dp
-
-    // Kavis Şekli
     val dynamicShape = if (isTextOnRight) {
         RoundedCornerShape(topEnd = 90.dp)
     } else {
@@ -166,8 +197,6 @@ fun AlternatingMenuCard(
             .clickable { onClick() }
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
-
-            // --- SOL TARAFTAKİ ALAN (Resim soldaysa) ---
             if (isTextOnRight) {
                 Image(
                     painter = painterResource(id = R.drawable.bina),
@@ -180,12 +209,11 @@ fun AlternatingMenuCard(
                 )
             }
 
-            // --- YAZI KUTUSU (ORTAK) ---
             Box(
                 modifier = Modifier
                     .weight(1.2f)
                     .fillMaxHeight()
-                    .shadow(elevation = 33.8.dp, shape = dynamicShape)
+                    .shadow(elevation = 15.dp, shape = dynamicShape)
                     .background(color = MenuCardColor, shape = dynamicShape)
                     .clip(dynamicShape),
                 contentAlignment = Alignment.Center
@@ -198,7 +226,6 @@ fun AlternatingMenuCard(
                 )
             }
 
-            // --- SAĞ TARAFTAKİ ALAN (Resim sağdaysa) ---
             if (!isTextOnRight) {
                 Image(
                     painter = painterResource(id = R.drawable.bina),
@@ -211,14 +238,5 @@ fun AlternatingMenuCard(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun DuyuruItem(title: String, desc: String) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(text = title, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, color = TextDark)
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(text = desc, fontSize = 13.sp, color = Color.Gray, lineHeight = 16.sp)
     }
 }

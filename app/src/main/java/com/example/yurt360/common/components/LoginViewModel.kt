@@ -34,6 +34,21 @@ class LoginViewModel : ViewModel() {
     fun onUsernameChange(newText: String) { _username.value = newText }
     fun onPasswordChange(newText: String) { _password.value = newText }
 
+    // Bilgileri ve Oturumu Temizleme
+    fun clearCredentials() {
+        _username.value = ""
+        _password.value = ""
+        _loginState.value = LoginState.Idle // Durumu boşa çekmezsek otomatik giriş yapabilir
+
+        viewModelScope.launch {
+            try {
+                SupabaseClient.client.auth.signOut() // Gerçek Supabase çıkışı
+            } catch (e: Exception) {
+                Log.e("LogoutError", "Çıkış yapılırken hata: ${e.message}")
+            }
+        }
+    }
+
     fun onLoginClick() {
         val emailInput = _username.value.trim()
         val passInput = _password.value.trim()
@@ -48,81 +63,49 @@ class LoginViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val supabase = SupabaseClient.client
-
                 supabase.auth.signInWith(Email) {
-                    email = emailInput.trim()
+                    email = emailInput
                     password = passInput
                 }
 
                 val currentUser = supabase.auth.currentUserOrNull()
-
                 if (currentUser != null) {
-                    val userId = currentUser.id
-
                     val profile = supabase.from("users")
-                        .select {
-                            filter {
-                                eq("id", userId)
-                            }
-                        }.decodeSingleOrNull<ProfileDto>()
+                        .select { filter { eq("id", currentUser.id) } }
+                        .decodeSingleOrNull<ProfileDto>()
 
                     if (profile != null) {
-                        Log.d("LoginTypeControl", "Gelen Veri (Raw): ${profile.isAdmin}")
-                        val topUser = profile.toTopUser()
-                        _loginState.value = LoginState.Success(topUser)
+                        _loginState.value = LoginState.Success(profile.toTopUser())
                     } else {
-                        Log.e("LoginTypeControl", "HATA: Profil null geldi!")
                         _loginState.value = LoginState.Error("Kullanıcı profili bulunamadı.")
                     }
                 } else {
-                    _loginState.value = LoginState.Error("Giriş başarısız oldu.")
+                    _loginState.value = LoginState.Error("Giriş başarısız.")
                 }
-
             } catch (e: Exception) {
-                Log.e("SupabaseLogin", "Error: ${e.message}")
-                val msg = if (e.message?.contains("Invalid login") == true)
-                    "Hatalı e-posta veya şifre."
-                else "Bir hata oluştu: ${e.message}"
+                val msg = if (e.message?.contains("Invalid login") == true) "Hatalı e-posta veya şifre." else "Hata: ${e.message}"
                 _loginState.value = LoginState.Error(msg)
-            }
-        }
-    }
-    fun resetPassword(email: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
-        if (email.isBlank()) {
-            onError("Lütfen e-posta adresinizi girin.")
-            return
-        }
-
-        viewModelScope.launch {
-            try {
-                val supabase = SupabaseClient.client
-
-                supabase.auth.resetPasswordForEmail(
-                    email = email,
-                    redirectUrl = "com.example.yurt360://reset-callback"
-                )
-                onSuccess()
-            } catch (e: Exception) {
-                Log.e("SupabaseReset", "Error: ${e.message}")
-                onError("Mail gönderilemedi: ${e.message}")
             }
         }
     }
 
     fun resetLoginState() { _loginState.value = LoginState.Idle }
 
+    fun resetPassword(email: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                SupabaseClient.client.auth.resetPasswordForEmail(email = email, redirectUrl = "com.example.yurt360://reset-callback")
+                onSuccess()
+            } catch (e: Exception) { onError(e.message ?: "Hata") }
+        }
+    }
+
     fun updatePassword(newPass: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             try {
-                val supabase = SupabaseClient.client
-                supabase.auth.modifyUser {
-                    password = newPass
-                }
+                SupabaseClient.client.auth.modifyUser { password = newPass }
                 onSuccess()
-            } catch (e: Exception) {
-                Log.e("UpdatePass", "Hata: ${e.message}")
-                onError("Şifre güncellenemedi: ${e.message}")
-            }
+            } catch (e: Exception) { onError(e.message ?: "Hata") }
         }
     }
 }

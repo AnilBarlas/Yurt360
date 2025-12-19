@@ -72,7 +72,8 @@ dependencies {
 
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-
-
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:VERSION")
+    implementation("io.github.jan-tennert.supabase:realtime-kt:VERSION")
+    implementation("androidx.compose.material:material-icons-extended:1.7.6")
     implementation("androidx.navigation:navigation-compose:2.7.5")
 }

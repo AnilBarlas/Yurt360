@@ -3,6 +3,7 @@ package com.example.yurt360.data.api
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.realtime.Realtime
 
 object SupabaseClient {
     private const val SUPABASE_URL = "https://pmqvmmbqfvjkgtxpbmwo.supabase.co"
@@ -14,5 +15,6 @@ object SupabaseClient {
     ) {
         install(Auth)
         install(Postgrest)
+        install(Realtime)
     }
 }
