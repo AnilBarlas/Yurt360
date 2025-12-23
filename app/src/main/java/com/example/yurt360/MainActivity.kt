@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yurt360.common.components.*
 import com.example.yurt360.user.mainScreen.*
+import com.example.yurt360.user.refectory.MenuScreen // MenuScreen Import edildi
 import com.example.yurt360.common.model.Admin
 import com.example.yurt360.common.model.TopUser
 import com.example.yurt360.common.model.User
@@ -37,6 +38,8 @@ class MainActivity : ComponentActivity() {
 
                     var showNewPasswordScreen by remember { mutableStateOf(isResetLink) }
                     var currentUser by remember { mutableStateOf<TopUser?>(null) }
+
+                    // Başlangıç rotası 'home'
                     var currentScreenRoute by remember { mutableStateOf("home") }
                     var isMenuOpen by remember { mutableStateOf(false) }
 
@@ -56,7 +59,7 @@ class MainActivity : ComponentActivity() {
                     } else {
                         if (currentUser == null) {
                             LoginScreen(
-                                viewModel = loginViewModel, // ÖNEMLİ: Aynı VM'i paslıyoruz
+                                viewModel = loginViewModel,
                                 onLoginSuccess = { topUser ->
                                     currentUser = topUser
                                     currentScreenRoute = "home"
@@ -72,7 +75,7 @@ class MainActivity : ComponentActivity() {
                                     isMenuOpen = false
                                 },
                                 onLogout = {
-                                    loginViewModel.clearCredentials() // ÖNEMLİ: Çıkışta temizliyoruz
+                                    loginViewModel.clearCredentials()
                                     currentUser = null
                                     isMenuOpen = false
                                     currentScreenRoute = "home"
@@ -86,8 +89,14 @@ class MainActivity : ComponentActivity() {
                                             "home" -> UserHomeScreen(
                                                 user = user,
                                                 onMenuClick = { isMenuOpen = true },
-                                                onNavigation = { currentScreenRoute = it }
+                                                onNavigation = { route -> currentScreenRoute = route }
                                             )
+
+                                            // YEMEKHANE SAYFASI EKLENDİ
+                                            "refectory" -> MenuScreen(
+                                                onNavigate = { route -> currentScreenRoute = route }
+                                            )
+
                                             "profile" -> ProfileScreen(
                                                 user = user,
                                                 onNavigate = { currentScreenRoute = it },

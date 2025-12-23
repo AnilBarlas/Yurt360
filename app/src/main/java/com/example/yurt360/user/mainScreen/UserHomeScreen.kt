@@ -141,13 +141,20 @@ fun UserHomeScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 // --- 3. Menü Kartları ---
+                // UserHomeScreen.kt içinde ilgili kısmı bul ve bununla değiştir:
+
                 val menuItems = listOf("YEMEKHANE", "ÇALIŞMA ALANI", "ODA DEĞİŞİMİ", "ÇAMAŞIR YIKAMA")
 
                 menuItems.forEachIndexed { index, title ->
                     AlternatingMenuCard(
                         title = title,
                         isTextOnRight = (index % 2 == 0),
-                        onClick = { /* Menü tıklama aksiyonu */ }
+                        onClick = {
+                            // Eğer tıklanan kart YEMEKHANE ise navigasyonu tetikle
+                            if (title == "YEMEKHANE") {
+                                onNavigation("refectory")
+                            }
+                        }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
