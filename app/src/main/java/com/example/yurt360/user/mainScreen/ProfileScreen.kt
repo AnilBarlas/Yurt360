@@ -42,7 +42,7 @@ val InputBackground = Color(0xFFFAFAFA)
 fun ProfileScreen(
     user: User,
     onNavigate: (String) -> Unit,
-    onMenuClick: () -> Unit // Yan menüyü açmak için eklenen callback
+    onMenuClick: () -> Unit
 ) {
     var expandedCard by remember { mutableStateOf<String?>(null) }
 

@@ -1,6 +1,8 @@
 package com.example.yurt360.common.components
 
-import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,11 +22,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yurt360.R
 import com.example.yurt360.common.model.TopUser
+import kotlinx.coroutines.delay
 
 val OrangePrimary = Color(0xFFFF8838)
 val TextGray = Color(0xFF4A4A4A)
@@ -39,48 +43,59 @@ fun LoginScreen(
     val loginState by viewModel.loginState.collectAsState()
 
     var showResetScreen by remember { mutableStateOf(false) }
-    val context = LocalContext.current
+
+    // Bildirim mesajını tutan state
+    var notificationMessage by remember { mutableStateOf<String?>(null) }
+
+    // Mesaj geldiğinde 2 saniye sonra otomatik kaybolması için
+    LaunchedEffect(notificationMessage) {
+        if (notificationMessage != null) {
+            delay(2000) // 2 saniye bekle
+            notificationMessage = null // Mesajı temizle
+        }
+    }
 
     LaunchedEffect(loginState) {
         when (val state = loginState) {
             is LoginState.Success -> {
-                Toast.makeText(context, "Giriş Başarılı!", Toast.LENGTH_SHORT).show()
+                notificationMessage = "Giriş Başarılı!"
+                delay(500)
                 onLoginSuccess(state.user)
                 viewModel.resetLoginState()
             }
             is LoginState.Error -> {
-                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+                notificationMessage = state.message
                 viewModel.resetLoginState()
             }
-            else -> {} //Yükleme ekranı
+            else -> {}
         }
     }
 
-    if (showResetScreen) {
-        ResetPasswordScreen(
-            onSendClick = { email ->
-                viewModel.resetPassword(
-                    email = email,
-                    onSuccess = {
-                        Toast.makeText(context, "Sıfırlama bağlantısı e-postana gönderildi!", Toast.LENGTH_LONG).show()
-                        showResetScreen = false // Ana ekrana dön
-                    },
-                    onError = { msg ->
-                        Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
-                    }
-                )
-            },
-            onBackClick = {
-                showResetScreen = false // Ana ekrana dön
-            }
-        )
-    } else {
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-        ) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        if (showResetScreen) {
+            ResetPasswordScreen(
+                onSendClick = { email ->
+                    viewModel.resetPassword(
+                        email = email,
+                        onSuccess = {
+                            notificationMessage = "Sıfırlama bağlantısı e-postana gönderildi!"
+                            showResetScreen = false
+                        },
+                        onError = { msg ->
+                            notificationMessage = msg
+                        }
+                    )
+                },
+                onBackClick = {
+                    showResetScreen = false
+                }
+            )
+        } else {
+            // --- UI İÇERİĞİ ---
             Image(
                 painter = painterResource(id = R.drawable.bina),
                 contentDescription = "Bina Görseli",
@@ -165,6 +180,38 @@ fun LoginScreen(
                         showResetScreen = true
                     }
                 )
+            }
+        }
+
+        // --- ÖZEL BİLDİRİM KUTUSU ---
+        // Hizalama: BottomCenter (Alt Orta)
+        // Padding: Bottom 80.dp (Aşağıdan hafif yukarıda)
+        AnimatedVisibility(
+            visible = notificationMessage != null,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier
+                .align(Alignment.BottomCenter) // Alt ortaya hizala
+                .padding(bottom = 80.dp)       // En aşağıya değmemesi için boşluk bırak
+        ) {
+            notificationMessage?.let { msg ->
+                Surface(
+                    modifier = Modifier
+                        .padding(horizontal = 40.dp)
+                        .shadow(6.dp, RoundedCornerShape(25.dp)), // Daha yuvarlak hatlar
+                    shape = RoundedCornerShape(25.dp),
+                    color = Color.White,
+                    tonalElevation = 4.dp
+                ) {
+                    Text(
+                        text = msg,
+                        modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp),
+                        color = Color.Black,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     }

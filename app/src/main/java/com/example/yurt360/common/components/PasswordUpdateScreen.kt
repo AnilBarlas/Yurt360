@@ -1,4 +1,4 @@
-package com.example.yurt360.user.mainScreen
+package com.example.yurt360.common.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -14,11 +14,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.yurt360.R
-import com.example.yurt360.common.components.CustomBottomNavigationBar
 import androidx.compose.ui.zIndex
+import com.example.yurt360.user.mainScreen.OrangePrimary
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.Icons
 
 @Composable
 fun PasswordUpdateScreen(
@@ -91,7 +94,9 @@ fun PasswordUpdateScreen(
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
                         shape = RoundedCornerShape(20.dp),
-                        modifier = Modifier.fillMaxWidth(0.7f).height(50.dp)
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(50.dp)
                     ) {
                         Text("Parolayı Güncelle", color = Color.White, fontWeight = FontWeight.Bold)
                     }
@@ -108,11 +113,13 @@ fun PasswordUpdateScreen(
         }
 
         if (!isSuccess) {
-            Text(
-                text = "< Geri",
-                color = Color.White,
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowLeft,
+                contentDescription = "Geri",
+                tint = Color.White,
                 modifier = Modifier
                     .padding(top = 50.dp, start = 20.dp)
+                    .size(60.dp)
                     .clickable { onNavigateBack() }
             )
         }
@@ -125,7 +132,9 @@ fun PasswordUpdateScreen(
 
 @Composable
 fun CustomPasswordInput(label: String, value: String, onValueChange: (String) -> Unit) {
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = 8.dp)) {
         Surface(
             modifier = Modifier.zIndex(1f),
             shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
@@ -135,7 +144,9 @@ fun CustomPasswordInput(label: String, value: String, onValueChange: (String) ->
             Text(text = label, fontSize = 13.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp))
         }
         Surface(
-            modifier = Modifier.fillMaxWidth().zIndex(2f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .zIndex(2f),
             shape = RoundedCornerShape(50.dp),
             shadowElevation = 4.dp,
             color = Color.White
@@ -144,7 +155,7 @@ fun CustomPasswordInput(label: String, value: String, onValueChange: (String) ->
                 value = value,
                 onValueChange = onValueChange,
                 modifier = Modifier.fillMaxWidth(),
-                visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                visualTransformation = PasswordVisualTransformation(),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
@@ -163,7 +174,9 @@ fun SuccessButton(text: String, onClick: () -> Unit) {
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
         shape = RoundedCornerShape(20.dp),
-        modifier = Modifier.fillMaxWidth(0.8f).height(45.dp)
+        modifier = Modifier
+            .fillMaxWidth(0.8f)
+            .height(45.dp)
     ) {
         Text(text, color = Color.White, fontWeight = FontWeight.Bold)
     }

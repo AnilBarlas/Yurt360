@@ -1,6 +1,8 @@
 package com.example.yurt360.common.components
 
-import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,14 +16,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.yurt360.R
-import androidx.compose.ui.platform.LocalConfiguration
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,8 +33,17 @@ fun ResetPasswordScreen(
     onBackClick: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
-    val context = LocalContext.current
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+
+
+    var notificationMessage by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(notificationMessage) {
+        if (notificationMessage != null) {
+            delay(2000)
+            notificationMessage = null
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -112,13 +124,13 @@ fun ResetPasswordScreen(
 
             Spacer(modifier = Modifier.height(30.dp))
 
-            // Sıfırlama Bağlantısı Gönder Butonu
+
             Button(
                 onClick = {
                     if (email.isNotBlank()) {
                         onSendClick(email.trim())
                     } else {
-                        Toast.makeText(context, "Lütfen e-posta adresinizi girin.", Toast.LENGTH_SHORT).show()
+                        notificationMessage = "Lütfen e-posta adresinizi girin."
                     }
                 },
                 modifier = Modifier
@@ -146,6 +158,36 @@ fun ResetPasswordScreen(
                     onBackClick()
                 }
             )
+        }
+
+        // --- ÖZEL BİLDİRİM KUTUSU ---
+        AnimatedVisibility(
+            visible = notificationMessage != null,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 80.dp)
+        ) {
+            notificationMessage?.let { msg ->
+                Surface(
+                    modifier = Modifier
+                        .padding(horizontal = 40.dp)
+                        .shadow(6.dp, RoundedCornerShape(25.dp)),
+                    shape = RoundedCornerShape(25.dp),
+                    color = Color.White,
+                    tonalElevation = 4.dp
+                ) {
+                    Text(
+                        text = msg,
+                        modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp),
+                        color = Color.Black,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         }
     }
 }

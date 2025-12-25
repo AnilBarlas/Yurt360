@@ -12,7 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -27,7 +26,12 @@ import com.example.yurt360.common.model.User
 
 // Renk Tanımlar
 val TextDark = Color(0xFF1F1F1F)
-val MenuCardColor = Color.White
+
+// Menü verilerini tutmak için model
+data class MenuItemData(
+    val title: String,
+    val iconResId: Int
+)
 
 @Composable
 fun UserHomeScreen(
@@ -39,7 +43,6 @@ fun UserHomeScreen(
     val context = LocalContext.current
     val announcementList = viewModel.announcements
 
-    // Sayfa açıldığında ViewModel'deki dinleyiciyi başlatır
     LaunchedEffect(Unit) {
         viewModel.observeAnnouncements(context)
     }
@@ -140,16 +143,28 @@ fun UserHomeScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // --- 3. Menü Kartları ---
-                val menuItems = listOf("YEMEKHANE", "ÇALIŞMA ALANI", "ODA DEĞİŞİMİ", "ÇAMAŞIR YIKAMA")
+                val menuList = listOf(
+                    MenuItemData("YEMEKHANE", R.drawable.bina),
+                    MenuItemData("ÇALIŞMA ALANI", R.drawable.bina),
+                    MenuItemData("ODA DEĞİŞİMİ", R.drawable.bina),
+                    MenuItemData("ÇAMAŞIR YIKAMA", R.drawable.bina)
+                )
 
-                menuItems.forEachIndexed { index, title ->
-                    AlternatingMenuCard(
-                        title = title,
-                        isTextOnRight = (index % 2 == 0),
-                        onClick = { /* Menü tıklama aksiyonu */ }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    menuList.forEachIndexed { index, item ->
+                        val isImageLeft = (index % 2 == 0)
+
+                        AlternatingMenuCard(
+                            title = item.title,
+                            resimId = item.iconResId,
+                            isImageLeft = isImageLeft,
+                            onClick = {
+
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -180,61 +195,79 @@ fun DuyuruItem(title: String, desc: String) {
 @Composable
 fun AlternatingMenuCard(
     title: String,
-    isTextOnRight: Boolean,
+    resimId: Int,
+    isImageLeft: Boolean,
     onClick: () -> Unit
 ) {
-    val cardHeight = 162.dp
-    val dynamicShape = if (isTextOnRight) {
-        RoundedCornerShape(topEnd = 90.dp)
-    } else {
-        RoundedCornerShape(topStart = 90.dp)
-    }
-
-    Box(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(cardHeight)
-            .clickable { onClick() }
+            .height(180.dp)
+            .clickable { onClick() },
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
-            if (isTextOnRight) {
+
+            if (isImageLeft) {
+                // --- DURUM 1: Resim Solda, Yazı Sağda ---
+
+                // 1. Resim
                 Image(
-                    painter = painterResource(id = R.drawable.bina),
+                    painter = painterResource(id = resimId),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clip(dynamicShape)
+                        .clip(RoundedCornerShape(topEnd = 100.dp)) // Sağ Üst Kavis
                 )
-            }
 
-            Box(
-                modifier = Modifier
-                    .weight(1.2f)
-                    .fillMaxHeight()
-                    .shadow(elevation = 15.dp, shape = dynamicShape)
-                    .background(color = MenuCardColor, shape = dynamicShape)
-                    .clip(dynamicShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = title,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-            }
+                // 2. Yazı
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = title,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                }
 
-            if (!isTextOnRight) {
+            } else {
+                // --- DURUM 2: Yazı Solda, Resim Sağda ---
+
+                // 1. Yazı
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = title,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                }
+
+                // 2. Resim
                 Image(
-                    painter = painterResource(id = R.drawable.bina),
+                    painter = painterResource(id = resimId),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clip(dynamicShape)
+                        .clip(RoundedCornerShape(topStart = 100.dp)) // Sol Üst Kavis
                 )
             }
         }

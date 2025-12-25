@@ -32,12 +32,12 @@ class AnnouncementViewModel : ViewModel() {
     val announcements = mutableStateListOf<Announcement>()
     private var isFirstLoad = true
 
-    // UI'dan çağrılan ana fonksiyon
+
     fun observeAnnouncements(context: Context) {
         val supabase = SupabaseClient.client
         val myChannel = supabase.realtime.channel("announcements")
 
-        // Realtime dinleyici (Yeni veri eklendiğinde tetiklenir)
+
         myChannel.postgresChangeFlow<PostgresAction.Insert>(schema = "public") {
             table = "announcement"
         }.onEach {
@@ -46,7 +46,7 @@ class AnnouncementViewModel : ViewModel() {
 
         viewModelScope.launch {
             myChannel.subscribe()
-            fetchLatest(context) // İlk açılışta verileri çek
+            fetchLatest(context)
         }
     }
 
@@ -54,10 +54,10 @@ class AnnouncementViewModel : ViewModel() {
         try {
             val result = SupabaseClient.client.from("announcement").select {
                 order(column = "created_at", order = Order.DESCENDING)
-                limit(3) // Kuyruk mantığı: Sadece en yeni 3 duyuru
+                limit(3)
             }.decodeList<Announcement>()
 
-            // Bildirim kontrolü
+
             if (result.isNotEmpty() && !isFirstLoad) {
                 if (announcements.isEmpty() || result[0].id != announcements[0].id) {
                     sendNotification(context, result[0].title, result[0].description)
@@ -81,7 +81,7 @@ class AnnouncementViewModel : ViewModel() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        val notification = NotificationCompat.Builder(context, channelId)
+        /*val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(title)
             .setContentText(message)
@@ -89,6 +89,6 @@ class AnnouncementViewModel : ViewModel() {
             .setAutoCancel(true)
             .build()
 
-        notificationManager.notify(System.currentTimeMillis().toInt(), notification)
+        notificationManager.notify(System.currentTimeMillis().toInt(), notification)*/
     }
 }

@@ -20,6 +20,7 @@ import com.example.yurt360.common.model.TopUser
 import com.example.yurt360.common.model.User
 import com.example.yurt360.data.api.SupabaseClient
 import io.github.jan.supabase.gotrue.handleDeeplinks
+import java.nio.file.attribute.UserPrincipalLookupService
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +41,7 @@ class MainActivity : ComponentActivity() {
                     var currentScreenRoute by remember { mutableStateOf("home") }
                     var isMenuOpen by remember { mutableStateOf(false) }
 
+
                     if (showNewPasswordScreen) {
                         NewPasswordScreen(
                             onConfirmClick = { newPass ->
@@ -56,7 +58,7 @@ class MainActivity : ComponentActivity() {
                     } else {
                         if (currentUser == null) {
                             LoginScreen(
-                                viewModel = loginViewModel, // ÖNEMLİ: Aynı VM'i paslıyoruz
+                                viewModel = loginViewModel,
                                 onLoginSuccess = { topUser ->
                                     currentUser = topUser
                                     currentScreenRoute = "home"
@@ -72,7 +74,7 @@ class MainActivity : ComponentActivity() {
                                     isMenuOpen = false
                                 },
                                 onLogout = {
-                                    loginViewModel.clearCredentials() // ÖNEMLİ: Çıkışta temizliyoruz
+                                    loginViewModel.clearCredentials()
                                     currentUser = null
                                     isMenuOpen = false
                                     currentScreenRoute = "home"
@@ -108,6 +110,12 @@ class MainActivity : ComponentActivity() {
                                             "about_us" -> AboutUsScreen(
                                                 onMenuClick = { isMenuOpen = true },
                                                 onNavigate = { currentScreenRoute = it }
+                                            )
+
+                                            "settings" -> SettingsScreen(
+                                                onNavigateBack = {
+                                                    currentScreenRoute = "home"
+                                                }
                                             )
                                         }
                                     }

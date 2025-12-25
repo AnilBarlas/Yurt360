@@ -1,6 +1,8 @@
 package com.example.yurt360.common.components
 
-import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,14 +16,15 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.yurt360.R
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,9 +32,18 @@ fun NewPasswordScreen(
     onConfirmClick: (String) -> Unit
 ) {
     var newPassword by remember { mutableStateOf("") }
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
+
+    // Bildirim State'i
+    var notificationMessage by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(notificationMessage) {
+        if (notificationMessage != null) {
+            delay(2000)
+            notificationMessage = null
+        }
+    }
 
     Box(
         modifier = Modifier.fillMaxSize().background(Color.White)
@@ -99,7 +111,7 @@ fun NewPasswordScreen(
                     if (newPassword.length >= 6) {
                         onConfirmClick(newPassword)
                     } else {
-                        Toast.makeText(context, "Şifre en az 6 karakter olmalı.", Toast.LENGTH_SHORT).show()
+                        notificationMessage = "Şifre en az 6 karakter olmalı."
                     }
                 },
                 modifier = Modifier.width(220.dp).height(50.dp).shadow(8.dp, RoundedCornerShape(25.dp)),
@@ -107,6 +119,36 @@ fun NewPasswordScreen(
                 shape = RoundedCornerShape(25.dp)
             ) {
                 Text("Şifreyi Güncelle", fontSize = 16.sp, color = Color.White)
+            }
+        }
+
+        // --- ÖZEL BİLDİRİM KUTUSU ---
+        AnimatedVisibility(
+            visible = notificationMessage != null,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 80.dp)
+        ) {
+            notificationMessage?.let { msg ->
+                Surface(
+                    modifier = Modifier
+                        .padding(horizontal = 40.dp)
+                        .shadow(6.dp, RoundedCornerShape(25.dp)),
+                    shape = RoundedCornerShape(25.dp),
+                    color = Color.White,
+                    tonalElevation = 4.dp
+                ) {
+                    Text(
+                        text = msg,
+                        modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp),
+                        color = Color.Black,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     }
