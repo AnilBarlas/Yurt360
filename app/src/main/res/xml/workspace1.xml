@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Günler -->
+    <TextView
+        android:id="@+id/daysTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="9 Wed"
+        android:textSize="20sp"
+        android:layout_gravity="center"
+        android:paddingBottom="20dp"/>
+
+    <!-- Saatler -->
+    <GridLayout
+        android:id="@+id/hoursGrid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="4"
+        android:orientation="horizontal"
+        android:layout_gravity="center">
+
+        <!-- Saatler için TextView'ler buraya gelecek -->
+        <!-- Örnek olarak 12 saatlik sıralama yapılabilir. -->
+
+    </GridLayout>
+
+    <!-- Masalar -->
+    <GridLayout
+        android:id="@+id/tablesGrid"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:columnCount="5"
+        android:rowCount="4"
+        android:orientation="horizontal"
+        android:layout_gravity="center"
+        android:padding="10dp">
+
+        <!-- Toplar (masalar) buraya eklenecek -->
+        <!-- Örnek: -->
+        <!--
+        <View
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_margin="5dp"
+            android:background="@android:color/white" />
+        -->
+
+    </GridLayout>
+
+    <!-- Durumlar -->
+    <TextView
+        android:text="Available, Reserved, Selected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingTop="10dp"/>
+
+    <!-- Rezervasyon Oluştur -->
+    <Button
+        android:id="@+id/reserveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rezervasyon Oluştur"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"/>
+</LinearLayout>
