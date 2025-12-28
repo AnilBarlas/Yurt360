@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.yurt360.R
 import kotlinx.coroutines.delay
+import com.example.yurt360.common.utils.OrangePrimary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

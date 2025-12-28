@@ -151,7 +151,7 @@ fun UserHomeScreen(
                 )
 
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     menuList.forEachIndexed { index, item ->
                         val isImageLeft = (index % 2 == 0)
@@ -199,6 +199,25 @@ fun AlternatingMenuCard(
     isImageLeft: Boolean,
     onClick: () -> Unit
 ) {
+    // Şekli duruma göre dinamik olarak belirliyoruz
+    val cardShape = if (isImageLeft) {
+        // DURUM 1: Resim Solda -> Card'ın Sağ Üst köşesini yuvarlat
+        RoundedCornerShape(
+            topStart = 12.dp,
+            bottomStart = 12.dp,
+            topEnd = 60.dp, // Sağ Üst Kavis
+            bottomEnd = 12.dp
+        )
+    } else {
+        // DURUM 2: Resim Sağda -> Card'ın Sol Üst köşesini yuvarlat
+        RoundedCornerShape(
+            topStart = 60.dp, // Sol Üst Kavis
+            bottomStart = 12.dp,
+            topEnd = 12.dp,
+            bottomEnd = 12.dp
+        )
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -206,7 +225,7 @@ fun AlternatingMenuCard(
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(12.dp)
+        shape = cardShape // Oluşturduğumuz dinamik şekli buraya atadık
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
 
@@ -221,7 +240,8 @@ fun AlternatingMenuCard(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clip(RoundedCornerShape(topEnd = 100.dp)) // Sağ Üst Kavis
+                        // İç kavis (Resmin yazıya bakan tarafı)
+                        .clip(RoundedCornerShape(topEnd = 100.dp))
                 )
 
                 // 2. Yazı
@@ -267,7 +287,8 @@ fun AlternatingMenuCard(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clip(RoundedCornerShape(topStart = 100.dp)) // Sol Üst Kavis
+                        // İç kavis (Resmin yazıya bakan tarafı)
+                        .clip(RoundedCornerShape(topStart = 100.dp))
                 )
             }
         }

@@ -20,6 +20,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.example.yurt360.common.utils.OrangePrimary
+import com.example.yurt360.common.utils.purple
+import com.example.yurt360.common.utils.orangelinear
+
 
 @Composable
 fun CustomBottomNavigationBar(
@@ -33,26 +37,25 @@ fun CustomBottomNavigationBar(
             .background(Color.Transparent),
         contentAlignment = Alignment.BottomCenter
     ) {
-        // Turuncu Alt Bar
-        Surface(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(100.dp),
-            color = OrangePrimary
+                .height(100.dp)
+                .background(brush = orangelinear)
         ) {
             Row(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                // Home İkonu: Tıklandığında "home" bilgisini yollar
+                // Home İkonu
                 NavIconItem(
                     icon = Icons.Default.Home,
                     label = "home",
                     onClick = { onNavigate("home") }
                 )
 
-                // Profil İkonu: Tıklandığında "profile" bilgisini yollar
+                // Profil İkonu
                 NavIconItem(
                     icon = Icons.Default.Person,
                     label = "profile",
@@ -77,7 +80,7 @@ fun CustomBottomNavigationBar(
                 )
                 .padding(6.dp)
                 .clip(CircleShape)
-                .background(OrangePrimary)
+                .background(purple)
                 .clickable { onNavigate("calendar") },
             contentAlignment = Alignment.Center
         ) {

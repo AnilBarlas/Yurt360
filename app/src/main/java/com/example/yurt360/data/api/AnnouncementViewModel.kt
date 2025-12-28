@@ -50,6 +50,18 @@ class AnnouncementViewModel : ViewModel() {
         }
     }
 
+    fun addAnnouncement(title: String, description: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            try {
+                val newAnnouncement = Announcement(title = title, description = description)
+                SupabaseClient.client.from("announcement").insert(newAnnouncement)
+                onSuccess()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     private suspend fun fetchLatest(context: Context) {
         try {
             val result = SupabaseClient.client.from("announcement").select {

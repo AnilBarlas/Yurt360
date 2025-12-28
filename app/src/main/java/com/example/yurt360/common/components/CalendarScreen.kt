@@ -1,4 +1,4 @@
-package com.example.yurt360.user.mainScreen
+package com.example.yurt360.common.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,15 +15,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.yurt360.common.components.CustomBottomNavigationBar
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.*
+import com.example.yurt360.common.utils.OrangePrimary
+import com.example.yurt360.common.utils.purpleLinear
+
+// Renk Tanımları
 val LightBackground = Color(0xFFF8F9FA)
 val SelectedBlue = Color(0xFF8E99F3)
-val LinePurple = Color(0xFFC5CAE9) // Ay isminin altındaki çizgi rengi
+val LinePurple = Color(0xFFB0B7FF)
 
 // Etkinlik Veri Modeli
 data class Event(
@@ -38,7 +42,6 @@ fun CalendarScreen(onNavigate: (String) -> Unit) {
     val currentDate = LocalDate.now()
     val monthName = currentDate.month.getDisplayName(TextStyle.FULL, Locale("tr")).uppercase()
 
-    // Örnek Veri Seti
     val todayEvents = listOf(
         Event("Library", "Reservation", "09:00"),
         Event("Laundry Room", "Reservation to Pick Up", "13:00", isSelected = true),
@@ -57,27 +60,27 @@ fun CalendarScreen(onNavigate: (String) -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp), // Takvim ve Çizgi bu boşluğa göre hizalanır
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(30.dp))
 
-            // 1. Ay İsmi
+            // 1. Ay İsmi (Padding buraya özel)
             Text(
                 text = monthName,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFF2D2D2D),
-                letterSpacing = 2.sp
+                letterSpacing = 2.sp,
+                modifier = Modifier.padding(horizontal = 20.dp)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // DEĞİŞİKLİK: Çizgi artık fillMaxWidth() ile takvim kartının başladığı yerden bittiği yere kadar uzanır
+            // Çizgi (Sabit genişlik: Tue-Fri arası görünüm)
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .width(150.dp)
                     .height(4.dp)
                     .clip(CircleShape)
                     .background(LinePurple)
@@ -85,14 +88,17 @@ fun CalendarScreen(onNavigate: (String) -> Unit) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 2. Takvim Kartı
-            CalendarGridCard(currentDate.dayOfMonth)
+            // 2. Takvim Kartı (Padding buraya özel)
+            Box(modifier = Modifier.padding(horizontal = 20.dp)) {
+                CalendarGridCard(currentDate.dayOfMonth)
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 3. Birleşik Today Paneli (Sağ üst 80dp yuvarlatılmış)
+            // 3. Today Paneli (Padding YOK - Kenarlara değer)
             TodayUnifiedCard(events = todayEvents)
 
+            // Listenin en altına boşluk
             Spacer(modifier = Modifier.height(40.dp))
         }
     }
@@ -100,11 +106,12 @@ fun CalendarScreen(onNavigate: (String) -> Unit) {
 
 @Composable
 fun TodayUnifiedCard(events: List<Event>) {
+    // Şekil: Üst köşeler 90dp, altlar 0dp
     val specialShape = RoundedCornerShape(
-        topStart = 20.dp,
-        topEnd = 80.dp,
-        bottomEnd = 20.dp,
-        bottomStart = 20.dp
+        topStart = 90.dp,
+        topEnd = 90.dp,
+        bottomEnd = 0.dp,
+        bottomStart = 0.dp
     )
 
     Surface(
@@ -122,11 +129,14 @@ fun TodayUnifiedCard(events: List<Event>) {
         Column(
             modifier = Modifier.padding(24.dp)
         ) {
+            // Başlık: Ortalanmış
             Text(
                 text = "Today",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = Color.Black,
+                modifier = Modifier.fillMaxWidth(), // Tüm genişliği kapla
+                textAlign = TextAlign.Center        // Yazıyı ortala
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -135,7 +145,9 @@ fun TodayUnifiedCard(events: List<Event>) {
                 Text(
                     text = "Bugün için bir plan bulunmuyor.",
                     color = Color.Gray,
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
                 )
             } else {
                 events.forEachIndexed { index, event ->
@@ -221,7 +233,9 @@ fun CalendarGridCard(todayDay: Int) {
             val calendarDays = (1..31).chunked(7)
             calendarDays.forEach { week ->
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     week.forEach { day ->
@@ -230,7 +244,11 @@ fun CalendarGridCard(todayDay: Int) {
                             modifier = Modifier
                                 .size(34.dp)
                                 .then(
-                                    if (isToday) Modifier.border(2.dp, OrangePrimary, CircleShape)
+                                    if (isToday) Modifier.border(
+                                        4.dp, //Halka kalınlığı
+                                        OrangePrimary,
+                                        CircleShape
+                                    )
                                     else Modifier
                                 ),
                             contentAlignment = Alignment.Center
@@ -239,7 +257,7 @@ fun CalendarGridCard(todayDay: Int) {
                                 text = day.toString(),
                                 fontSize = 14.sp,
                                 fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isToday) OrangePrimary else Color.Black
+                                color = Color.Black // Yazı rengi
                             )
                         }
                     }

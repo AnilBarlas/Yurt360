@@ -21,10 +21,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.yurt360.R
 import kotlinx.coroutines.delay
+import com.example.yurt360.common.utils.OrangePrimary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,7 +83,7 @@ fun ResetPasswordScreen(
 
             // Başlık
             Text(
-                text = "PAROLAMI UNUTTUM",
+                text = "Parolamı Unuttum",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = TextGray,
@@ -191,3 +193,4 @@ fun ResetPasswordScreen(
         }
     }
 }
+

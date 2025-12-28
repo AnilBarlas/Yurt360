@@ -29,8 +29,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yurt360.R
 import com.example.yurt360.common.model.TopUser
 import kotlinx.coroutines.delay
-
-val OrangePrimary = Color(0xFFFF8838)
+import com.example.yurt360.common.utils.OrangePrimary
+import com.example.yurt360.common.utils.Orange
 val TextGray = Color(0xFF4A4A4A)
 
 @Composable
@@ -173,7 +173,7 @@ fun LoginScreen(
 
                 Text(
                     text = "Parolamı Unuttum",
-                    color = OrangePrimary,
+                    color = Orange,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.clickable {
@@ -184,8 +184,6 @@ fun LoginScreen(
         }
 
         // --- ÖZEL BİLDİRİM KUTUSU ---
-        // Hizalama: BottomCenter (Alt Orta)
-        // Padding: Bottom 80.dp (Aşağıdan hafif yukarıda)
         AnimatedVisibility(
             visible = notificationMessage != null,
             enter = fadeIn(),
