@@ -98,7 +98,10 @@ class MainActivity : ComponentActivity() {
                                                 onMenuClick = { isMenuOpen = true }
                                             )
                                             "applications" -> ApplicationsScreen(
+                                                onNavigate = { currentScreenRoute = it }
                                             )
+
+
                                             "update_password" -> PasswordUpdateScreen(
                                                 onNavigateBack = { currentScreenRoute = "profile" },
                                                 onNavigateHome = { currentScreenRoute = "home" },

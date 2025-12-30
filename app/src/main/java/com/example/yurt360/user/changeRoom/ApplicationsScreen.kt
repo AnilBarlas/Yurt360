@@ -13,73 +13,82 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextOverflow
+import com.example.yurt360.common.utils.Geologica
+import com.example.yurt360.common.components.CustomBottomNavigationBar
 
 @Composable
-fun ApplicationsScreen() {
+fun ApplicationsScreen(onNavigate: (String) -> Unit) {
     var isExpanded by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-            .animateContentSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        // TITLE
-        Text(
-            text = "BAŞVURULAR",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Normal,
-            color = Color.DarkGray,
-            letterSpacing = 1.sp
-        )
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        // MAIN TOGGLE BUTTON
-        MenuButton(
-            text = "Başvuru Oluştur",
-            modifier = Modifier.fillMaxWidth(),
-            containerColor = if (isExpanded) Color(0xFF7E87E0) else Color.White,
-            contentColor = if (isExpanded) Color.White else Color.Black
-        ) {
-            isExpanded = !isExpanded
+    Scaffold(
+        bottomBar = {
+            CustomBottomNavigationBar(onNavigate = onNavigate)
         }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding) // Important: Handles bottom bar spacing
+                .padding(15.dp)
+                .animateContentSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // TITLE
+            Text(
+                text = "BAŞVURULAR",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Normal,
+                fontFamily = Geologica,
+                color = Color.DarkGray,
+                letterSpacing = 1.sp
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
-        // CONDITIONAL CONTENT
-        if (isExpanded) {
-            // SHOW DROPDOWN MENU
-            val subMenuModifier = Modifier.fillMaxWidth()
-
-            MenuButton(text = "Alt Başvuru 1", modifier = subMenuModifier) {}
-            Spacer(modifier = Modifier.height(16.dp))
-
-            MenuButton(text = "Alt Başvuru 2", modifier = subMenuModifier) {}
-            Spacer(modifier = Modifier.height(16.dp))
-
-            MenuButton(text = "Alt Başvuru 3", modifier = subMenuModifier) {}
-
-        } else {
-            // SHOW ORIGINAL BOTTOM BUTTONS
-            Row(
+            // MAIN TOGGLE BUTTON
+            MenuButton(
+                text = "Başvuru Oluştur",
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                containerColor = if (isExpanded) Color(0xFF7E87E0) else Color.White,
+                contentColor = if (isExpanded) Color.White else Color.Black
             ) {
-                MenuButton(
-                    text = "Güncel Başvurular",
-                    modifier = Modifier.weight(1f)
-                ) {
-                    // Handle Current Applications click
-                }
+                isExpanded = !isExpanded
+            }
 
-                MenuButton(
-                    text = "Geçmiş Başvurular",
-                    modifier = Modifier.weight(1f)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // CONDITIONAL CONTENT
+            if (isExpanded) {
+                val subMenuModifier = Modifier.fillMaxWidth()
+
+                MenuButton(text = "Oda Değişim Talebi Formları", modifier = subMenuModifier) {}
+                Spacer(modifier = Modifier.height(10.dp))
+
+                MenuButton(text = "Şikayet Formları", modifier = subMenuModifier) {}
+                Spacer(modifier = Modifier.height(10.dp))
+
+                MenuButton(text = "Öneri Formları", modifier = subMenuModifier) {}
+
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    // Handle Past Applications click
+                    MenuButton(
+                        text = "Güncel Başvurular",
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        // Handle Current Applications click
+                    }
+
+                    MenuButton(
+                        text = "Geçmiş Başvurular",
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        // Handle Past Applications click
+                    }
                 }
             }
         }
@@ -96,32 +105,32 @@ fun MenuButton(
 ) {
     val buttonShape = RoundedCornerShape(20.dp)
 
-    // Using Button instead of ElevatedButton + explicit shadow modifier ensures
-    // the shadow shape matches the button shape perfectly.
     Button(
         onClick = onClick,
         modifier = modifier
             .height(60.dp)
-            .shadow(elevation = 4.dp, shape = buttonShape), // Shadow with explicit shape
+            .shadow(
+                elevation = 8.dp,
+                shape = buttonShape,
+                clip = false,
+                ambientColor = Color.Transparent,
+                spotColor = Color.Black
+            ),
         shape = buttonShape,
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
             contentColor = contentColor
         ),
-        elevation = null // Disable default elevation to rely on the shadow modifier
+        elevation = null
     ) {
         Text(
             text = text,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Medium,
+            fontFamily = Geologica,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis
         )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun ApplicationsScreenPreview() {
-    MaterialTheme {
-        ApplicationsScreen()
     }
 }
