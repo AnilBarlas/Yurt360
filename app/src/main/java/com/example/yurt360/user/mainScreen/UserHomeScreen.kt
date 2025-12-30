@@ -146,7 +146,7 @@ fun UserHomeScreen(
                 val menuList = listOf(
                     MenuItemData("YEMEKHANE", R.drawable.bina),
                     MenuItemData("ÇALIŞMA ALANI", R.drawable.bina),
-                    MenuItemData("ODA DEĞİŞİMİ", R.drawable.bina),
+                    MenuItemData("BAŞVURULAR", R.drawable.bina),
                     MenuItemData("ÇAMAŞIR YIKAMA", R.drawable.bina)
                 )
 
@@ -161,6 +161,9 @@ fun UserHomeScreen(
                             resimId = item.iconResId,
                             isImageLeft = isImageLeft,
                             onClick = {
+                                if (item.title == "BAŞVURULAR") {
+                                    onNavigation("applications")
+                                }
 
                             }
                         )

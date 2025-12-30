@@ -20,6 +20,7 @@ import com.example.yurt360.common.model.User
 import com.example.yurt360.data.api.SupabaseClient
 import io.github.jan.supabase.gotrue.handleDeeplinks
 import com.example.yurt360.admin.mainScreen.AdminProfileScreen
+import com.example.yurt360.user.changeRoom.ApplicationsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,6 +96,8 @@ class MainActivity : ComponentActivity() {
                                                 user = user,
                                                 onNavigate = { currentScreenRoute = it },
                                                 onMenuClick = { isMenuOpen = true }
+                                            )
+                                            "applications" -> ApplicationsScreen(
                                             )
                                             "update_password" -> PasswordUpdateScreen(
                                                 onNavigateBack = { currentScreenRoute = "profile" },
