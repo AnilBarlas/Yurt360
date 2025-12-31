@@ -38,21 +38,19 @@ fun ApplicationsScreen(onNavigate: (String) -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 15.dp)
-                // 1. Use verticalScroll so items don't clip if the list gets long
+                // REMOVED: .padding(horizontal = 12.dp) from here to fix shadow clipping
                 .verticalScroll(rememberScrollState())
                 .animateContentSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            // 2. CHANGED: Use Top instead of Center to stop buttons from jumping up
             verticalArrangement = Arrangement.Top
         ) {
-            // 3. ADDED: Fixed Spacer to push content down to a "nice" starting position
-            // This replaces Arrangement.Center logic
             Spacer(modifier = Modifier.height(236.dp))
 
             // TITLE
             Text(
                 text = "BAŞVURULAR",
+                // ADDED: Padding here
+                modifier = Modifier.padding(horizontal = 12.dp),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Normal,
                 fontFamily = Geologica,
@@ -62,20 +60,23 @@ fun ApplicationsScreen(onNavigate: (String) -> Unit) {
 
             Spacer(modifier = Modifier.height(42.dp))
 
-            // --- 1. CREATE APPLICATION BUTTON ---
+            // CREATE APPLICATION BUTTON
             MenuButton(
                 text = "Başvuru Oluştur",
-                modifier = Modifier.fillMaxWidth(),
+                // ADDED: Padding here
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
                 containerColor = getContainerColor(activeSection == ActiveSection.CREATE),
                 contentColor = getContentColor(activeSection == ActiveSection.CREATE)
             ) {
                 activeSection = if (activeSection == ActiveSection.CREATE) ActiveSection.NONE else ActiveSection.CREATE
             }
 
-            // --- 2. LOGIC SPLIT ---
+            // LOGIC SPLIT
             if (activeSection == ActiveSection.CREATE) {
                 Spacer(modifier = Modifier.height(16.dp))
-                val subMenuModifier = Modifier.fillMaxWidth()
+                // ADDED: Padding to sub-menu modifier
+                val subMenuModifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+
                 MenuButton(text = "Oda Değişim Talebi Formları", modifier = subMenuModifier) {}
                 Spacer(modifier = Modifier.height(10.dp))
                 MenuButton(text = "Şikayet Formları", modifier = subMenuModifier) {}
@@ -87,7 +88,10 @@ fun ApplicationsScreen(onNavigate: (String) -> Unit) {
 
                 // "LIL BUTTONS" ROW
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        // ADDED: Padding here
+                        .padding(horizontal = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     MenuButton(
@@ -109,10 +113,12 @@ fun ApplicationsScreen(onNavigate: (String) -> Unit) {
                     }
                 }
 
-                // DROPDOWNS FOR LIL BUTTONS (Appear Below)
+                // DROPDOWNS FOR LIL BUTTONS
                 if (activeSection == ActiveSection.CURRENT) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    val subMenuModifier = Modifier.fillMaxWidth()
+                    // ADDED: Padding to sub-menu modifier
+                    val subMenuModifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+
                     MenuButton(text = "Oda Değişim Talebi Formları", modifier = subMenuModifier) {}
                     Spacer(modifier = Modifier.height(10.dp))
                     MenuButton(text = "Şikayet Formları", modifier = subMenuModifier) {}
@@ -122,7 +128,9 @@ fun ApplicationsScreen(onNavigate: (String) -> Unit) {
 
                 if (activeSection == ActiveSection.PAST) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    val subMenuModifier = Modifier.fillMaxWidth()
+                    // ADDED: Padding to sub-menu modifier
+                    val subMenuModifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+
                     MenuButton(text = "Oda Değişim Talebi Formları", modifier = subMenuModifier) {}
                     Spacer(modifier = Modifier.height(10.dp))
                     MenuButton(text = "Şikayet Formları", modifier = subMenuModifier) {}
@@ -131,7 +139,6 @@ fun ApplicationsScreen(onNavigate: (String) -> Unit) {
                 }
             }
 
-            // Bottom spacer to ensure scrolling feels good
             Spacer(modifier = Modifier.height(50.dp))
         }
     }
@@ -151,6 +158,7 @@ fun MenuButton(
         onClick = onClick,
         modifier = modifier
             .height(48.dp)
+            // shadow(clip = false) will now draw into the padding area provided by the modifier
             .shadow(
                 elevation = 8.dp,
                 shape = buttonShape,
