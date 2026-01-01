@@ -12,6 +12,11 @@ import androidx.compose.ui.Modifier
 import com.example.yurt360.common.components.LoginScreen
 import com.example.yurt360.common.model.Admin
 import com.example.yurt360.common.model.User
+import com.example.yurt360.user.workSpace.WorkSpace1
+import com.example.yurt360.user.workSpace.WorkSpace2
+import com.example.yurt360.user.workSpace.WorkSpace3
+//import com.example.yurt360.user.laundry.Laundry1_1
+//import com.example.yurt360.user.laundry.Laundry1_2
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,7 +27,12 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LoginScreen(
+                    //Laundry1_1()
+                    //Laundry1_2()
+                    WorkSpace1()
+                    //WorkSpace2()
+                    //WorkSpace3()
+                    /*LoginScreen(
                         onLoginSuccess = { topUser ->
 
                             when (topUser) {
@@ -34,7 +44,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
-                    )
+                    )*/
                 }
             }
         }

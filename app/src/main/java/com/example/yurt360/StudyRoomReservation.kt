@@ -1,5 +1,6 @@
-package com.example.myapplication
+package com.example.yurt360
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.os.Bundle
 import android.widget.Button
@@ -7,6 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.yurt360.R
 import java.util.*
 
 data class Table(val id: Int, val name: String, var isBooked: Boolean = false)
@@ -16,6 +18,7 @@ class StudyRoomReservation : AppCompatActivity() {
     private lateinit var tableList: MutableList<Table>
     private lateinit var adapter: TableAdapter
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -29,13 +32,11 @@ class StudyRoomReservation : AppCompatActivity() {
         // 2) RecyclerView & adapter kurulumu
         val rv = findViewById<RecyclerView>(R.id.recyclerTables)  // XML'deki id ile eşleşmeli
         rv.layoutManager = GridLayoutManager(this, 4)  // 4 sütun → 4x3 = 12 masa
-        adapter = TableAdapter(tableList) { table ->
-            onTableClicked(table)
-        }
+        adapter = TableAdapter(tableList, ::onTableClicked)
         rv.adapter = adapter
 
         // 3) Başvuru / Rezervasyon butonu
-        val btn = findViewById<Button>(R.id.btnApply)  // XML’de tanımlıysa
+        val btn = findViewById<Button>(R.id.recyclerTables)  // XML’de tanımlıysa
         btn.setOnClickListener {
             showDatePicker()
         }

@@ -1,6 +1,5 @@
-package com.example.yurt360.user.workSpace
+/*package com.example.yurt360.user.laundry
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,13 +24,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.yurt360.common.components.CustomBottomNavigationBar
-import com.example.yurt360.data.api.SupabaseClient
-import com.example.yurt360.data.api.SupabaseClient.client
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.TextStyle
 import java.util.Locale
-import com.example.yurt360.user.workSpace.WorkSpaceRes1
+import android.util.Log
+import com.example.yurt360.data.api.SupabaseClient
+import com.example.yurt360.data.api.SupabaseClient.client
+import com.example.yurt360.user.laundry.ReservationRow
+import com.example.yurt360.user.laundry.getRowRangeForHour
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.CoroutineScope
@@ -39,29 +40,30 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 // Renkler
-private val SelectedDayColor = Color(0xFF7E87E2) // RGB(126,135,226)
-private val NonSelectedDayColor = Color(0xFFB0B7FF) // RGB(176,183,255)
-private val ThinBorderColor = Color(0x33000000) // yarı saydam siyah (ince stroke)
+private val SelectedDayColor = Color(0xFF7E87E2)
+private val NonSelectedDayColor = Color(0xFFB0B7FF)
+private val ThinBorderColor = Color(0x33000000)
 private val DayTextColor = Color.White
 
-// TopSquare default arkaplan: RGB(240,234,225) -> #F0EAE1
 private val TopDefaultBg = Color(0xFFF0EAE1)
 
-// Diğer renkler
-private val WorkSpaceOrangePrimary = Color(0xFFFF8C42)
-private val ActiveColor = WorkSpaceOrangePrimary
+// Turuncu tonları
+private val LightOrange = Color(0xFFFFD8A6)
+private val MidOrange = Color(0xFFFFB378)
+private val DarkOrange = Color(0xFFFF8C42)
+private val ActiveColor = DarkOrange
 private val ReservedBorderColor = Color(0xFFBDBDBD)
 private val DefaultHourTextColor = Color.Black
 
 @kotlinx.serialization.Serializable
 data class ReservationRow(
-    val table_id: Int,
+    val machine_id: Int,
     val status: String,
     val user_id: String? = null
 )
 
 @Composable
-fun WorkSpace1() {
+fun Laundry1() {
     val client = SupabaseClient.client
     val scope = rememberCoroutineScope()
 
@@ -75,50 +77,43 @@ fun WorkSpace1() {
             *(List(5) {
                 mutableStateListOf(
                     *(List(12) {
-                        mutableStateListOf(*(List(20) { "available" }.toTypedArray()))
+                        mutableStateListOf(*(List(10) { "available" }.toTypedArray()))
                     }.toTypedArray())
                 )
             }.toTypedArray())
         )
     }
 
-    // confirmationType: null | "created" | "removed"
-    var confirmationType by remember { mutableStateOf<String?>(null) }
+    // dialogState: null | "confirm_plan" | "created" | "removed"
+    var dialogState by remember { mutableStateOf<String?>(null) }
 
-    // Dinamik 5 günlük info (orta = bugün)
     val zone = ZoneId.of("Europe/Istanbul")
     val today = remember { LocalDate.now(zone) }
     val days = remember(today) {
         (-2..2).map { offset ->
             val date = today.plusDays(offset.toLong())
-            val shortEn = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.ENGLISH) // Mon, Tue...
-            val fullEn = date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH) // Monday...
+            val shortEn = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
+            val fullEn = date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
             DayInfo(number = date.dayOfMonth, short = shortEn, full = fullEn)
         }
     }
 
-    // Kullanıcının verdiği mor tonları
-    val lightPurple = Color(0xFFB6BCFE) // RGB(182,188,254)
-    val darkPurple = Color(0xFF929AE9)  // RGB(146,154,233)
-    val midPurple = Color(0xFFA4ABF3)   // ara ton
+    // Turuncu gradyan (dialog / gerekiyorsa)
+    val orangeGradient = Brush.horizontalGradient(
+        colorStops = arrayOf(
+            0.0f to DarkOrange,
+            0.6f to MidOrange,
+            1.0f to LightOrange
+        )
+    )
 
-    // Root container: Box ile Scaffold'ı sarıyoruz, böylece overlay (dialog) Scaffold'ın üstünde (BottomBar dahil) gözükecek.
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier.matchParentSize(),
             bottomBar = {
-                CustomBottomNavigationBar(
-                    onNavigate = { route ->
-                        when (route) {
-                            "home" -> { /* navController.navigate("home") */ }
-                            "calendar" -> { /* navController.navigate("calendar") */ }
-                            "profile" -> { /* navController.navigate("profile") */ }
-                        }
-                    }
-                )
+                CustomBottomNavigationBar(onNavigate = { /*...*/ })
             }
         ) { paddingVals ->
-            // İçerik
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -126,7 +121,7 @@ fun WorkSpace1() {
                     .padding(16.dp)
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    // --- Üst: 5 kare (tam kare) + alt sekmeler ---
+                    // Üst gün kutuları (aynı)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -135,14 +130,12 @@ fun WorkSpace1() {
                         verticalAlignment = Alignment.Top
                     ) {
                         val baseWeight = 1f
-                        val centerWeight = 1.20f // ortadaki daha belirgin geniş
-                        val centerOffsetUp = 14.dp // (varsa) ortadaki sütunu yukarı kaydırma miktarı
+                        val centerWeight = 1.20f
+                        val centerOffsetUp = 14.dp
 
                         days.forEachIndexed { index, info ->
                             val weight = if (index == fixedSelectedDay) centerWeight else baseWeight
                             val scaleFactor = weight / baseWeight
-
-                            // Eğer ortadaki sütunsa tüm column'u yukarı kaydır (kutu+sekme birlikte)
                             val columnOffset = if (index == fixedSelectedDay) (-centerOffsetUp) else 0.dp
 
                             Column(
@@ -155,7 +148,6 @@ fun WorkSpace1() {
                                 val corner = 14.dp
                                 val dayShape = RoundedCornerShape(corner)
 
-                                // Gün kutusu
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -179,7 +171,6 @@ fun WorkSpace1() {
                                     )
                                 }
 
-                                // Alt sekme
                                 val tabShape = RoundedCornerShape(
                                     topStart = 0.dp,
                                     topEnd = 0.dp,
@@ -217,7 +208,7 @@ fun WorkSpace1() {
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Saatler
+                    // Saatler (aynı)
                     val hoursList = generateHourlyList(9, 21)
                     Column {
                         for (row in 0..2) {
@@ -245,21 +236,21 @@ fun WorkSpace1() {
                         }
                     }
 
-                    fun reserveRoom(selectedHour: Int, activeTop: Int) {
+                    fun laundryRoom(selectedHour: Int, activeTop: Int) {
                         val (startRow, endRow) = getRowRangeForHour(selectedHour)
-                        val roomIndex = startRow + activeTop
+                        val machineIndex = startRow + activeTop
 
                         scope.launch {
                             try {
                                 val session = client.auth.refreshCurrentSession()
-                                val response = client.from("workSpace_kuzey1_reservations")
+                                val response = client.from("laundryA_kuzey1_machines")
                                     .update(mapOf(
                                         "user_id" to "efffe411-62fa-4e11-ad42-07aadda51165",
                                         "status" to "reserved"
                                     )) {
                                         select()
                                         filter {
-                                            eq("table_id", roomIndex)
+                                            eq("machine_id", machineIndex)
                                             eq("status", "Available")
                                         }
                                     }
@@ -270,7 +261,7 @@ fun WorkSpace1() {
                                     // nested state listesini doğrudan güncelle
                                     topStates[fixedSelectedDay][selectedHour][activeTop] = "reserved"
 
-                                    Log.d("ComposeUpdate", "Top ${roomIndex} UI’ya reserved olarak yansıdı.")
+                                    Log.d("ComposeUpdate", "Top ${machineIndex} UI’ya reserved olarak yansıdı.")
                                 }
 
                             } catch (e: Exception) {
@@ -279,7 +270,7 @@ fun WorkSpace1() {
                         }
                     }
 
-                    fun updateReservedStatusFromList(list: List<ReservationRow>) {
+                    fun updateLaundryStatusFromList(list: List<ReservationRow>) {
                         // önce tüm kutuları available yap
                         topStates.forEachIndexed { dayIndex, hours ->
                             hours.forEachIndexed { hourIndex, tops ->
@@ -291,9 +282,9 @@ fun WorkSpace1() {
 
                         // sonra DB’den gelen "reserved" durumlarını uygula
                         list.forEach { row ->
-                            val roomId = row.table_id
-                            val hourIndex = (roomId - 1) / 20
-                            val topIndex = (roomId - 1) % 20
+                            val machineId = row.machine_id
+                            val hourIndex = (machineId - 1) / 20
+                            val topIndex = (machineId - 1) % 20
                             topStates[fixedSelectedDay][hourIndex][topIndex] = "reserved"
                         }
                     }
@@ -304,20 +295,19 @@ fun WorkSpace1() {
                                 Log.d("Polling", "Polling db for reserved status…")
 
                                 try {
-                                    client.auth.refreshCurrentSession()
                                     val response = client
-                                        .from("workSpace_kuzey1_reservations")
+                                        .from("laundryA_kuzey1_machines")
                                         .select {
                                             filter {
                                                 eq("status", "reserved")
                                             }
                                         }
-                                        .decodeList<ReservationRow>()
+                                        .decodeList<com.example.yurt360.user.laundry.ReservationRow>()
 
                                     Log.d("PollingQuery", "Reserved rows: $response")
 
                                     // UI state güncelle
-                                    updateReservedStatusFromList(response)
+                                    updateLaundryStatusFromList(response)
 
                                 } catch (e: Exception) {
                                     Log.e("Polling", "Error in polling: ${e.localizedMessage}")
@@ -333,24 +323,54 @@ fun WorkSpace1() {
                         startPolling(scope)
                     }
 
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                    // Top'ları saran kutu
+                    // Çamaşır Makinesi Doluluğu: BEYAZ arkaplan, sağ/sol kırpma (daha dar)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.94f) // sağdan/soldan hafif kırp
+                            .height(56.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.White)
+                            .border(width = 1.dp, color = ThinBorderColor, shape = RoundedCornerShape(12.dp))
+                            .padding(12.dp)
+                            .align(Alignment.CenterHorizontally),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Çamaşır Makinesi Doluluğu",
+                            color = Color.Black,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Büyük kutu: içeriğe göre sıkışık (wrapContentHeight) -> gereksiz boşluk yok
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .wrapContentHeight()
                             .border(
                                 width = 1.dp,
                                 color = ThinBorderColor,
                                 shape = RoundedCornerShape(12.dp)
                             )
                             .background(color = Color.White, shape = RoundedCornerShape(12.dp))
-                            .padding(12.dp)
+                            .padding(12.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            for (row in 0 until 4) {
+                        Column(
+                            modifier = Modifier.wrapContentWidth(),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            // 2 satır x 5 sütun, kutular ortalanmış
+                            for (row in 0 until 2) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                    modifier = Modifier.wrapContentWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     topStates[fixedSelectedDay][selectedHour]
@@ -359,22 +379,19 @@ fun WorkSpace1() {
                                             val topIndex = row * 5 + colIndex
                                             TopSquare(
                                                 index = topIndex + 1,
-                                                state = state,  // "reserved" ya da "available" durumu burada kontrol edilecek
-                                                isSelected = (activeTop == topIndex) && state != "reserved"
+                                                state = state,
+                                                isSelected = (activeTop == topIndex)
                                             ) {
-                                                if (state != "reserved") {
-                                                    activeTop = if (activeTop == topIndex) null else topIndex
-                                                }
+                                                activeTop = if (activeTop == topIndex) null else topIndex
                                             }
                                         }
                                 }
-                                Spacer(modifier = Modifier.height(8.dp))
                             }
                         }
                     }
 
-                    // Legend (kutulara yakın)
-                    Spacer(modifier = Modifier.height(4.dp))
+                    // Legend (Available / Reserved / Selected) — büyük karenin hemen altında
+                    Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -391,7 +408,7 @@ fun WorkSpace1() {
                                     .background(color = TopDefaultBg, shape = CircleShape)
                                     .border(width = 1.dp, color = ThinBorderColor, shape = CircleShape)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(text = "Available", color = Color.Black, fontSize = 14.sp)
                         }
 
@@ -403,14 +420,11 @@ fun WorkSpace1() {
                                     .background(color = Color.White, shape = CircleShape)
                                     .border(width = 1.dp, color = ReservedBorderColor, shape = CircleShape)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(text = "Reserved", color = Color.Black, fontSize = 14.sp)
                         }
 
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(end = 8.dp)
-                        ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 8.dp)) {
                             Box(
                                 modifier = Modifier
                                     .size(18.dp)
@@ -418,65 +432,75 @@ fun WorkSpace1() {
                                     .background(color = ActiveColor, shape = CircleShape)
                                     .border(width = 1.dp, color = ThinBorderColor, shape = CircleShape)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(text = "Selected", color = Color.Black, fontSize = 14.sp)
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    // Butonlar (gradient'ler)
-                    Row(
+                    // "Kurutmaya Devam Et" -> SABİT turuncu (SolidButton) ve ekran ortasında
+                    Box(
                         modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        SolidButton(
+                            modifier = Modifier
+                                .width(260.dp)
+                                .height(48.dp),
+                            color = ActiveColor,
+                            shape = RoundedCornerShape(14.dp),
+                            enabled = true,
+                            onClick = { /* Kurutmaya devam et action */ }
+                        ) {
+                            // kalınlık kaldırıldı; diğer iki butonla aynı
+                            Text("Kurutmaya Devam Et", color = Color.White)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // İki sabit turuncu buton (yan yana)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 0.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        val leftGradient = Brush.horizontalGradient(
-                            colorStops = arrayOf(
-                                0.0f to darkPurple,
-                                0.6f to midPurple,
-                                1.0f to lightPurple
-                            )
-                        )
-
-                        GradientButton(
+                        // Rezervasyon Oluştur -> önce onay dialog'u aç
+                        SolidButton(
                             modifier = Modifier
                                 .weight(1f)
                                 .height(50.dp),
-                            gradient = leftGradient,
+                            color = ActiveColor,
                             shape = RoundedCornerShape(16.dp),
-                            enabled = activeTop != null,  // Eğer bir kutu seçili değilse buton pasif olmalı
+                            enabled = true,
                             onClick = {
                                 if (activeTop != null) {  // Eğer bir kutu seçiliyse işlemi başlat
                                     val top = activeTop
                                     if (top != null && topStates[fixedSelectedDay][selectedHour!!][top] != "reserved") {
                                         scope.launch {
-                                            reserveRoom(selectedHour!!, top)  // Burada veritabanı güncelleniyor
+                                            laundryRoom(
+                                                selectedHour!!,
+                                                top
+                                            )  // Burada veritabanı güncelleniyor
                                         }
                                     }
-
-                                    // Rezervasyonu oluştur ve UI'ı güncelle
-                                    confirmationType = "created"
-                                    activeTop = null  // Seçili kutu null'a dönüyor
+                                    // açılacak: plan onayı
+                                    dialogState = "confirm_plan"
+                                    activeTop = null
                                 }
                             }
                         ) {
                             Text("Rezervasyon Oluştur", color = Color.White)
                         }
 
-                        val rightGradient = Brush.horizontalGradient(
-                            colorStops = arrayOf(
-                                0.0f to lightPurple,
-                                0.4f to midPurple,
-                                1.0f to darkPurple
-                            )
-                        )
-
-
-                        GradientButton(
+                        // Rezervasyonu Kaldır (aynı davranış)
+                        SolidButton(
                             modifier = Modifier
                                 .weight(1f)
                                 .height(50.dp),
-                            gradient = rightGradient,
+                            color = ActiveColor,
                             shape = RoundedCornerShape(16.dp),
                             enabled = true,
                             onClick = {
@@ -514,7 +538,7 @@ fun WorkSpace1() {
                                             }
                                         )
 
-                                        confirmationType = "removed"
+                                        dialogState = "removed"
                                         activeTop = null
 
                                     } catch (e: Exception) {
@@ -526,125 +550,186 @@ fun WorkSpace1() {
                             Text("Rezervasyonu Kaldır", color = Color.White)
                         }
                     }
-                }
-            } // içerik Box sonu
-        } // Scaffold sonu
 
-        // Overlay dialog — Scaffold'ın üstünde (bu yüzden BottomNavigationBar dahil tüm ekran kapanır)
-        if (confirmationType != null) {
-            // karartma (tüm ekranı kaplar) ve tıklamaları tüketir
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+            }
+        }
+
+        // Overlay dialog(s)
+        if (dialogState != null) {
+            // ekran karartma
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color(0x80000000))
-                    .clickable { /* arka plan tıklamaları tüketilsin */ }
+                    .clickable { /* clickleri tüket */ }
             )
 
-            // Dialog kutusu: genişlik olarak ekranın yatay padding'li genişliğini alır,
-            // yükseklik olarak saat kutularının altından top'ların ortasına kadar inecek şekilde yaklaşık bir değer verildi.
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .height(220.dp)
-                    .align(Alignment.Center)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White)
-                    .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(12.dp))
-                    .padding(18.dp)
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceBetween
-                ) {
-                    // Metin (farklı içerik: created vs removed)
-                    if (confirmationType == "created") {
-                        Text(
-                            buildAnnotatedString {
-                                append("Rezervasyonunuz oluşturulmuştur. ")
-                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                                    append("Ajandanızdan")
-                                }
-                                append(" rezervasyon saatinizi kontrol edebilirsiniz.")
-                            },
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                                .wrapContentHeight(Alignment.CenterVertically)
-                        )
-                    } else {
-                        // removed
-                        Text(
-                            text = "Rezervasyonunuz kaldırılmıştır.",
-                            color = Color.Black,
-                            fontSize = 16.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                                .wrapContentHeight(Alignment.CenterVertically)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    val dialogButtonGradient = Brush.horizontalGradient(
-                        colorStops = arrayOf(
-                            0.0f to darkPurple,
-                            0.6f to midPurple,
-                            1.0f to lightPurple
-                        )
-                    )
-
-                    GradientButton(
+            // Dialog içeriği
+            when (dialogState) {
+                "confirm_plan" -> {
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp),
-                        gradient = dialogButtonGradient,
-                        shape = RoundedCornerShape(12.dp),
-                        onClick = {
-                            // dialogu kapat
-                            confirmationType = null
-                        }
+                            .padding(horizontal = 24.dp)
+                            .wrapContentHeight()
+                            .align(Alignment.Center)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.White)
+                            .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(12.dp))
+                            .padding(18.dp)
                     ) {
-                        Text("Devam Et", color = Color.White)
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = "Rezervasyonunuz planlanmıştır. Onaylıyor musunuz?",
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                // Evet
+                                ThinButton(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(44.dp),
+                                    onClick = {
+                                        // yeniden kontrol: seçili top olmalı
+                                        val top = activeTop
+                                        if (top == null) {
+                                            dialogState = null
+                                            return@ThinButton
+                                        }
+                                        // create reservation
+                                        topStates = topStates.toMutableList().apply {
+                                            this[fixedSelectedDay] = this[fixedSelectedDay].toMutableList().apply {
+                                                this[selectedHour] = this[selectedHour].toMutableList().apply {
+                                                    this[top] = "reserved"
+                                                }
+                                            }
+                                        }
+                                        activeTop = null
+                                        // bir sonraki dialogu aç
+                                        dialogState = "created"
+                                    }
+                                ) {
+                                    Text(text = "Evet")
+                                }
+
+                                // Hayır
+                                ThinButton(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(44.dp),
+                                    onClick = {
+                                        // dialogu kapat, rezervasyon yapılmasın
+                                        dialogState = null
+                                    }
+                                ) {
+                                    Text(text = "Hayır")
+                                }
+                            }
+                        }
+                    }
+                }
+
+                "created" -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp)
+                            .wrapContentHeight()
+                            .align(Alignment.Center)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.White)
+                            .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(12.dp))
+                            .padding(18.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = "Rezervasyonunuz oluşturulmuştur. Ajandanızdan teslim alma saatinizi kontrol edebilirsiniz.",
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            ThinButton(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(44.dp),
+                                onClick = { dialogState = null }
+                            ) {
+                                Text("Devam Et")
+                            }
+                        }
+                    }
+                }
+
+                "removed" -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp)
+                            .wrapContentHeight()
+                            .align(Alignment.Center)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color.White)
+                            .border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(12.dp))
+                            .padding(18.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text(
+                                text = "Rezervasyonunuz kaldırılmıştır.",
+                                color = Color.Black,
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            ThinButton(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(44.dp),
+                                onClick = { dialogState = null }
+                            ) {
+                                Text("Devam Et")
+                            }
+                        }
                     }
                 }
             }
         }
-    } // root Box sonu
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    WorkSpaceRes1(
-        selectedHour = selectedHour,
-        topStates = topStates[fixedSelectedDay],
-        activeTop = activeTop,
-        onSelect = { index ->
-            activeTop = index
-        },
-        onReserve = { index ->
-            //reserveRoom(index + 1)
-        }
-    )
+    }
 }
 
-/** Küçük holder */
+/** Yardımcılar ve bileşenler (WorkSpace1 ile uyumlu) */
+
 private data class DayInfo(val number: Int, val short: String, val full: String)
 
-/**
- * HourBox: seçili ise turuncu dolu, yazı beyaz. Değilse beyaz zemin + ince border.
- */
 @Composable
 fun HourBox(hour: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val shape = RoundedCornerShape(12.dp)
-    val bg = if (isSelected) WorkSpaceOrangePrimary else Color.White
+    val bg = if (isSelected) ActiveColor else Color.White
     val textColor = if (isSelected) Color.White else DefaultHourTextColor
-    val borderColor = if (isSelected) WorkSpaceOrangePrimary else ThinBorderColor
+    val borderColor = if (isSelected) ActiveColor else ThinBorderColor
 
     Box(
         modifier = modifier
@@ -663,46 +748,34 @@ fun HourBox(hour: String, isSelected: Boolean, modifier: Modifier = Modifier, on
     }
 }
 
-/**
- * TopSquare: daha basık görünmesi için height < width.
- * - default: yeni rgb #F0EAE1 arkaplan, siyah sayı
- * - selected: turuncu background, beyaz sayı
- * - reserved: beyaz background, kenar gri, sayı gri (ancak şimdi reserved da seçilebilir)
- */
 @Composable
 fun TopSquare(index: Int, state: String, isSelected: Boolean, onClick: () -> Unit) {
     val shape = RoundedCornerShape(8.dp)
 
-    // "reserved" durumundaki kutu için renk ve tıklanabilirlik kontrolü
     val (bgColor, borderColor, textColor) = when {
-        state == "reserved" -> Triple(Color.White, ReservedBorderColor, Color(0xFF757575))  // Reserved durumu: gri
-        isSelected -> Triple(ActiveColor, ThinBorderColor, Color.White)  // Seçilen kutu: turuncu
-        else -> Triple(TopDefaultBg, ThinBorderColor, Color.Black)  // Diğer durumlar: normal
+        state == "reserved" && !isSelected -> Triple(Color.White, ReservedBorderColor, Color(0xFF757575))
+        isSelected -> Triple(ActiveColor, ThinBorderColor, Color.White)
+        else -> Triple(TopDefaultBg, ThinBorderColor, Color.Black)
     }
 
-    // "reserved" kutu tıklanamaz olmalı
     Box(
         modifier = Modifier
-            .width(48.dp)
-            .height(36.dp)
+            .width(56.dp)
+            .height(42.dp)
             .border(width = 1.dp, color = borderColor, shape = shape)
             .background(color = bgColor, shape = shape)
-            .clickable(enabled = state != "reserved") {  // Eğer state "reserved" ise, kutu tıklanamaz
-                onClick()
-            },
+            .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = index.toString(),
             color = textColor,
-            fontSize = 14.sp
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold
         )
     }
 }
 
-/** Basit gradient buton — Box şeklinde, köşeli; içerik olarak Compose alır
- *  enabled parametresi eklendi: enabled==false ise clickable eklenmez (pasif görünüş için opacity düşürüldü)
- */
 @Composable
 fun GradientButton(
     modifier: Modifier = Modifier,
@@ -728,12 +801,53 @@ fun GradientButton(
             .alpha(alpha),
         contentAlignment = Alignment.Center
     ) {
-        Box(modifier = Modifier.padding(vertical = 10.dp), content = content)
+        Box(modifier = Modifier.padding(vertical = 8.dp), content = content)
     }
 }
 
-/** küçük yardımcı sınıf */
-private data class Quad<A, B, C, D>(val a: A, val b: B, val c: C, val d: D)
+@Composable
+fun SolidButton(
+    modifier: Modifier = Modifier,
+    color: Color,
+    shape: Shape = RoundedCornerShape(12.dp),
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+    content: @Composable BoxScope.() -> Unit
+) {
+    val clickableModifier = if (enabled) Modifier.clickable { onClick() } else Modifier
+    val alpha = if (enabled) 1f else 0.5f
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .background(color = color, shape = shape)
+            .then(clickableModifier)
+            .alpha(alpha),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(modifier = Modifier.padding(vertical = 8.dp), content = content)
+    }
+}
+
+/** İnce (white bg, black border) buton - dialog'daki Evet/Hayır/Devam Et için */
+@Composable
+fun ThinButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    content: @Composable BoxScope.() -> Unit
+) {
+    val shape = RoundedCornerShape(10.dp)
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .background(Color.White, shape = shape)
+            .border(width = 1.dp, color = Color.Black, shape = shape)
+            .clickable { onClick() }
+            .padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(modifier = Modifier.padding(horizontal = 4.dp), content = content)
+    }
+}
 
 fun generateHourlyList(startHour: Int, endHour: Int): List<String> {
     return (startHour until endHour).map { hour ->
@@ -745,18 +859,18 @@ fun generateHourlyList(startHour: Int, endHour: Int): List<String> {
 
 fun getRowRangeForHour(selectedHour: Int): Pair<Int, Int> {
     return when (selectedHour) {
-        0 -> 1 to 20
-        1 -> 21 to 40
-        2 -> 41 to 60
-        3 -> 61 to 80
-        4 -> 81 to 100
-        5 -> 101 to 120
-        6 -> 121 to 140
-        7 -> 141 to 160
-        8 -> 161 to 180
-        9 -> 181 to 200
-        10 -> 201 to 220
-        11 -> 221 to 240
-        else -> 241 to 260
+        0 -> 1 to 10
+        1 -> 11 to 20
+        2 -> 21 to 30
+        3 -> 31 to 40
+        4 -> 41 to 50
+        5 -> 51 to 60
+        6 -> 61 to 70
+        7 -> 71 to 80
+        8 -> 81 to 90
+        9 -> 91 to 100
+        10 -> 101 to 110
+        11 -> 111 to 120
+        else -> 121 to 130
     }
-}
+}*/

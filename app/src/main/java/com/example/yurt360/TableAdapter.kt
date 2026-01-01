@@ -1,10 +1,11 @@
-package com.example.myapplication
+package com.example.yurt360
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.yurt360.Table
 
 class TableAdapter(
     private val tables: List<Table>,
@@ -12,7 +13,7 @@ class TableAdapter(
 ) : RecyclerView.Adapter<TableAdapter.TableViewHolder>() {
 
     inner class TableViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val tvName: TextView = itemView.findViewById(R.id.tvTableName)
+        val tvName: TextView = itemView.findViewById(R.id.recyclerTables)
         init {
             itemView.setOnClickListener {
                 val position = bindingAdapterPosition

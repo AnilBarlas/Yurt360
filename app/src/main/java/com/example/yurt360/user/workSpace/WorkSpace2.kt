@@ -31,7 +31,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.TextStyle
 import java.util.Locale
-import com.example.yurt360.user.workSpace.WorkSpaceRes1
+import com.example.yurt360.user.workSpace.WorkSpaceRes2
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.CoroutineScope
@@ -54,14 +54,14 @@ private val ReservedBorderColor = Color(0xFFBDBDBD)
 private val DefaultHourTextColor = Color.Black
 
 @kotlinx.serialization.Serializable
-data class ReservationRow(
+data class ReservationRow2(
     val table_id: Int,
     val status: String,
     val user_id: String? = null
 )
 
 @Composable
-fun WorkSpace1() {
+fun WorkSpace2() {
     val client = SupabaseClient.client
     val scope = rememberCoroutineScope()
 
@@ -93,7 +93,7 @@ fun WorkSpace1() {
             val date = today.plusDays(offset.toLong())
             val shortEn = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.ENGLISH) // Mon, Tue...
             val fullEn = date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH) // Monday...
-            DayInfo(number = date.dayOfMonth, short = shortEn, full = fullEn)
+            DayInfo2(number = date.dayOfMonth, short = shortEn, full = fullEn)
         }
     }
 
@@ -252,7 +252,7 @@ fun WorkSpace1() {
                         scope.launch {
                             try {
                                 val session = client.auth.refreshCurrentSession()
-                                val response = client.from("workSpace_kuzey1_reservations")
+                                val response = client.from("workSpace_kuzey2_reservations")
                                     .update(mapOf(
                                         "user_id" to "efffe411-62fa-4e11-ad42-07aadda51165",
                                         "status" to "reserved"
@@ -304,9 +304,8 @@ fun WorkSpace1() {
                                 Log.d("Polling", "Polling db for reserved status…")
 
                                 try {
-                                    client.auth.refreshCurrentSession()
                                     val response = client
-                                        .from("workSpace_kuzey1_reservations")
+                                        .from("workSpace_kuzey2_reservations")
                                         .select {
                                             filter {
                                                 eq("status", "reserved")
@@ -492,7 +491,7 @@ fun WorkSpace1() {
                                         }
 
                                         // 2) DB güncelle: user_id null ve status "Available"
-                                        val response = client.from("workSpace_kuzey1_reservations")
+                                        val response = client.from("workSpace_kuzey2_reservations")
                                             .update(mapOf("user_id" to null, "status" to "Available")) {
                                                 filter { eq("user_id", userId) }
                                             }
@@ -620,7 +619,7 @@ fun WorkSpace1() {
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    WorkSpaceRes1(
+    WorkSpaceRes2(
         selectedHour = selectedHour,
         topStates = topStates[fixedSelectedDay],
         activeTop = activeTop,
@@ -634,13 +633,13 @@ fun WorkSpace1() {
 }
 
 /** Küçük holder */
-private data class DayInfo(val number: Int, val short: String, val full: String)
+private data class DayInfo2(val number: Int, val short: String, val full: String)
 
 /**
  * HourBox: seçili ise turuncu dolu, yazı beyaz. Değilse beyaz zemin + ince border.
  */
 @Composable
-fun HourBox(hour: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun HourBox2(hour: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val shape = RoundedCornerShape(12.dp)
     val bg = if (isSelected) WorkSpaceOrangePrimary else Color.White
     val textColor = if (isSelected) Color.White else DefaultHourTextColor
@@ -670,7 +669,7 @@ fun HourBox(hour: String, isSelected: Boolean, modifier: Modifier = Modifier, on
  * - reserved: beyaz background, kenar gri, sayı gri (ancak şimdi reserved da seçilebilir)
  */
 @Composable
-fun TopSquare(index: Int, state: String, isSelected: Boolean, onClick: () -> Unit) {
+fun TopSquare2(index: Int, state: String, isSelected: Boolean, onClick: () -> Unit) {
     val shape = RoundedCornerShape(8.dp)
 
     // "reserved" durumundaki kutu için renk ve tıklanabilirlik kontrolü
@@ -704,7 +703,7 @@ fun TopSquare(index: Int, state: String, isSelected: Boolean, onClick: () -> Uni
  *  enabled parametresi eklendi: enabled==false ise clickable eklenmez (pasif görünüş için opacity düşürüldü)
  */
 @Composable
-fun GradientButton(
+fun GradientButton2(
     modifier: Modifier = Modifier,
     gradient: Brush,
     shape: Shape = RoundedCornerShape(12.dp),
@@ -733,9 +732,9 @@ fun GradientButton(
 }
 
 /** küçük yardımcı sınıf */
-private data class Quad<A, B, C, D>(val a: A, val b: B, val c: C, val d: D)
+private data class Quad2<A, B, C, D>(val a: A, val b: B, val c: C, val d: D)
 
-fun generateHourlyList(startHour: Int, endHour: Int): List<String> {
+fun generateHourlyList2(startHour: Int, endHour: Int): List<String> {
     return (startHour until endHour).map { hour ->
         val amPm = if (hour < 12) "AM" else "PM"
         val hour12 = if (hour % 12 == 0) 12 else hour % 12
@@ -743,7 +742,7 @@ fun generateHourlyList(startHour: Int, endHour: Int): List<String> {
     }
 }
 
-fun getRowRangeForHour(selectedHour: Int): Pair<Int, Int> {
+fun getRowRangeForHour2(selectedHour: Int): Pair<Int, Int> {
     return when (selectedHour) {
         0 -> 1 to 20
         1 -> 21 to 40
