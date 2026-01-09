@@ -8,19 +8,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yurt360.common.components.*
 import com.example.yurt360.user.mainScreen.*
-import com.example.yurt360.user.refectory.MenuScreen // MenuScreen Import edildi
+import com.example.yurt360.admin.mainScreen.AdminHomeScreen
 import com.example.yurt360.common.model.Admin
 import com.example.yurt360.common.model.TopUser
 import com.example.yurt360.common.model.User
 import com.example.yurt360.data.api.SupabaseClient
 import io.github.jan.supabase.gotrue.handleDeeplinks
+import com.example.yurt360.admin.mainScreen.AdminProfileScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,10 +37,9 @@ class MainActivity : ComponentActivity() {
 
                     var showNewPasswordScreen by remember { mutableStateOf(isResetLink) }
                     var currentUser by remember { mutableStateOf<TopUser?>(null) }
-
-                    // Başlangıç rotası 'home'
                     var currentScreenRoute by remember { mutableStateOf("home") }
                     var isMenuOpen by remember { mutableStateOf(false) }
+
 
                     if (showNewPasswordScreen) {
                         NewPasswordScreen(
@@ -66,9 +64,10 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         } else {
+                            // Yan menü
                             SideMenuView(
                                 isOpen = isMenuOpen,
-                                user = currentUser as? User,
+                                user = currentUser as? User, // Admin için null gidebilir, sorun yok.
                                 onClose = { isMenuOpen = false },
                                 onNavigate = { route ->
                                     currentScreenRoute = route
@@ -84,19 +83,14 @@ class MainActivity : ComponentActivity() {
 
                             Box(modifier = Modifier.fillMaxSize()) {
                                 when (val user = currentUser) {
+                                    // --- USER BLOĞU ---
                                     is User -> {
                                         when (currentScreenRoute) {
                                             "home" -> UserHomeScreen(
                                                 user = user,
                                                 onMenuClick = { isMenuOpen = true },
-                                                onNavigation = { route -> currentScreenRoute = route }
+                                                onNavigation = { currentScreenRoute = it }
                                             )
-
-                                            // YEMEKHANE SAYFASI EKLENDİ
-                                            "refectory" -> MenuScreen(
-                                                onNavigate = { route -> currentScreenRoute = route }
-                                            )
-
                                             "profile" -> ProfileScreen(
                                                 user = user,
                                                 onNavigate = { currentScreenRoute = it },
@@ -113,16 +107,56 @@ class MainActivity : ComponentActivity() {
                                             "calendar" -> CalendarScreen(
                                                 onNavigate = { currentScreenRoute = it },
                                             )
-
                                             "about_us" -> AboutUsScreen(
                                                 onMenuClick = { isMenuOpen = true },
                                                 onNavigate = { currentScreenRoute = it }
                                             )
+                                            "settings" -> SettingsScreen(
+                                                onNavigateBack = {
+                                                    currentScreenRoute = "home"
+                                                }
+                                            )
                                         }
                                     }
+
+                                    // --- ADMIN BLOĞU ---
                                     is Admin -> {
-                                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                            Text("Admin Paneli")
+                                        when (currentScreenRoute) {
+                                            "home" -> AdminHomeScreen(
+                                                admin = user,
+                                                onMenuClick = { isMenuOpen = true },
+                                                onNavigation = { currentScreenRoute = it }
+                                            )
+                                            "profile" -> AdminProfileScreen(
+                                                user = user,
+                                                onNavigate = { currentScreenRoute = it },
+                                                onMenuClick = { isMenuOpen = true }
+                                            )
+                                            "update_password" -> PasswordUpdateScreen(
+                                                onNavigateBack = { currentScreenRoute = "profile" },
+                                                onNavigateHome = { currentScreenRoute = "home" },
+                                                onNavigate = { currentScreenRoute = it },
+                                                onUpdatePassword = { newPass, callback ->
+                                                    loginViewModel.updatePassword(newPass, { callback(null) }, { callback(it) })
+                                                }
+                                            )
+                                            "calendar" -> CalendarScreen(
+                                                onNavigate = { currentScreenRoute = it },
+                                            )
+                                            "about_us" -> AboutUsScreen(
+                                                onMenuClick = { isMenuOpen = true },
+                                                onNavigate = { currentScreenRoute = it }
+                                            )
+                                            "settings" -> SettingsScreen(
+                                                onNavigateBack = {
+                                                    currentScreenRoute = "home"
+                                                }
+                                            )
+                                            else -> AdminHomeScreen(
+                                                admin = user,
+                                                onMenuClick = { isMenuOpen = true },
+                                                onNavigation = { currentScreenRoute = it }
+                                            )
                                         }
                                     }
                                     else -> {}

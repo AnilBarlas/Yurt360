@@ -138,24 +138,30 @@ fun ContactInfoRow(icon: ImageVector, label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 4.dp), // Dikey boşluk minimal tutuldu
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center // Tüm satırı yatayda ortalar
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size(28.dp),
+            modifier = Modifier.size(22.dp), // İkon biraz daha küçültüldü
             tint = Color.Black
         )
-        Spacer(modifier = Modifier.width(16.dp))
+
+        Spacer(modifier = Modifier.width(12.dp))
+
         Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(25.dp),
-            color = Color(0xFFF5F5F5),
+            modifier = Modifier
+                .width(220.dp) // Genişlik 220dp'ye sabitlenerek kısaltıldı
+                .height(48.dp), // Yükseklik daha kompakt hale getirildi
+            shape = RoundedCornerShape(24.dp),
+            color = Color(0xFFF7F7F7),
             shadowElevation = 0.dp
         ) {
             Column(
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -165,9 +171,10 @@ fun ContactInfoRow(icon: ImageVector, label: String, value: String) {
                 )
                 Text(
                     text = value,
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.Black
+                    color = Color.Black,
+                    maxLines = 1 // Taşmaları önlemek için tek satır
                 )
             }
         }

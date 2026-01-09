@@ -1,4 +1,4 @@
-package com.example.yurt360.user.mainScreen
+package com.example.yurt360.admin.mainScreen
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
@@ -6,6 +6,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,22 +28,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.yurt360.R
 import com.example.yurt360.common.components.CustomBottomNavigationBar
-import com.example.yurt360.common.model.User
+import com.example.yurt360.common.model.Admin
+import com.example.yurt360.common.utils.OrangePrimary
 
-// Renk Tanımları
-val OrangePrimary = Color(0xFFFF8A65)
 val InputBackground = Color(0xFFFAFAFA)
 
 @Composable
-fun ProfileScreen(
-    user: User,
+fun AdminProfileScreen(
+    user: Admin,
     onNavigate: (String) -> Unit,
-    onMenuClick: () -> Unit // Yan menüyü açmak için eklenen callback
+    onMenuClick: () -> Unit
 ) {
     var expandedCard by remember { mutableStateOf<String?>(null) }
 
@@ -64,16 +65,6 @@ fun ProfileScreen(
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
-
-        // 2. KATMAN: PROFİL FOTOĞRAFI
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 80.dp)
-                .zIndex(1f)
-        ) {
-            ProfilePhotoSection(user.image_url)
-        }
 
         // 3. KATMAN: KARTLAR
         Column(
@@ -195,7 +186,7 @@ fun ProfileSectionCard(
     title: String,
     isExpanded: Boolean,
     modifier: Modifier = Modifier,
-    contentPaddingBottom: androidx.compose.ui.unit.Dp = 32.dp,
+    contentPaddingBottom: Dp = 32.dp,
     onHeaderClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
@@ -243,34 +234,56 @@ fun ProfileSectionCard(
 }
 
 @Composable
-fun ContactInfoContent(user: User) {
-    ProfileInfoRow(label = "Telefon", value = user.phone)
+fun ContactInfoContent(user: Admin) {
     Spacer(modifier = Modifier.height(12.dp))
     ProfileInfoRow(label = "E-posta", value = user.email)
 }
 
 @Composable
-fun PersonalInfoContent(user: User) {
-    ProfileInfoRow(label = "Kimlik No", value = user.tc)
+fun PersonalInfoContent(user: Admin) {
     ProfileInfoRow(label = "Ad", value = user.name)
     ProfileInfoRow(label = "Soyad", value = user.surname)
-    ProfileInfoRow(label = "Cinsiyet", value = user.gender)
-    ProfileInfoRow(label = "Kan Grubu", value = user.bloodType)
-    ProfileInfoRow(label = "Doğum Tarihi", value = user.birthDate)
-    ProfileInfoRow(label = "Yurt", value = user.location)
 }
 
 @Composable
 fun ProfileInfoRow(label: String, value: String) {
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-        Text(text = label, color = Color.Gray, fontSize = 12.sp, modifier = Modifier.padding(start = 4.dp, bottom = 4.dp))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically // Yazı ve kutuyu dikeyde ortalar
+    ) {
+        // Sol taraftaki Başlık (Label)
+        Text(
+            text = label,
+            color = Color.Gray,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier
+                .width(100.dp) // Tüm başlıkların aynı hizada durması için sabit genişlik
+                .padding(end = 8.dp)
+        )
+
+        // Sağ taraftaki Değer Kutusu (TextField görünümü)
         Surface(
             shape = RoundedCornerShape(12.dp),
             color = InputBackground,
-            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE0E0E0)),
-            modifier = Modifier.fillMaxWidth()
+            border = BorderStroke(1.dp, Color(0xFFE0E0E0)),
+            modifier = Modifier
+                .weight(1f) // Kalan boşluğu doldurur ama ekranın tamamını kaplamaz
+                .heightIn(min = 45.dp) // Kutunun yüksekliğini sabitler
         ) {
-            Text(text = value, color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(16.dp))
+            Box(
+                contentAlignment = Alignment.CenterStart,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = value,
+                    color = Color.Black,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
         }
     }
 }

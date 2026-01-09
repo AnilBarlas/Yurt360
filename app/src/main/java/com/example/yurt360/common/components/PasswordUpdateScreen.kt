@@ -1,4 +1,4 @@
-package com.example.yurt360.user.mainScreen
+package com.example.yurt360.common.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -10,15 +10,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.yurt360.R
-import com.example.yurt360.common.components.CustomBottomNavigationBar
 import androidx.compose.ui.zIndex
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.Icons
+import com.example.yurt360.common.utils.OrangePrimary
+import com.example.yurt360.common.utils.purpleLinear
 
 @Composable
 fun PasswordUpdateScreen(
@@ -31,7 +36,6 @@ fun PasswordUpdateScreen(
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
 
-    // UI Durum Yönetimi
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -50,7 +54,7 @@ fun PasswordUpdateScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 220.dp)
+                .padding(top = if (isSuccess) 350.dp else 220.dp)
                 .clip(RoundedCornerShape(topStart = 100.dp, topEnd = 100.dp))
                 .background(Color.White)
                 .padding(horizontal = 40.dp),
@@ -59,7 +63,7 @@ fun PasswordUpdateScreen(
             Spacer(modifier = Modifier.height(40.dp))
 
             if (!isSuccess) {
-                Text(text = "PAROLA GÜNCELLE", fontSize = 24.sp, color = Color.Black)
+                Text(text = "Parolayı Güncelle", fontSize = 24.sp, color = Color.Black)
                 Spacer(modifier = Modifier.height(30.dp))
 
                 CustomPasswordInput(label = "Mevcut Parola", value = currentPassword, onValueChange = { currentPassword = it })
@@ -75,6 +79,7 @@ fun PasswordUpdateScreen(
                 if (isLoading) {
                     CircularProgressIndicator(color = Color(0xFFFF8A65))
                 } else {
+                    // Gradient ve Boyut Ayarlı Buton
                     Button(
                         onClick = {
                             if (newPassword.length < 6) {
@@ -89,11 +94,20 @@ fun PasswordUpdateScreen(
                                 if (error == null) isSuccess = true else errorMessage = error
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        contentPadding = PaddingValues(),
                         shape = RoundedCornerShape(20.dp),
-                        modifier = Modifier.fillMaxWidth(0.7f).height(50.dp)
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f) // Genişlik %50'ye düşürüldü
+                            .height(50.dp)
+                            .background(brush = purpleLinear, shape = RoundedCornerShape(20.dp))
                     ) {
-                        Text("Parolayı Güncelle", color = Color.White, fontWeight = FontWeight.Bold)
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Parolayı Güncelle", color = Color.White, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             } else {
@@ -102,17 +116,19 @@ fun PasswordUpdateScreen(
                 Text(text = "Parolanız güncellenmiştir.", fontSize = 18.sp, color = Color.Black, fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.height(60.dp))
                 SuccessButton(text = "Ana Sayfaya Geri Dön", onClick = onNavigateHome)
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(25.dp))
                 SuccessButton(text = "Profil Bilgilerine Geri Dön", onClick = onNavigateBack)
             }
         }
 
         if (!isSuccess) {
-            Text(
-                text = "< Geri",
-                color = Color.White,
+            Icon(
+                imageVector = Icons.Default.KeyboardArrowLeft,
+                contentDescription = "Geri",
+                tint = Color.White,
                 modifier = Modifier
                     .padding(top = 50.dp, start = 20.dp)
+                    .size(60.dp)
                     .clickable { onNavigateBack() }
             )
         }
@@ -125,17 +141,23 @@ fun PasswordUpdateScreen(
 
 @Composable
 fun CustomPasswordInput(label: String, value: String, onValueChange: (String) -> Unit) {
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = 8.dp)) {
+
+        // Etiket Kısmı: Surface kaldırıldı, sadece Text var
+        Text(
+            text = label,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(start = 16.dp, bottom = 6.dp)
+        )
+
+        // Input Kısmı
         Surface(
-            modifier = Modifier.zIndex(1f),
-            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-            shadowElevation = 4.dp,
-            color = Color.White
-        ) {
-            Text(text = label, fontSize = 13.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp))
-        }
-        Surface(
-            modifier = Modifier.fillMaxWidth().zIndex(2f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .zIndex(2f),
             shape = RoundedCornerShape(50.dp),
             shadowElevation = 4.dp,
             color = Color.White
@@ -144,7 +166,7 @@ fun CustomPasswordInput(label: String, value: String, onValueChange: (String) ->
                 value = value,
                 onValueChange = onValueChange,
                 modifier = Modifier.fillMaxWidth(),
-                visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                visualTransformation = PasswordVisualTransformation(),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
@@ -161,10 +183,23 @@ fun CustomPasswordInput(label: String, value: String, onValueChange: (String) ->
 fun SuccessButton(text: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
+        // 1. Butonun kendi rengini şeffaf yapıyoruz
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+        // 2. İç padding'i sıfırlıyoruz ki gradient tam dolsun
+        contentPadding = PaddingValues(),
         shape = RoundedCornerShape(20.dp),
-        modifier = Modifier.fillMaxWidth(0.8f).height(45.dp)
+        modifier = Modifier
+            .fillMaxWidth(0.8f)
+            .height(45.dp)
+            // 3. Brush'ı modifier üzerinden shape ile birlikte veriyoruz
+            .background(brush = purpleLinear, shape = RoundedCornerShape(20.dp))
     ) {
-        Text(text, color = Color.White, fontWeight = FontWeight.Bold)
+        // Metni ortalamak için Box kullanıyoruz
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text, color = Color.White, fontWeight = FontWeight.Bold)
+        }
     }
 }
