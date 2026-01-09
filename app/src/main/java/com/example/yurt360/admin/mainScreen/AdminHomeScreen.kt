@@ -82,7 +82,7 @@ fun AdminHomeScreen(
                     .height(240.dp)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.bina),
+                    painter = painterResource(id = R.drawable.loginscreen),
                     contentDescription = "Yurt Binası",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -191,10 +191,10 @@ fun AdminHomeScreen(
 
                 // --- 4. Alt Menüler ---
                 val menuList = listOf(
-                    MenuItemData("YEMEKHANE", R.drawable.bina),
-                    MenuItemData("ÇALIŞMA ALANI", R.drawable.bina),
-                    MenuItemData("ODA DEĞİŞİMİ", R.drawable.bina),
-                    MenuItemData("ÇAMAŞIR YIKAMA", R.drawable.bina)
+                    MenuItemData("YEMEKHANE", R.drawable.loginscreen),
+                    MenuItemData("ÇALIŞMA ALANI", R.drawable.loginscreen),
+                    MenuItemData("ODA DEĞİŞİMİ", R.drawable.loginscreen),
+                    MenuItemData("ÇAMAŞIR YIKAMA", R.drawable.loginscreen)
                 )
 
                 Column(

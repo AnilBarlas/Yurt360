@@ -1,4 +1,4 @@
-package com.example.yurt360.common.components
+package com.example.yurt360.common.passwordScreens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -10,7 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -22,7 +21,7 @@ import com.example.yurt360.R
 import androidx.compose.ui.zIndex
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.Icons
-import com.example.yurt360.common.utils.OrangePrimary
+import com.example.yurt360.common.components.CustomBottomNavigationBar
 import com.example.yurt360.common.utils.purpleLinear
 
 @Composable
@@ -42,7 +41,7 @@ fun PasswordUpdateScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         // Arka Plan Görseli
         Image(
-            painter = painterResource(id = R.drawable.bina),
+            painter = painterResource(id = R.drawable.loginscreen),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier

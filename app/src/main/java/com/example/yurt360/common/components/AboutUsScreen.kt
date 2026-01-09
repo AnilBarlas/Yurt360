@@ -44,7 +44,7 @@ fun AboutUsScreen(
                     .height(260.dp)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.bina),
+                    painter = painterResource(id = R.drawable.loginscreen),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()

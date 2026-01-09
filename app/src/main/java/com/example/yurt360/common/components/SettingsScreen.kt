@@ -31,7 +31,7 @@ fun SettingsScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         // 1. Arka Plan Görseli
         Image(
-            painter = painterResource(id = R.drawable.bina),
+            painter = painterResource(id = R.drawable.loginscreen),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier

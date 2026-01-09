@@ -5,9 +5,9 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import androidx.compose.runtime.mutableStateListOf
-import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.yurt360.common.model.Announcement
 import com.example.yurt360.data.api.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Order
@@ -18,15 +18,8 @@ import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 
-@Serializable
-data class Announcement(
-    val id: Int? = null,
-    val title: String,
-    val description: String,
-    val created_at: String? = null
-)
+
 
 class AnnouncementViewModel : ViewModel() {
     val announcements = mutableStateListOf<Announcement>()
@@ -92,15 +85,5 @@ class AnnouncementViewModel : ViewModel() {
             val channel = NotificationChannel(channelId, "Yurt Duyuruları", NotificationManager.IMPORTANCE_HIGH)
             notificationManager.createNotificationChannel(channel)
         }
-
-        /*val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle(title)
-            .setContentText(message)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-            .build()
-
-        notificationManager.notify(System.currentTimeMillis().toInt(), notification)*/
     }
 }

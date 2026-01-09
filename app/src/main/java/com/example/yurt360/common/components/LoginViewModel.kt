@@ -34,15 +34,14 @@ class LoginViewModel : ViewModel() {
     fun onUsernameChange(newText: String) { _username.value = newText }
     fun onPasswordChange(newText: String) { _password.value = newText }
 
-    // Bilgileri ve Oturumu Temizleme
     fun clearCredentials() {
         _username.value = ""
         _password.value = ""
-        _loginState.value = LoginState.Idle // Durumu boşa çekmezsek otomatik giriş yapabilir
+        _loginState.value = LoginState.Idle
 
         viewModelScope.launch {
             try {
-                SupabaseClient.client.auth.signOut() // Gerçek Supabase çıkışı
+                SupabaseClient.client.auth.signOut()
             } catch (e: Exception) {
                 Log.e("LogoutError", "Çıkış yapılırken hata: ${e.message}")
             }
