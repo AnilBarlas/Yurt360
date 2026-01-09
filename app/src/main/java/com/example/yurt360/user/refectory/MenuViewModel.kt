@@ -31,16 +31,16 @@ class MenuViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                // Supabase'den veriyi çek (id'ye göre sırala)
+
                 val menus = SupabaseClient.client
                     .from("menus")
                     .select()
                     .decodeList<Menu>()
-                    .sortedBy { it.id } // İstersen tarihe göre de sıralayabilirsin
+                    .sortedBy { it.id }
 
                 _menuList.value = menus
 
-                // İlk açılışta listenin ilk elemanını seçili yap
+
                 if (menus.isNotEmpty()) {
                     _selectedMenu.value = menus[0]
                 }
@@ -52,7 +52,6 @@ class MenuViewModel : ViewModel() {
         }
     }
 
-    // Kullanıcı tarihe tıkladığında çalışır
     fun selectMenu(menu: Menu) {
         _selectedMenu.value = menu
     }
