@@ -161,7 +161,10 @@ fun UserHomeScreen(
                             resimId = item.iconResId,
                             isImageLeft = isImageLeft,
                             onClick = {
-
+                                // --- DÜZELTME BURADA YAPILDI ---
+                                if (item.title == "YEMEKHANE") {
+                                    onNavigation("menu")
+                                }
                             }
                         )
                     }

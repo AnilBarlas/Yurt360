@@ -18,6 +18,8 @@ import com.example.yurt360.common.model.Admin
 import com.example.yurt360.common.model.TopUser
 import com.example.yurt360.common.model.User
 import com.example.yurt360.data.api.SupabaseClient
+// --- IMPORT EKLENDİ ---
+import com.example.yurt360.user.refectory.MenuScreen
 import io.github.jan.supabase.gotrue.handleDeeplinks
 import com.example.yurt360.admin.mainScreen.AdminProfileScreen
 
@@ -90,6 +92,10 @@ class MainActivity : ComponentActivity() {
                                                 user = user,
                                                 onMenuClick = { isMenuOpen = true },
                                                 onNavigation = { currentScreenRoute = it }
+                                            )
+                                            // --- MENÜ ROTASI EKLENDİ ---
+                                            "menu" -> MenuScreen(
+                                                onNavigate = { currentScreenRoute = it }
                                             )
                                             "profile" -> ProfileScreen(
                                                 user = user,
