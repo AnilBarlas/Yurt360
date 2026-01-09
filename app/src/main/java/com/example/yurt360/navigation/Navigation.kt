@@ -1,4 +1,4 @@
-package com.example.yurt360.common.navigation
+package com.example.yurt360.navigation
 
 import android.app.Activity
 import android.widget.Toast
@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -22,6 +23,7 @@ import com.example.yurt360.common.passwordScreens.ResetPasswordScreen
 import com.example.yurt360.user.mainScreen.AnnouncementViewModel
 import com.example.yurt360.user.mainScreen.ProfileScreen
 import com.example.yurt360.user.mainScreen.UserHomeScreen
+import com.example.yurt360.user.refectory.MenuScreen
 
 object Routes {
     const val LOGIN = "login"
@@ -30,6 +32,7 @@ object Routes {
     // User Rotaları
     const val HOME = "home"
     const val PROFILE = "profile"
+    const val MENU = "menu"
 
     // Admin Rotaları
     const val ADMIN_HOME = "admin_home"
@@ -234,9 +237,20 @@ fun RootNavigation() {
                     }
                 )
             }
+
+            composable(Routes.MENU) {
+                MenuScreen(
+                    onNavigate = { route ->
+                        val isAdmin = currentAdmin != null
+                        handleNavigation(navController, route, isAdmin)
+                    }
+                )
+            }
+
+
         }
 
-        // SIDE MENU
+
         val menuUser = currentUser ?: currentAdmin?.let { admin ->
             User(
                 id = admin.id,
@@ -286,7 +300,7 @@ fun RootNavigation() {
     }
 }
 
-fun handleNavigation(navController: androidx.navigation.NavController, route: String, isAdmin: Boolean) {
+fun handleNavigation(navController: NavController, route: String, isAdmin: Boolean) {
     val targetRoute = when (route) {
         "home" -> if (isAdmin) Routes.ADMIN_HOME else Routes.HOME
         "profile" -> if (isAdmin) Routes.ADMIN_PROFILE else Routes.PROFILE
@@ -294,6 +308,7 @@ fun handleNavigation(navController: androidx.navigation.NavController, route: St
         "settings" -> Routes.SETTINGS
         "about_us" -> Routes.ABOUT_US
         "update_password" -> Routes.UPDATE_PASSWORD
+        "menu" -> Routes.MENU
         else -> route
     }
 
@@ -309,7 +324,7 @@ fun handleNavigation(navController: androidx.navigation.NavController, route: St
 }
 
 @Composable
-fun NavigateToLogin(navController: androidx.navigation.NavController) {
+fun NavigateToLogin(navController: NavController) {
     LaunchedEffect(Unit) {
         navController.navigate(Routes.LOGIN) {
             popUpTo(0) { inclusive = true }
