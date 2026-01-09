@@ -18,10 +18,12 @@ import com.example.yurt360.common.model.Admin
 import com.example.yurt360.common.model.TopUser
 import com.example.yurt360.common.model.User
 import com.example.yurt360.data.api.SupabaseClient
-// --- IMPORT EKLENDİ ---
-import com.example.yurt360.user.refectory.MenuScreen
 import io.github.jan.supabase.gotrue.handleDeeplinks
 import com.example.yurt360.admin.mainScreen.AdminProfileScreen
+
+// --- IMPORTLAR EKLENDİ ---
+import com.example.yurt360.user.refectory.MenuScreen // User tarafı için
+import com.example.yurt360.admin.refectory.AdminMenuScreen // Admin tarafı için (YENİ)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,7 +95,6 @@ class MainActivity : ComponentActivity() {
                                                 onMenuClick = { isMenuOpen = true },
                                                 onNavigation = { currentScreenRoute = it }
                                             )
-                                            // --- MENÜ ROTASI EKLENDİ ---
                                             "menu" -> MenuScreen(
                                                 onNavigate = { currentScreenRoute = it }
                                             )
@@ -133,6 +134,11 @@ class MainActivity : ComponentActivity() {
                                                 onMenuClick = { isMenuOpen = true },
                                                 onNavigation = { currentScreenRoute = it }
                                             )
+                                            // --- YENİ EKLENEN KISIM: ADMIN YEMEKHANE YÖNETİMİ ---
+                                            "menu" -> AdminMenuScreen(
+                                                onNavigateBack = { currentScreenRoute = "home" }
+                                            )
+                                            // ----------------------------------------------------
                                             "profile" -> AdminProfileScreen(
                                                 user = user,
                                                 onNavigate = { currentScreenRoute = it },

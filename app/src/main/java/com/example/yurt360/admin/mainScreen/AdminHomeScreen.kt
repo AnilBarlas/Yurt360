@@ -117,7 +117,7 @@ fun AdminHomeScreen(
                         color = Color.White,
                         shape = RoundedCornerShape(topEnd = 20.dp),
                         modifier = Modifier
-                            .width(140.dp) // Genişlik kısaltıldı (Weight kaldırıldı)
+                            .width(140.dp)
                             .height(45.dp)
                     ) {
                         Box(contentAlignment = Alignment.CenterStart) {
@@ -136,7 +136,7 @@ fun AdminHomeScreen(
                         color = GreenTabColor,
                         shape = RoundedCornerShape(topStart = 20.dp),
                         modifier = Modifier
-                            .width(140.dp) // Genişlik kısaltıldı (Weight kaldırıldı)
+                            .width(140.dp)
                             .height(45.dp)
                             .clickable { showAddDialog = true } // Tıklanınca Dialog açılır
                     ) {
@@ -206,7 +206,12 @@ fun AdminHomeScreen(
                             title = item.title,
                             resimId = item.iconResId,
                             isImageLeft = isImageLeft,
-                            onClick = {}
+                            onClick = {
+                                // --- DÜZELTİLEN KISIM BURASI ---
+                                if (item.title == "YEMEKHANE") {
+                                    onNavigation("menu") // AdminMenuScreen'e yönlendirir
+                                }
+                            }
                         )
                     }
                 }
@@ -230,7 +235,7 @@ fun AddAnnouncementDialog(
             colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F0F0)),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(350.dp) // Yüksekliği biraz artırdık rahat sığması için
+                .height(350.dp)
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(
@@ -253,7 +258,7 @@ fun AddAnnouncementDialog(
                         value = title,
                         onValueChange = { title = it },
                         placeholder = { Text("Ana Duyuru (Başlık)", color = Color.Gray, fontSize = 14.sp) },
-                        singleLine = true, // Başlık tek satır olur
+                        singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = Color.White,
                             unfocusedContainerColor = Color.White,
