@@ -21,7 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.yurt360.common.components.CustomBottomNavigationBar // Ortak bileşen import edildi
+import com.example.yurt360.common.components.UserBottomNavigationBar // Ortak bileşen import edildi
 import com.example.yurt360.common.model.Menu
 
 // --- Renk Tanımları ---
@@ -42,7 +42,7 @@ fun MenuScreen(
     Scaffold(
         containerColor = BackgroundColor,
         bottomBar = {
-            CustomBottomNavigationBar(onNavigate = onNavigate)
+            UserBottomNavigationBar(onNavigate = onNavigate)
         }
     ) { innerPadding ->
 

@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.yurt360.common.components.CustomBottomNavigationBar
+import com.example.yurt360.common.components.UserBottomNavigationBar
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.*
@@ -52,7 +52,7 @@ fun CalendarScreen(onNavigate: (String) -> Unit) {
 
     Scaffold(
         bottomBar = {
-            CustomBottomNavigationBar(onNavigate = onNavigate)
+            UserBottomNavigationBar(onNavigate = onNavigate)
         },
         containerColor = LightBackground
     ) { innerPadding ->

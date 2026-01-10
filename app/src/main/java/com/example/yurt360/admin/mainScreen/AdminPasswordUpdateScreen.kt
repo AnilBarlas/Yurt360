@@ -1,12 +1,10 @@
-package com.example.yurt360.common.passwordScreens
+package com.example.yurt360.admin.mainScreen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,16 +20,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yurt360.R
-import com.example.yurt360.common.components.CustomBottomNavigationBar
-import com.example.yurt360.common.utils.purple
 import com.example.yurt360.common.utils.purpleLinear
+import com.example.yurt360.common.components.CustomAdminBottomNavigationBar
 
 @Composable
-fun PasswordUpdateScreen(
+fun AdminPasswordUpdateScreen(
     onNavigateBack: () -> Unit,
     onNavigateHome: () -> Unit,
     onNavigate: (String) -> Unit,
-    viewModel: PasswordUpdateViewModel = viewModel()
+    viewModel: AdminPasswordUpdateViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -123,19 +120,25 @@ fun PasswordUpdateScreen(
         }
 
         if (!uiState.isSuccess) {
-            Icon(
-                painter = painterResource(id = R.drawable.arrow),
-                contentDescription = "Geri",
-                tint = Color.Unspecified,
+            // Geri butonu için tıklama alanı genişletilmiş kapsayıcı
+            Box(
                 modifier = Modifier
-                    .padding(top = 40.dp, start = 20.dp)
-                    .size(20.dp)
-                    .clickable { onNavigateBack() }
-            )
+                    .padding(top = 26.dp, start = 6.dp) // Görsel konumu korumak için ayarlandı
+                    .size(48.dp)
+                    .clickable { onNavigateBack() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.arrow),
+                    contentDescription = "Geri",
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
 
         Box(modifier = Modifier.align(Alignment.BottomCenter)) {
-            CustomBottomNavigationBar(onNavigate = onNavigate)
+            CustomAdminBottomNavigationBar(onNavigate = onNavigate)
         }
     }
 }

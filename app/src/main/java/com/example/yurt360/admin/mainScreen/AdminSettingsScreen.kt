@@ -1,4 +1,4 @@
-package com.example.yurt360.common.components
+package com.example.yurt360.admin.mainScreen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -9,20 +9,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.yurt360.R
+import com.example.yurt360.common.components.CustomAdminBottomNavigationBar
+import com.example.yurt360.common.utils.purpleLinear
+import com.example.yurt360.user.mainScreen.SectionHeader
 
 @Composable
-fun SettingsScreen(
-    userLocation: String,
+fun AdminSettingsScreen(
     onMenuClick: () -> Unit,
     onNavigate: (String) -> Unit
 ) {
@@ -59,6 +59,7 @@ fun SettingsScreen(
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
+            // Dil Seçimi
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -82,11 +83,7 @@ fun SettingsScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(
-                                brush = Brush.horizontalGradient(
-                                    colors = listOf(Color(0xFF9FA8DA), Color(0xFF7986CB))
-                                )
-                            ),
+                            .background(purpleLinear),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -101,6 +98,7 @@ fun SettingsScreen(
             SectionHeader(text = "HESAP")
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Parola Değiştir
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -117,7 +115,7 @@ fun SettingsScreen(
                     modifier = Modifier
                         .width(250.dp)
                         .height(60.dp)
-                        .clickable { onNavigate("update_password") },
+                        .clickable { onNavigate("admin_update_password") },
                     color = Color.White,
                     shape = RoundedCornerShape(12.dp),
                     shadowElevation = 2.dp
@@ -128,53 +126,13 @@ fun SettingsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(75.dp))
-            SectionHeader(text = "YURT")
-            Spacer(modifier = Modifier.height(12.dp))
-
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.door),
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = Color.Black
-                )
-                Spacer(modifier = Modifier.width(20.dp))
-                Surface(
-                    modifier = Modifier
-                        .width(250.dp)
-                        .height(60.dp)
-                        .clickable { /* Yurt detay */ },
-                    color = Color.White,
-                    shape = RoundedCornerShape(12.dp),
-                    shadowElevation = 2.dp
-                ) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(userLocation, fontSize = 16.sp, color = Color.Black)
-                    }
-                }
-            }
+            // Not: Admin ekranında lokasyon/yurt bilgisi genellikle
+            // kullanıcıya özel olduğu için bu kısım isteğe bağlıdır.
         }
 
-        CustomBottomNavigationBar(
+        CustomAdminBottomNavigationBar(
             modifier = Modifier.align(Alignment.BottomCenter),
             onNavigate = onNavigate
         )
     }
-}
-
-@Composable
-fun SectionHeader(text: String) {
-    Text(
-        text = text,
-        fontSize = 15.sp,
-        fontWeight = FontWeight.Medium,
-        color = Color.Black,
-        letterSpacing = 1.sp
-    )
 }

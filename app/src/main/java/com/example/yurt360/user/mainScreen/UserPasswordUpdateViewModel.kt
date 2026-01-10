@@ -1,4 +1,4 @@
-package com.example.yurt360.common.passwordScreens
+package com.example.yurt360.user.mainScreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,7 +17,7 @@ data class PasswordUpdateUiState(
     val isSuccess: Boolean = false
 )
 
-class PasswordUpdateViewModel : ViewModel() {
+class UserPasswordUpdateViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(PasswordUpdateUiState())
     val uiState: StateFlow<PasswordUpdateUiState> = _uiState.asStateFlow()

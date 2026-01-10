@@ -117,14 +117,14 @@ fun SideMenuView(
                         verticalArrangement = Arrangement.spacedBy(0.dp)
                     ) {
                         menuItems.forEachIndexed { index, item ->
-                            MenuRowItem(
+                            UserMenuRowItem(
                                 title = item,
                                 isAlternatingLeft = (index % 2 == 0)
                             ) {
                                 when (item) {
-                                    "Profil" -> onNavigate("profile")
-                                    "Hakkımızda" -> onNavigate("about_us")
-                                    "Ayarlar" -> onNavigate("settings")
+                                    "Profil" -> onNavigate("user_profile")
+                                    "Hakkımızda" -> onNavigate("user_about_us")
+                                    "Ayarlar" -> onNavigate("user_settings")
                                 }
                                 onClose()
                             }
@@ -147,7 +147,7 @@ fun SideMenuView(
                             "Parola Güncelle",
                             color = Color(0xFFFF9800),
                             modifier = Modifier.clickable {
-                                onNavigate("update_password")
+                                onNavigate("user_update_password")
                                 onClose()
                             }
                         )
@@ -165,7 +165,7 @@ fun SideMenuView(
 }
 
 @Composable
-fun MenuRowItem(
+fun UserMenuRowItem(
     title: String,
     isAlternatingLeft: Boolean,
     onClick: () -> Unit

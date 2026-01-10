@@ -23,10 +23,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.yurt360.R
-import com.example.yurt360.common.components.CustomBottomNavigationBar
+import com.example.yurt360.common.components.CustomAdminBottomNavigationBar
 import com.example.yurt360.common.model.Admin
 import com.example.yurt360.user.mainScreen.ProfileInfoRow
 import com.example.yurt360.user.mainScreen.ProfileSectionCard
@@ -141,7 +140,7 @@ fun AdminProfileScreen(
         )
 
         Box(modifier = Modifier.align(Alignment.BottomCenter)) {
-            CustomBottomNavigationBar(onNavigate = onNavigate)
+            CustomAdminBottomNavigationBar(onNavigate = onNavigate)
         }
     }
 }

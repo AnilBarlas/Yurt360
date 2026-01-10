@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.yurt360.R
-import com.example.yurt360.common.components.CustomBottomNavigationBar
+import com.example.yurt360.common.components.UserBottomNavigationBar
 import com.example.yurt360.common.model.User
 
 val InputBackground = Color(0xFFFAFAFA)
@@ -150,7 +150,7 @@ fun ProfileScreen(
         Box(
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-            CustomBottomNavigationBar(onNavigate = onNavigate)
+            UserBottomNavigationBar(onNavigate = onNavigate)
         }
     }
 }

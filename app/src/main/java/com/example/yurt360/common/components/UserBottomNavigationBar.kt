@@ -24,7 +24,7 @@ import com.example.yurt360.common.utils.purple
 import com.example.yurt360.common.utils.orangelinear
 
 @Composable
-fun CustomBottomNavigationBar(
+fun UserBottomNavigationBar(
     modifier: Modifier = Modifier,
     onNavigate: (String) -> Unit
 ) {

@@ -117,14 +117,14 @@ fun AdminSideMenuView(
                         verticalArrangement = Arrangement.spacedBy(0.dp)
                     ) {
                         menuItems.forEachIndexed { index, item ->
-                            MenuRowItem(
+                            AdminMenuRowItem(
                                 title = item,
                                 isAlternatingLeft = (index % 2 == 0)
                             ) {
                                 when (item) {
                                     "Profil" -> onNavigate("admin_profile")
-                                    "Hakkımızda" -> onNavigate("about_us")
-                                    "Ayarlar" -> onNavigate("settings")
+                                    "Hakkımızda" -> onNavigate("admin_about_us")
+                                    "Ayarlar" -> onNavigate("admin_settings")
                                 }
                                 onClose()
                             }
@@ -147,7 +147,7 @@ fun AdminSideMenuView(
                             "Parola Güncelle",
                             color = Color(0xFFFF9800),
                             modifier = Modifier.clickable {
-                                onNavigate("update_password")
+                                onNavigate("admin_update_password")
                                 onClose()
                             }
                         )
@@ -165,7 +165,7 @@ fun AdminSideMenuView(
 }
 
 @Composable
-fun MenuRowItem(
+fun AdminMenuRowItem(
     title: String,
     isAlternatingLeft: Boolean,
     onClick: () -> Unit

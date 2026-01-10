@@ -58,7 +58,7 @@ fun CustomAdminBottomNavigationBar(
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.home),
-                            contentDescription = "admin_home",
+                            contentDescription = "Anasayfa",
                             tint = White,
                             modifier = Modifier.size(32.dp)
                         )
@@ -116,7 +116,7 @@ fun CustomAdminBottomNavigationBar(
                 .padding(6.dp)
                 .clip(CircleShape)
                 .background(purple)
-                .clickable { onNavigate("announcment") },
+                .clickable { onNavigate("add_announcement") },
             contentAlignment = Alignment.Center
         ) {
             Icon(

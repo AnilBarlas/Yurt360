@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yurt360.R
 import com.example.yurt360.common.components.AnnouncementViewModel
-import com.example.yurt360.common.components.CustomBottomNavigationBar
+import com.example.yurt360.common.components.UserBottomNavigationBar
 import com.example.yurt360.common.model.User
 import com.example.yurt360.common.utils.OrangePrimary
 import com.example.yurt360.common.utils.purpleLinear
@@ -47,7 +47,7 @@ fun UserHomeScreen(
 
     Scaffold(
         bottomBar = {
-            CustomBottomNavigationBar(
+            UserBottomNavigationBar(
                 onNavigate = onNavigation
             )
         },

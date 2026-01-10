@@ -1,4 +1,4 @@
-package com.example.yurt360.common.components
+package com.example.yurt360.user.mainScreen
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -16,15 +16,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.yurt360.R
 import androidx.compose.ui.graphics.painter.Painter
+import com.example.yurt360.common.components.UserBottomNavigationBar
 
 @Composable
-fun AboutUsScreen(
+fun UserAboutUsScreen(
     onMenuClick: () -> Unit,
     onNavigate: (String) -> Unit
 ) {
     Scaffold(
         bottomBar = {
-            CustomBottomNavigationBar(onNavigate = onNavigate)
+            UserBottomNavigationBar(onNavigate = onNavigate)
         },
         containerColor = Color.White
     ) { innerPadding ->
