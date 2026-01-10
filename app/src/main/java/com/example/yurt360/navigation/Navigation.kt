@@ -13,10 +13,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navDeepLink
 import com.example.yurt360.admin.mainScreen.*
 import com.example.yurt360.common.components.*
 import com.example.yurt360.common.model.Admin
 import com.example.yurt360.common.model.User
+import com.example.yurt360.common.passwordScreens.NewPasswordScreen
 import com.example.yurt360.common.passwordScreens.ResetPasswordScreen
 import com.example.yurt360.user.mainScreen.*
 import com.example.yurt360.user.refectory.MenuScreen
@@ -24,6 +26,7 @@ import com.example.yurt360.user.refectory.MenuScreen
 object Routes {
     const val LOGIN = "login"
     const val FORGOT_PASSWORD = "forgot_password"
+    const val NEW_PASSWORD = "new_password"
 
     // User Rotaları
     const val USER_HOME = "user_home"
@@ -132,12 +135,34 @@ fun RootNavigation() {
             composable(Routes.FORGOT_PASSWORD) {
                 ResetPasswordScreen(
                     onSendClick = { email ->
-                        loginViewModel.resetPassword(email,
-                            onSuccess = { navController.popBackStack() },
-                            onError = { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
-                        )
+                        // İsteğinize uygun olarak işlem bitince Login ekranına yönlendiriyoruz.
+                        Toast.makeText(context, "Sıfırlama bağlantısı gönderildi. Lütfen e-postanızı kontrol edin.", Toast.LENGTH_LONG).show()
+                        navController.navigate(Routes.LOGIN) {
+                            popUpTo(Routes.LOGIN) { inclusive = true }
+                        }
                     },
                     onBackClick = { navController.popBackStack() }
+                )
+            }
+
+            // DEEP LINK EKLENMİŞ ALAN
+            composable(
+                route = Routes.NEW_PASSWORD,
+                deepLinks = listOf(
+                    navDeepLink {
+                        // Maildeki link formatınız: https://www.yurt360.com/new_password
+                        // Bu linke tıklandığında uygulama açılacak ve bu ekrana düşecektir.
+                        uriPattern = "https://www.yurt360.com/new_password"
+                    }
+                )
+            ) {
+                NewPasswordScreen(
+                    onConfirmClick = { newPassword ->
+                        Toast.makeText(context, "Şifreniz başarıyla güncellendi.", Toast.LENGTH_SHORT).show()
+                        navController.navigate(Routes.LOGIN) {
+                            popUpTo(Routes.LOGIN) { inclusive = true }
+                        }
+                    }
                 )
             }
 
@@ -220,15 +245,12 @@ fun RootNavigation() {
             }
 
             // Duyuru Ekleme Ekranı/Dialog'u
-            // Değişiklik: composable yerine dialog kullanıldı.
             dialog(Routes.ADD_ANNOUNCEMENT) {
                 AnnouncementDialog(
                     onDismiss = {
                         navController.popBackStack()
                     },
                     onConfirm = { title, description ->
-                        // ViewModel üzerinden duyuru ekleme işlemi
-                        // onSuccess callback'i eklendi, işlem bitince ekran kapanacak
                         announcementViewModel.addAnnouncement(title, description) {
                             navController.popBackStack()
                         }

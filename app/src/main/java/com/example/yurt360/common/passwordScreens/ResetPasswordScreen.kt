@@ -91,7 +91,7 @@ fun ResetPasswordScreen(
                     text = "Parolamı Unuttum",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.Gray, // TextGray yerine Color.Gray veya tanımlı rengin
+                    color = Color.Black,
                     letterSpacing = 1.sp
                 )
 

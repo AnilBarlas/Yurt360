@@ -45,18 +45,18 @@ fun AnnouncementDialog(
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false) // Ekran genişliğini kullanabilmek için
+        properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth(0.9f) // Ekranın %90'ı kadar genişle
+                .fillMaxWidth(0.9f)
                 .clip(RoundedCornerShape(50.dp))
                 .background(backgroundColor)
-                .padding(16.dp), // Yüksekliği azaltmak için padding düşürüldü (20->16)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("Duyuru Yayınla", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(10.dp)) // Boşluk azaltıldı (16->10)
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Başlık Alanı
             TextField(
@@ -76,7 +76,7 @@ fun AnnouncementDialog(
                 ),
                 shape = RoundedCornerShape(20.dp)
             )
-            Spacer(modifier = Modifier.height(10.dp)) // Boşluk azaltıldı (16->10)
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Açıklama Alanı
             TextField(
@@ -85,7 +85,7 @@ fun AnnouncementDialog(
                 label = { Text("Duyuru Detayı") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp) // Yükseklik azaltıldı (120->100)
+                    .height(100.dp)
                     .shadow(elevation = 6.dp, shape = RoundedCornerShape(20.dp))
                     .background(Color.White, RoundedCornerShape(20.dp)),
                 colors = TextFieldDefaults.colors(
@@ -98,7 +98,7 @@ fun AnnouncementDialog(
                 shape = RoundedCornerShape(20.dp)
             )
 
-            Spacer(modifier = Modifier.height(10.dp)) // Boşluk azaltıldı (16->10)
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Gönder Butonu
             IconButton(
