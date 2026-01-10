@@ -15,12 +15,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.yurt360.common.model.User
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 
 @Composable
 fun SideMenuView(
@@ -165,39 +174,72 @@ fun MenuRowItem(
     onClick: () -> Unit
 ) {
     val shape = if (isAlternatingLeft) {
-        RoundedCornerShape(
-            topStart = 0.dp,
-            topEnd = 100.dp,
-            bottomEnd = 0.dp,
-            bottomStart = 0.dp
-        )
+        RoundedCornerShape(topStart = 0.dp, topEnd = 100.dp, bottomEnd = 0.dp, bottomStart = 0.dp)
     } else {
-        RoundedCornerShape(
-            topStart = 100.dp,
-            topEnd = 0.dp,
-            bottomEnd = 0.dp,
-            bottomStart = 0.dp
-        )
+        RoundedCornerShape(topStart = 100.dp, topEnd = 0.dp, bottomEnd = 0.dp, bottomStart = 0.dp)
     }
 
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(150.dp)
-            .clickable { onClick() },
+            .height(130.dp)
+            .clickable { onClick() }
+            .drawBehind {
+
+                val shadowColor = Color.Black.copy(alpha = 0.15f).toArgb()
+                val transparentColor = Color.Transparent.toArgb()
+
+                val paint = Paint().asFrameworkPaint().apply {
+                    color = transparentColor
+                    setShadowLayer(25f, 0f, -10f, shadowColor)
+                }
+
+                drawIntoCanvas { canvas ->
+                    val path = Path().apply {
+                        if (isAlternatingLeft) {
+                            moveTo(0f, size.height)
+                            lineTo(0f, 0f)
+                            lineTo(size.width - 100.dp.toPx(), 0f)
+                            // Sağ üst kavis
+                            arcTo(
+                                rect = androidx.compose.ui.geometry.Rect(
+                                    size.width - 200.dp.toPx(), 0f, size.width, 200.dp.toPx()
+                                ),
+                                startAngleDegrees = 270f,
+                                sweepAngleDegrees = 90f,
+                                forceMoveTo = false
+                            )
+                        } else {
+                            moveTo(size.width, size.height)
+                            lineTo(size.width, 0f)
+                            lineTo(100.dp.toPx(), 0f)
+                            // Sol üst kavis
+                            arcTo(
+                                rect = androidx.compose.ui.geometry.Rect(
+                                    0f, 0f, 200.dp.toPx(), 200.dp.toPx()
+                                ),
+                                startAngleDegrees = 270f,
+                                sweepAngleDegrees = -90f,
+                                forceMoveTo = false
+                            )
+                        }
+                    }
+                    canvas.nativeCanvas.drawPath(path.asAndroidPath(), paint)
+                }
+            },
         shape = shape,
         color = Color.White,
-        shadowElevation = 2.dp
+        shadowElevation = 0.dp
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 30.dp),
+                .padding(horizontal = 40.dp),
             contentAlignment = if (isAlternatingLeft) Alignment.CenterStart else Alignment.CenterEnd
         ) {
             Text(
                 text = title,
-                fontSize = 24.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color.Black
             )

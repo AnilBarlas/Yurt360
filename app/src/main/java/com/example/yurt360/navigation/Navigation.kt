@@ -63,7 +63,7 @@ fun RootNavigation() {
 
     LaunchedEffect(Unit) {
         loginViewModel.checkExistingSession()
-        }
+    }
 
     if (!isSessionChecked) {
         return
@@ -267,7 +267,6 @@ fun RootNavigation() {
 }
 
 fun handleNavigation(navController: NavController, route: String, isAdmin: Boolean) {
-
     val targetRoute = when (route) {
         "home" -> if (isAdmin) Routes.ADMIN_HOME else Routes.HOME
         "profile" -> if (isAdmin) Routes.ADMIN_PROFILE else Routes.PROFILE
@@ -276,23 +275,20 @@ fun handleNavigation(navController: NavController, route: String, isAdmin: Boole
         "about_us" -> Routes.ABOUT_US
         "update_password" -> Routes.UPDATE_PASSWORD
         "menu" -> Routes.MENU
-        else -> route // study_area, laundry vb.
+        else -> route
     }
 
     val currentRoute = navController.currentBackStackEntry?.destination?.route
-    if (targetRoute == null || currentRoute == targetRoute) {
-        return
-    }
+    if (targetRoute == currentRoute) return
 
     navController.navigate(targetRoute) {
         if (route == "home" || route == "profile" || route == "calendar") {
             popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
+                saveState = false
             }
         }
-
         launchSingleTop = true
-        restoreState = true
+        restoreState = false
     }
 }
 

@@ -42,13 +42,10 @@ fun MenuScreen(
     Scaffold(
         containerColor = BackgroundColor,
         bottomBar = {
-            // HATA DÜZELTİLDİ: Dosya sonundaki kopya kod silindi, import edilen kullanılıyor.
             CustomBottomNavigationBar(onNavigate = onNavigate)
         }
     ) { innerPadding ->
 
-        // HATA DÜZELTİLDİ: Modifier.padding(innerPadding) hatası giderildi.
-        // Padding değerleri manuel hesaplanarak verildi.
         Column(modifier = Modifier
             .fillMaxSize()
             .padding(
@@ -58,14 +55,16 @@ fun MenuScreen(
         ) {
 
             // Geri Butonu
-            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Geri",
-                    modifier = Modifier.size(32.dp).clickable { onNavigate("home") },
-                    tint = Color.Black
-                )
-            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Geri",
+                modifier = Modifier
+                    .size(32.dp)
+                    .clickable {
+                        onNavigate("home")
+                    },
+                tint = Color.Black
+            )
 
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -76,7 +75,6 @@ fun MenuScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 20.dp)
                 ) {
-                    // 1. Üstteki Büyük Kart (Seçili Menü)
                     item {
                         selectedMenu?.let { menu ->
                             MenuCardItem(menu = menu)

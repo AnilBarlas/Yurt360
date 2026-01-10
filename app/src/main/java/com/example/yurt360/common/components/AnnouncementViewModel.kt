@@ -93,6 +93,6 @@ class AnnouncementViewModel : ViewModel() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
 
-        notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
+      //  notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
     }
 }
