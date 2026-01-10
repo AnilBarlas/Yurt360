@@ -3,22 +3,19 @@ package com.example.yurt360.common.components
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.yurt360.R
-import androidx.compose.material.icons.filled.Print
-import androidx.compose.material.icons.filled.Public
+import androidx.compose.ui.graphics.painter.Painter
 
 @Composable
 fun AboutUsScreen(
@@ -34,32 +31,37 @@ fun AboutUsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-            // verticalScroll kaldırıldı: Ekran sabit kalır.
+                .padding(bottom = innerPadding.calculateBottomPadding())
+                .verticalScroll(rememberScrollState())
         ) {
-            // --- ÜST GÖRSEL VE BAŞLIK ---
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(260.dp)
+                    .height(280.dp)
+                    .background(Color.White)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.loginscreen),
+                    painter = painterResource(id = R.drawable.profilebackground),
                     contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            translationY = 80f
+                        }
                 )
 
-                // Menü İkonu
                 IconButton(
                     onClick = onMenuClick,
-                    modifier = Modifier.padding(top = 40.dp, start = 10.dp)
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .padding(start = 10.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Menu,
+                        painter = painterResource(id = R.drawable.sidebar),
                         contentDescription = "Menu",
-                        tint = Color.White,
-                        modifier = Modifier.size(32.dp)
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(36.dp)
                     )
                 }
 
@@ -74,7 +76,6 @@ fun AboutUsScreen(
                 )
             }
 
-            // --- NEDİR KARTI (Görselin üzerine binen kavisli yapı) ---
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -100,18 +101,19 @@ fun AboutUsScreen(
                 }
             }
 
-            // --- İLETİŞİM BÖLÜMÜ ---
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 500.dp)
-                    .offset(y = -10.dp),
+                    .fillMaxHeight()
+                    .offset(y = (-10).dp),
                 shape = RoundedCornerShape(topStart = 80.dp, topEnd = 80.dp),
                 color = Color.White,
                 border = BorderStroke(0.5.dp, Color.LightGray.copy(alpha = 0.3f))
             ) {
                 Column(
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 24.dp, bottom = 10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
@@ -123,10 +125,12 @@ fun AboutUsScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    ContactInfoRow(Icons.Default.Public, "Web Sitesi", "yeditepe.edu.tr")
-                    ContactInfoRow(Icons.Default.Phone, "Telefon", "(0216) 578 00 00")
-                    ContactInfoRow(Icons.Default.Print, "Faks", "(0216) 578 02 99")
-                    ContactInfoRow(Icons.Default.Email, "E-Posta", "info@yeditepe.edu.tr")
+                    ContactInfoRow(painterResource(R.drawable.world), "Web Sitesi", "yeditepe.edu.tr")
+                    ContactInfoRow(painterResource(R.drawable.phone), "Telefon", "(0216) 578 00 00")
+                    ContactInfoRow(painterResource(R.drawable.fax), "Faks", "(0216) 578 02 99")
+                    ContactInfoRow(painterResource(R.drawable.letter), "E-Posta", "info@yeditepe.edu.tr")
+
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
             }
         }
@@ -134,18 +138,18 @@ fun AboutUsScreen(
 }
 
 @Composable
-fun ContactInfoRow(icon: ImageVector, label: String, value: String) {
+fun ContactInfoRow(icon: Painter, label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp), // Dikey boşluk minimal tutuldu
+            .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center // Tüm satırı yatayda ortalar
+        horizontalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = icon,
+            painter = icon,
             contentDescription = null,
-            modifier = Modifier.size(22.dp), // İkon biraz daha küçültüldü
+            modifier = Modifier.size(22.dp),
             tint = Color.Black
         )
 
@@ -153,11 +157,10 @@ fun ContactInfoRow(icon: ImageVector, label: String, value: String) {
 
         Surface(
             modifier = Modifier
-                .width(220.dp) // Genişlik 220dp'ye sabitlenerek kısaltıldı
-                .height(48.dp), // Yükseklik daha kompakt hale getirildi
+                .width(220.dp)
+                .height(48.dp),
             shape = RoundedCornerShape(24.dp),
-            color = Color(0xFFF7F7F7),
-            shadowElevation = 0.dp
+            color = Color(0xFFF7F7F7)
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -174,7 +177,7 @@ fun ContactInfoRow(icon: ImageVector, label: String, value: String) {
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color.Black,
-                    maxLines = 1 // Taşmaları önlemek için tek satır
+                    maxLines = 1
                 )
             }
         }

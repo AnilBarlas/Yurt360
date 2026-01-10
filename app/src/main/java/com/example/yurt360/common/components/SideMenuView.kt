@@ -166,39 +166,39 @@ fun MenuRowItem(
 ) {
     val shape = if (isAlternatingLeft) {
         RoundedCornerShape(
-            topStart = 12.dp,
+            topStart = 0.dp,
             topEnd = 100.dp,
-            bottomEnd = 12.dp,
-            bottomStart = 12.dp
+            bottomEnd = 0.dp,
+            bottomStart = 0.dp
         )
     } else {
         RoundedCornerShape(
             topStart = 100.dp,
-            topEnd = 12.dp,
-            bottomEnd = 12.dp,
-            bottomStart = 12.dp
+            topEnd = 0.dp,
+            bottomEnd = 0.dp,
+            bottomStart = 0.dp
         )
     }
 
-    Card(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(150.dp) // YÜKSEKLİK
+            .height(150.dp)
             .clickable { onClick() },
         shape = shape,
-        //elevation = CardDefaults.cardElevation(defaultElevation = 8.dp), //Gölge
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        color = Color.White,
+        shadowElevation = 2.dp
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 32.dp),
+                .padding(horizontal = 30.dp),
             contentAlignment = if (isAlternatingLeft) Alignment.CenterStart else Alignment.CenterEnd
         ) {
             Text(
                 text = title,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Normal,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Medium,
                 color = Color.Black
             )
         }

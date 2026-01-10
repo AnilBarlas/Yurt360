@@ -6,23 +6,18 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -33,9 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.yurt360.R
+import com.example.yurt360.admin.mainScreen.ProfilePhotoSection
 import com.example.yurt360.common.components.CustomBottomNavigationBar
 import com.example.yurt360.common.model.User
-import com.example.yurt360.common.utils.OrangePrimary
 
 val InputBackground = Color(0xFFFAFAFA)
 
@@ -45,127 +40,115 @@ fun ProfileScreen(
     onNavigate: (String) -> Unit,
     onMenuClick: () -> Unit
 ) {
-    var expandedCard by remember { mutableStateOf<String?>(null) }
+    var isContactExpanded by remember { mutableStateOf(false) }
 
-    // Kartlar arası boşluk animasyonu
     val personalInfoOffset by animateDpAsState(
-        targetValue = if (expandedCard == "contact") (-20).dp else (-60).dp,
+        targetValue = if (isContactExpanded) (-130).dp else (-100).dp,
         label = "personalInfoOffset"
     )
 
-    // Fotoğrafın bittiği yer hesabı
-    val contentTopPadding = 240.dp
+    val contentTopPadding = 260.dp
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // 1. KATMAN: ARKA PLAN
+        // 1. Arka Plan Resmi
         Image(
-            painter = painterResource(id = R.drawable.ic_launcher_background),
+            painter = painterResource(id = R.drawable.profilebackground),
             contentDescription = "Background",
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 15.dp)
         )
 
-        // 2. KATMAN: PROFİL FOTOĞRAFI
+        // 2. Profil Fotoğrafı
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 80.dp)
+                .padding(top = 110.dp)
                 .zIndex(1f)
         ) {
             ProfilePhotoSection(user.image_url)
         }
 
-        // 3. KATMAN: KARTLAR
+        // 3. Ana İçerik (Kartlar)
         Column(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
+                .align(Alignment.TopCenter)
                 .fillMaxSize()
                 .padding(top = contentTopPadding)
-                .verticalScroll(rememberScrollState(), enabled = false)
-                .padding(bottom = 10.dp),
+                .padding(bottom = 0.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Bottom
+            verticalArrangement = Arrangement.Top
         ) {
 
-            // --- PAROLA GÜNCELLE BUTONU ---
-            Button(
-                onClick = { onNavigate("update_password") },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFF0E0)),
-                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp, bottomStart = 0.dp, bottomEnd = 0.dp),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
-                modifier = Modifier
-                    .height(32.dp)
-                    .zIndex(0f)
-            ) {
-                Text(
-                    text = "Parola Güncelle",
-                    color = OrangePrimary,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(0.dp))
-
-            // --- İLETİŞİM BİLGİLERİ KARTI ---
+            // --- İLETİŞİM BİLGİLERİ (Üst Kart) ---
             ProfileSectionCard(
                 title = "İletişim Bilgileri",
-                isExpanded = expandedCard == "contact",
-                modifier = Modifier.zIndex(0f),
-                contentPaddingBottom = 60.dp,
+                isExpanded = isContactExpanded,
+                modifier = Modifier
+                    .zIndex(0f)
+                    .shadow(
+                        elevation = 10.dp,
+                        shape = RoundedCornerShape(topStart = 85.dp, topEnd = 85.dp),
+                        spotColor = Color.Black,
+                        ambientColor = Color.Black
+                    ),
+                contentPaddingBottom = if (isContactExpanded) 150.dp else 100.dp,
+                customShape = RoundedCornerShape(topStart = 85.dp, topEnd = 85.dp),
                 onHeaderClick = {
-                    expandedCard = if (expandedCard == "contact") null else "contact"
+                    isContactExpanded = !isContactExpanded
                 }
             ) {
                 ContactInfoContent(user)
             }
 
-            // --- KİŞİSEL BİLGİLER KARTI ---
-            ProfileSectionCard(
-                title = "Kişisel Bilgiler",
-                isExpanded = expandedCard == "personal",
+            // --- KİŞİSEL BİLGİLER (Alt Kart) ---
+            Box(
                 modifier = Modifier
-                    .offset(y = personalInfoOffset)
+                    .weight(1f)
                     .zIndex(1f)
-                    .weight(1f, fill = false)
-                    .shadow(
-                        elevation = 8.dp,
-                        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
-                        spotColor = Color.Black,
-                        ambientColor = Color.Black
-                    )
-                    .border(
-                        width = 0.5.dp,
-                        color = Color.Black.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp)
-                    ),
-                contentPaddingBottom = 130.dp,
-                onHeaderClick = {
-                    expandedCard = if (expandedCard == "personal") null else "personal"
-                }
             ) {
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState())
+                ProfileSectionCard(
+                    title = "Kişisel Bilgiler",
+                    isExpanded = true,
+                    modifier = Modifier
+                        .offset(y = personalInfoOffset)
+                        .fillMaxWidth()
+                        .height(1500.dp)
+                        .shadow(elevation = 8.dp, shape = RoundedCornerShape(topStart = 85.dp, topEnd = 85.dp))
+                        .border(
+                            0.5.dp,
+                            Color.Black.copy(alpha = 0.1f),
+                            RoundedCornerShape(topStart = 85.dp, topEnd = 85.dp)
+                        ),
+                    contentPaddingBottom = 0.dp,
+                    customShape = RoundedCornerShape(topStart = 85.dp, topEnd = 85.dp),
+                    onHeaderClick = {}
                 ) {
-                    PersonalInfoContent(user)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        PersonalInfoContent(user)
+                        Spacer(modifier = Modifier.height(250.dp))
+                    }
                 }
             }
         }
 
-        // 4. KATMAN: SOL ÜST MENÜ İKONU
         Icon(
-            imageVector = Icons.Default.Menu,
+            painter = painterResource(id = R.drawable.sidebar),
             contentDescription = "Menu",
-            tint = Color.White,
+            tint = Color.Unspecified,
             modifier = Modifier
                 .padding(top = 50.dp, start = 20.dp)
                 .size(32.dp)
                 .align(Alignment.TopStart)
-                .clickable { onMenuClick() } // Callback buraya bağlandı
+                .clickable { onMenuClick() }
         )
 
-        // 5. KATMAN: BOTTOM BAR
         Box(
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
@@ -174,22 +157,7 @@ fun ProfileScreen(
     }
 }
 
-@Composable
-fun ProfilePhotoSection(imageUrl: String) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(130.dp)
-            .clip(CircleShape)
-            .background(Color.White)
-            .padding(4.dp)
-            .clip(CircleShape)
-            .background(Color.White)
-            .shadow(elevation = 10.dp, shape = CircleShape)
-    ) {
-        Text(text = "fotoğrafı", color = Color.Black, fontWeight = FontWeight.Bold)
-    }
-}
+// --- YARDIMCI BİLEŞENLER ---
 
 @Composable
 fun ProfileSectionCard(
@@ -197,12 +165,13 @@ fun ProfileSectionCard(
     isExpanded: Boolean,
     modifier: Modifier = Modifier,
     contentPaddingBottom: Dp = 32.dp,
+    customShape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(topStart = 85.dp, topEnd = 85.dp),
     onHeaderClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp),
+        shape = customShape,
         color = Color.White,
         shadowElevation = 0.dp
     ) {
@@ -267,27 +236,24 @@ fun ProfileInfoRow(label: String, value: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically // Yazı ve kutuyu dikeyde ortalar
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        // Sol taraftaki Başlık (Label)
         Text(
             text = label,
-            color = Color.Gray,
+            color = Color.Black,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             modifier = Modifier
-                .width(100.dp) // Tüm başlıkların aynı hizada durması için sabit genişlik
+                .width(100.dp)
                 .padding(end = 8.dp)
         )
-
-        // Sağ taraftaki Değer Kutusu (TextField görünümü)
         Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = InputBackground,
-            border = BorderStroke(1.dp, Color(0xFFE0E0E0)),
             modifier = Modifier
-                .weight(1f) // Kalan boşluğu doldurur ama ekranın tamamını kaplamaz
-                .heightIn(min = 45.dp) // Kutunun yüksekliğini sabitler
+                .weight(1f)
+                .heightIn(min = 50.dp)
+                .shadow(4.dp, RoundedCornerShape(20.dp)),
+            shape = RoundedCornerShape(20.dp),
+            color = Color.White
         ) {
             Box(
                 contentAlignment = Alignment.CenterStart,

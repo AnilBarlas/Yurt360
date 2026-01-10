@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -20,7 +21,6 @@ import com.example.yurt360.common.model.User
 import com.example.yurt360.common.passwordScreens.NewPasswordScreen
 import com.example.yurt360.common.passwordScreens.PasswordUpdateScreen
 import com.example.yurt360.common.passwordScreens.ResetPasswordScreen
-import com.example.yurt360.user.mainScreen.AnnouncementViewModel
 import com.example.yurt360.user.mainScreen.ProfileScreen
 import com.example.yurt360.user.mainScreen.UserHomeScreen
 import com.example.yurt360.user.refectory.MenuScreen
@@ -51,44 +51,41 @@ fun RootNavigation() {
     val navController = rememberNavController()
     val context = LocalContext.current
 
-    // --- STATE YÖNETİMİ ---
     var currentUser by remember { mutableStateOf<User?>(null) }
     var currentAdmin by remember { mutableStateOf<Admin?>(null) }
-
     var isMenuOpen by remember { mutableStateOf(false) }
-
-    // --- VIEWMODEL ---
     val loginViewModel: LoginViewModel = viewModel()
+
+    val isSessionChecked by loginViewModel.isSessionChecked.collectAsState()
+    val loginState by loginViewModel.loginState.collectAsState()
+
     val announcementViewModel: AnnouncementViewModel = viewModel()
 
     LaunchedEffect(Unit) {
-        val activity = context as? Activity
-        val intent = activity?.intent
-        val uri = intent?.data
-
-        // URL içinde 'type=recovery' var mı diye bakıyoruz
-        if (uri != null && uri.toString().contains("type=recovery")) {
-            navController.navigate(Routes.NEW_PASSWORD) {
-                launchSingleTop = true
-            }
+        loginViewModel.checkExistingSession()
         }
+
+    if (!isSessionChecked) {
+        return
+    }
+
+    val startRoute = when {
+        currentAdmin != null -> Routes.ADMIN_HOME
+        currentUser != null -> Routes.HOME
+        else -> Routes.LOGIN
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-
         NavHost(
             navController = navController,
-            startDestination = Routes.LOGIN,
+            startDestination = startRoute,
             modifier = Modifier.fillMaxSize()
         ) {
-
-            // 1. LOGIN EKRANI
+            // login
             composable(Routes.LOGIN) {
                 LoginScreen(
                     viewModel = loginViewModel,
-                    onForgotPasswordClick = {
-                        navController.navigate(Routes.FORGOT_PASSWORD)
-                    },
+                    onForgotPasswordClick = { navController.navigate(Routes.FORGOT_PASSWORD) },
                     onLoginSuccess = { topUser ->
                         when (topUser) {
                             is Admin -> {
@@ -108,41 +105,30 @@ fun RootNavigation() {
                 )
             }
 
-            // 2. PAROLAMI UNUTTUM EKRANI
             composable(Routes.FORGOT_PASSWORD) {
                 ResetPasswordScreen(
                     onSendClick = { email ->
                         loginViewModel.resetPassword(
                             email = email,
                             onSuccess = {
-                                Toast.makeText(
-                                    context,
-                                    "Sıfırlama bağlantısı gönderildi!",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                                Toast.makeText(context, "Sıfırlama bağlantısı gönderildi!", Toast.LENGTH_LONG).show()
                                 navController.popBackStack()
                             },
-                            onError = { msg ->
-                                Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
-                            }
+                            onError = { msg -> Toast.makeText(context, msg, Toast.LENGTH_LONG).show() }
                         )
                     },
-                    onBackClick = {
-                        navController.popBackStack()
-                    }
+                    onBackClick = { navController.popBackStack() }
                 )
             }
 
-            // USER EKRANLARI
+            // User
             composable(Routes.HOME) {
                 currentUser?.let { user ->
                     UserHomeScreen(
                         user = user,
                         viewModel = announcementViewModel,
                         onMenuClick = { isMenuOpen = true },
-                        onNavigation = { route ->
-                            handleNavigation(navController, route, isAdmin = false)
-                        }
+                        onNavigation = { route -> handleNavigation(navController, route, isAdmin = false) }
                     )
                 } ?: NavigateToLogin(navController)
             }
@@ -152,23 +138,19 @@ fun RootNavigation() {
                     ProfileScreen(
                         user = user,
                         onMenuClick = { isMenuOpen = true },
-                        onNavigate = { route ->
-                            handleNavigation(navController, route, isAdmin = false)
-                        }
+                        onNavigate = { route -> handleNavigation(navController, route, isAdmin = false) }
                     )
                 } ?: NavigateToLogin(navController)
             }
 
-            // ADMIN EKRANLARI
+            // Admin
             composable(Routes.ADMIN_HOME) {
                 currentAdmin?.let { admin ->
                     AdminHomeScreen(
                         admin = admin,
                         viewModel = announcementViewModel,
                         onMenuClick = { isMenuOpen = true },
-                        onNavigation = { route ->
-                            handleNavigation(navController, route, isAdmin = true)
-                        }
+                        onNavigation = { route -> handleNavigation(navController, route, isAdmin = true) }
                     )
                 } ?: NavigateToLogin(navController)
             }
@@ -178,14 +160,12 @@ fun RootNavigation() {
                     AdminProfileScreen(
                         user = admin,
                         onMenuClick = { isMenuOpen = true },
-                        onNavigate = { route ->
-                            handleNavigation(navController, route, isAdmin = true)
-                        }
+                        onNavigate = { route -> handleNavigation(navController, route, isAdmin = true) }
                     )
                 } ?: NavigateToLogin(navController)
             }
 
-            // ORTAK EKRANLAR
+            // Ortak
             composable(Routes.CALENDAR) {
                 CalendarScreen(
                     onNavigate = { route ->
@@ -196,7 +176,15 @@ fun RootNavigation() {
             }
 
             composable(Routes.SETTINGS) {
-                SettingsScreen(onNavigateBack = { navController.popBackStack() })
+                val locationInfo = currentUser?.location ?: currentAdmin?.let { "Yönetim Paneli" } ?: ""
+                SettingsScreen(
+                    userLocation = locationInfo,
+                    onMenuClick = { isMenuOpen = true },
+                    onNavigate = { route ->
+                        val isAdmin = currentAdmin != null
+                        handleNavigation(navController, route, isAdmin)
+                    }
+                )
             }
 
             composable(Routes.ABOUT_US) {
@@ -219,9 +207,6 @@ fun RootNavigation() {
                     onNavigate = { route ->
                         val isAdmin = currentAdmin != null
                         handleNavigation(navController, route, isAdmin)
-                    },
-                    onUpdatePassword = { newPass, callback ->
-                        loginViewModel.updatePassword(newPass, { callback(null) }, { callback(it) })
                     }
                 )
             }
@@ -246,27 +231,10 @@ fun RootNavigation() {
                     }
                 )
             }
-
-
         }
 
-
         val menuUser = currentUser ?: currentAdmin?.let { admin ->
-            User(
-                id = admin.id,
-                name = admin.name,
-                surname = admin.surname,
-                email = admin.email,
-                phone = "",
-                tc = "",
-                gender = "",
-                bloodType = "",
-                birthDate = "",
-                address = "",
-                location = "",
-                roomNo = "",
-                image_url = ""
-            )
+            User(id = admin.id, name = admin.name, surname = admin.surname, email = admin.email, phone = "", tc = "", gender = "", bloodType = "", birthDate = "", address = "", location = "", roomNo = "", image_url = "")
         }
 
         SideMenuView(
@@ -276,16 +244,14 @@ fun RootNavigation() {
             onNavigate = { route ->
                 isMenuOpen = false
                 val isAdmin = currentAdmin != null
-                if (route == "profile") {
-                    if (isAdmin) navController.navigate(Routes.ADMIN_PROFILE)
-                    else navController.navigate(Routes.PROFILE)
-                } else if (route == "settings") {
-                    navController.navigate(Routes.SETTINGS)
-                } else if (route == "about_us") {
-                    navController.navigate(Routes.ABOUT_US)
-                } else if (route == "update_password") {
-                    navController.navigate(Routes.UPDATE_PASSWORD)
+                val target = when(route) {
+                    "profile" -> "profile"
+                    "about_us" -> Routes.ABOUT_US
+                    "settings" -> Routes.SETTINGS
+                    "update_password" -> Routes.UPDATE_PASSWORD
+                    else -> route
                 }
+                handleNavigation(navController, target, isAdmin)
             },
             onLogout = {
                 isMenuOpen = false
@@ -301,6 +267,7 @@ fun RootNavigation() {
 }
 
 fun handleNavigation(navController: NavController, route: String, isAdmin: Boolean) {
+
     val targetRoute = when (route) {
         "home" -> if (isAdmin) Routes.ADMIN_HOME else Routes.HOME
         "profile" -> if (isAdmin) Routes.ADMIN_PROFILE else Routes.PROFILE
@@ -309,17 +276,23 @@ fun handleNavigation(navController: NavController, route: String, isAdmin: Boole
         "about_us" -> Routes.ABOUT_US
         "update_password" -> Routes.UPDATE_PASSWORD
         "menu" -> Routes.MENU
-        else -> route
+        else -> route // study_area, laundry vb.
     }
 
-    if (targetRoute != null) {
-        navController.navigate(targetRoute) {
-            launchSingleTop = true
-            val homeRoute = if (isAdmin) Routes.ADMIN_HOME else Routes.HOME
-            if (targetRoute != homeRoute && targetRoute != Routes.LOGIN) {
-                popUpTo(homeRoute)
+    val currentRoute = navController.currentBackStackEntry?.destination?.route
+    if (targetRoute == null || currentRoute == targetRoute) {
+        return
+    }
+
+    navController.navigate(targetRoute) {
+        if (route == "home" || route == "profile" || route == "calendar") {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
             }
         }
+
+        launchSingleTop = true
+        restoreState = true
     }
 }
 

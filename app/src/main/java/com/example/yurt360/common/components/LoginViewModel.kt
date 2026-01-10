@@ -30,15 +30,39 @@ class LoginViewModel : ViewModel() {
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
+    private val _isSessionChecked = MutableStateFlow(false)
+    val isSessionChecked: StateFlow<Boolean> = _isSessionChecked.asStateFlow()
 
     fun onUsernameChange(newText: String) { _username.value = newText }
     fun onPasswordChange(newText: String) { _password.value = newText }
+
+    fun checkExistingSession() {
+        viewModelScope.launch {
+            try {
+                val supabase = SupabaseClient.client
+                val currentUser = supabase.auth.currentUserOrNull()
+
+                if (currentUser != null) {
+                    val profile = supabase.from("users")
+                        .select { filter { eq("id", currentUser.id) } }
+                        .decodeSingleOrNull<ProfileDto>()
+
+                    if (profile != null) {
+                        _loginState.value = LoginState.Success(profile.toTopUser())
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("SessionError", "Oturum kontrolünde hata: ${e.message}")
+            } finally {
+                _isSessionChecked.value = true
+            }
+        }
+    }
 
     fun clearCredentials() {
         _username.value = ""
         _password.value = ""
         _loginState.value = LoginState.Idle
-
         viewModelScope.launch {
             try {
                 SupabaseClient.client.auth.signOut()

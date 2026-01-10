@@ -1,45 +1,45 @@
-package com.example.yurt360.user.mainScreen
+package com.example.yurt360.common.components
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import androidx.compose.runtime.mutableStateListOf
+import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yurt360.common.model.Announcement
-import com.example.yurt360.data.api.SupabaseClient
-import io.github.jan.supabase.postgrest.from
-import io.github.jan.supabase.postgrest.query.Order
-import io.github.jan.supabase.realtime.PostgresAction
-import io.github.jan.supabase.realtime.channel
-import io.github.jan.supabase.realtime.postgresChangeFlow
-import io.github.jan.supabase.realtime.realtime
+import com.example.yurt360.data.repository.AnnouncementRepository
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-
-
 class AnnouncementViewModel : ViewModel() {
+
+    private val repository = AnnouncementRepository()
     val announcements = mutableStateListOf<Announcement>()
     private var isFirstLoad = true
 
+    private var isObserving = false
 
     fun observeAnnouncements(context: Context) {
-        val supabase = SupabaseClient.client
-        val myChannel = supabase.realtime.channel("announcements")
+        if (isObserving) return
 
+        isObserving = true
 
-        myChannel.postgresChangeFlow<PostgresAction.Insert>(schema = "public") {
-            table = "announcement"
-        }.onEach {
-            fetchLatest(context)
-        }.launchIn(viewModelScope)
+        repository.getAnnouncementStream()
+            .onEach {
+                fetchLatest(context)
+            }
+            .launchIn(viewModelScope)
 
         viewModelScope.launch {
-            myChannel.subscribe()
-            fetchLatest(context)
+            try {
+                repository.subscribeToRealtime()
+                fetchLatest(context)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -47,7 +47,7 @@ class AnnouncementViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val newAnnouncement = Announcement(title = title, description = description)
-                SupabaseClient.client.from("announcement").insert(newAnnouncement)
+                repository.addAnnouncement(newAnnouncement)
                 onSuccess()
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -57,15 +57,11 @@ class AnnouncementViewModel : ViewModel() {
 
     private suspend fun fetchLatest(context: Context) {
         try {
-            val result = SupabaseClient.client.from("announcement").select {
-                order(column = "created_at", order = Order.DESCENDING)
-                limit(3)
-            }.decodeList<Announcement>()
-
+            val result = repository.getLatestAnnouncements()
 
             if (result.isNotEmpty() && !isFirstLoad) {
                 if (announcements.isEmpty() || result[0].id != announcements[0].id) {
-                    sendNotification(context, result[0].title, result[0].description)
+                    sendNotification(context, result[0].title, result[0])
                 }
             }
 
@@ -77,13 +73,26 @@ class AnnouncementViewModel : ViewModel() {
         }
     }
 
-    private fun sendNotification(context: Context, title: String, message: String) {
+    private fun sendNotification(context: Context, title: String, message: Announcement) {
         val channelId = "announcement_notifs"
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, "Yurt Duyuruları", NotificationManager.IMPORTANCE_HIGH)
+            val channel = NotificationChannel(
+                channelId,
+                message.title,
+                NotificationManager.IMPORTANCE_HIGH
+            )
             notificationManager.createNotificationChannel(channel)
         }
+
+        val builder = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle(title)
+            .setContentText(message.description)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+
+        notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
     }
 }

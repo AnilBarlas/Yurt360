@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.window.Dialog
 import com.example.yurt360.R
+import com.example.yurt360.common.components.AnnouncementViewModel
 import com.example.yurt360.common.components.CustomBottomNavigationBar
 import com.example.yurt360.common.model.Admin
-import com.example.yurt360.user.mainScreen.AnnouncementViewModel
 
 // Renk Tanımlar
 val TextDark = Color(0xFF1F1F1F)
