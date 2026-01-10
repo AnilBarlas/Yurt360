@@ -1,4 +1,4 @@
-package com.example.yurt360.common.components
+package com.example.yurt360.user.mainScreen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,11 +18,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.yurt360.common.components.CustomBottomNavigationBar
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.*
 import com.example.yurt360.common.utils.OrangePrimary
-import com.example.yurt360.common.utils.purpleLinear
 
 // Renk Tanımları
 val LightBackground = Color(0xFFF8F9FA)

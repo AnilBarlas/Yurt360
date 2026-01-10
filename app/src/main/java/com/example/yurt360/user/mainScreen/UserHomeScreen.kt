@@ -219,12 +219,12 @@ fun UserHomeScreen(
 
                     Column(modifier = Modifier.matchParentSize()) {
                         Row(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                            Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onNavigation("study_area") })
-                            Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onNavigation("laundry") })
+                            Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onNavigation("user_study_area") })
+                            Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onNavigation("user_laundry") })
                         }
                         Row(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                            Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onNavigation("applications") })
-                            Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onNavigation("menu") })
+                            Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onNavigation("user_applications") })
+                            Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onNavigation("user_menu") })
                         }
                     }
                 }

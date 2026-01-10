@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.text.font.FontWeight
@@ -26,13 +25,12 @@ import androidx.compose.ui.zIndex
 import com.example.yurt360.common.model.User
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asAndroidPath
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 
 @Composable
-fun SideMenuView(
+fun AdminSideMenuView(
     isOpen: Boolean,
     user: User?,
     onClose: () -> Unit,
@@ -40,7 +38,6 @@ fun SideMenuView(
     onLogout: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize().zIndex(10f)) {
-        // Karartılmış Arka Plan
         AnimatedVisibility(
             visible = isOpen,
             enter = fadeIn(),
@@ -125,7 +122,7 @@ fun SideMenuView(
                                 isAlternatingLeft = (index % 2 == 0)
                             ) {
                                 when (item) {
-                                    "Profil" -> onNavigate("profile")
+                                    "Profil" -> onNavigate("admin_profile")
                                     "Hakkımızda" -> onNavigate("about_us")
                                     "Ayarlar" -> onNavigate("settings")
                                 }

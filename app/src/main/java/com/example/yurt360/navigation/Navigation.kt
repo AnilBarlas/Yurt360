@@ -1,6 +1,5 @@
 package com.example.yurt360.navigation
 
-import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,13 +13,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.yurt360.admin.mainScreen.AdminHomeScreen
-import com.example.yurt360.admin.mainScreen.AdminProfileScreen
 import com.example.yurt360.common.components.*
 import com.example.yurt360.common.model.Admin
 import com.example.yurt360.common.model.User
 import com.example.yurt360.common.passwordScreens.NewPasswordScreen
 import com.example.yurt360.common.passwordScreens.PasswordUpdateScreen
 import com.example.yurt360.common.passwordScreens.ResetPasswordScreen
+import com.example.yurt360.user.mainScreen.CalendarScreen
 import com.example.yurt360.user.mainScreen.ProfileScreen
 import com.example.yurt360.user.mainScreen.UserHomeScreen
 import com.example.yurt360.user.refectory.MenuScreen
@@ -242,17 +241,17 @@ fun RootNavigation() {
             isOpen = isMenuOpen,
             user = menuUser,
             onClose = { isMenuOpen = false },
-            onNavigate = { route ->
+            onNavigate = { menuKey ->
                 isMenuOpen = false
                 val isAdmin = currentAdmin != null
-                val target = when(route) {
-                    "profile" -> "profile"
-                    "about_us" -> Routes.ABOUT_US
-                    "settings" -> Routes.SETTINGS
-                    "update_password" -> Routes.UPDATE_PASSWORD
-                    else -> route
+                val route = when(menuKey) {
+                    "Profil" -> "profile"
+                    "Hakkımızda" -> "about_us"
+                    "Ayarlar" -> "settings"
+                    "update_password" -> "update_password"
+                    else -> menuKey
                 }
-                handleNavigation(navController, target, isAdmin)
+                handleNavigation(navController, route, isAdmin)
             },
             onLogout = {
                 isMenuOpen = false
@@ -276,6 +275,7 @@ fun handleNavigation(navController: NavController, route: String, isAdmin: Boole
         "about_us" -> Routes.ABOUT_US
         "update_password" -> Routes.UPDATE_PASSWORD
         "menu" -> Routes.MENU
+        "announcment" -> Routes.ADMIN_HOME // Admin barındaki megafon için (veya ilgili rota)
         else -> route
     }
 
@@ -283,13 +283,14 @@ fun handleNavigation(navController: NavController, route: String, isAdmin: Boole
     if (targetRoute == currentRoute) return
 
     navController.navigate(targetRoute) {
-        if (route == "home" || route == "profile" || route == "calendar") {
+        if (targetRoute == Routes.HOME || targetRoute == Routes.ADMIN_HOME ||
+            targetRoute == Routes.PROFILE || targetRoute == Routes.ADMIN_PROFILE) {
             popUpTo(navController.graph.findStartDestination().id) {
-                saveState = false
+                saveState = true
             }
         }
         launchSingleTop = true
-        restoreState = false
+        restoreState = true
     }
 }
 

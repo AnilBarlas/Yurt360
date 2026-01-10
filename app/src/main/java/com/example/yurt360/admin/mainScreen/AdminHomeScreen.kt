@@ -2,6 +2,7 @@ package com.example.yurt360.admin.mainScreen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -59,10 +60,9 @@ fun AdminHomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 20.dp), // Ana ekran kenar boşluğu
+                .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            // Sidebar İkonu
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -81,11 +81,9 @@ fun AdminHomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // İçerik Kolonu (UserHomeScreen ile aynı iç padding: 20.dp)
             Column(
                 modifier = Modifier.padding(horizontal = 20.dp),
             ) {
-                // Profil Bölümü
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -129,8 +127,8 @@ fun AdminHomeScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(30.dp))
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(45.dp))
                         .background(purpleLinear)
                 ) {
                     Image(
@@ -138,7 +136,9 @@ fun AdminHomeScreen(
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         alpha = 0.5f,
-                        modifier = Modifier.matchParentSize()
+                        modifier = Modifier
+                            .matchParentSize()
+                            .scale(1.1f)
                     )
 
                     Row(
@@ -154,13 +154,14 @@ fun AdminHomeScreen(
                         ) {
                             Box(
                                 modifier = Modifier
+                                    .offset(y = (-15).dp)
                                     .background(Color.White.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
-                                    .padding(horizontal = 28.dp, vertical = 4.dp)
+                                    .padding(horizontal = 28.dp, vertical = 0.dp)
                             ) {
                                 Text("Duyurular", color = Color.White, fontSize = 20.sp)
                             }
 
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(15.dp))
 
                             Text(
                                 text = latestAnnouncement?.title ?: "Duyuru Yok",
@@ -183,29 +184,39 @@ fun AdminHomeScreen(
                             )
                         }
 
-                        // Megafon ve Duyuru Ekle Butonu
-                        Box(contentAlignment = Alignment.BottomCenter) {
+                        // Megafon ve Duyuru Ekle Butonu Konteynırı
+                        Box(
+                            modifier = Modifier.fillMaxHeight(),
+                            contentAlignment = Alignment.BottomEnd // Sağ alt köşeye hizalar
+                        ) {
+                            // Megafon Görseli
                             Image(
                                 painter = painterResource(id = R.drawable.megafon),
                                 contentDescription = null,
                                 colorFilter = ColorFilter.tint(Color.White),
                                 contentScale = ContentScale.Fit,
                                 modifier = Modifier
-                                    .size(85.dp)
-                                    .offset(y = 15.dp)
+                                    .size(75.dp)
+                                    .offset(x = (-10).dp, y = (-15).dp)
                             )
-                            // Admin Özel Buton
+
+                            // Admin Özel Buton (İnce, Uzun ve Beyaz Çerçeveli)
                             Box(
                                 modifier = Modifier
-                                    .offset(y = 25.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(Color(0xFFFF5722)) // Turuncu buton
+                                    .offset(x = -5.dp, y = 15.dp) // Görseldeki gibi köşeye tam oturması için
+                                    .clip(RoundedCornerShape(25.dp)) // Kenarları iyice yuvarlatıldı
+                                    .background(Color(0xFFF95604))
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color.White,
+                                        shape = RoundedCornerShape(25.dp)
+                                    )
                                     .clickable { onNavigation("add_announcement") }
-                                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                                    .padding(horizontal = 20.dp, vertical = 1.dp) // Dikey padding azaltıldı (ince), yatay artırıldı (uzun)
                             ) {
                                 Text(
                                     "DUYURU EKLE",
-                                    color = Color.White,
+                                    color = Color.Black, // Yazı rengi orijinal haline sadık kalındı
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -254,7 +265,7 @@ fun AdminHomeScreen(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .clickable { onNavigation("applications") }
+                                        .clickable { onNavigation("admin_applications") }
                                 )
                             }
 
@@ -265,14 +276,14 @@ fun AdminHomeScreen(
                                     modifier = Modifier
                                         .weight(1f)
                                         .fillMaxHeight()
-                                        .clickable { onNavigation("laundry") }
+                                        .clickable { onNavigation("admin_laundry") }
                                 )
                                 // Yemek Menüsü
                                 Box(
                                     modifier = Modifier
                                         .weight(1f)
                                         .fillMaxHeight()
-                                        .clickable { onNavigation("menu") }
+                                        .clickable { onNavigation("admin_menu") }
                                 )
                             }
                             // Görselin en altındaki gölge ve kavis payı (%5)
@@ -285,3 +296,4 @@ fun AdminHomeScreen(
         }
     }
 }
+

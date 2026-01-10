@@ -48,7 +48,7 @@ fun CustomBottomNavigationBar(
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.clickable { onNavigate("home") }
+                    modifier = Modifier.clickable { onNavigate("user_home") }
                 ) {
                     Box(
                         modifier = Modifier
@@ -58,7 +58,7 @@ fun CustomBottomNavigationBar(
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.home),
-                            contentDescription = "home",
+                            contentDescription = "user_home",
                             tint = White,
                             modifier = Modifier.size(32.dp)
                         )
@@ -74,7 +74,7 @@ fun CustomBottomNavigationBar(
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.clickable { onNavigate("profile") }
+                    modifier = Modifier.clickable { onNavigate("user_profile") }
                 ) {
                     Box(
                         modifier = Modifier
@@ -84,7 +84,7 @@ fun CustomBottomNavigationBar(
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.user),
-                            contentDescription = "profile",
+                            contentDescription = "user_profile",
                             tint = White,
                             modifier = Modifier.size(32.dp)
                         )

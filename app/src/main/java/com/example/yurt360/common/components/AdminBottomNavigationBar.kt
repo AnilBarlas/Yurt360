@@ -48,7 +48,7 @@ fun CustomAdminBottomNavigationBar(
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.clickable { onNavigate("home") }
+                    modifier = Modifier.clickable { onNavigate("admin_home") }
                 ) {
                     Box(
                         modifier = Modifier
@@ -58,7 +58,7 @@ fun CustomAdminBottomNavigationBar(
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.home),
-                            contentDescription = "home",
+                            contentDescription = "admin_home",
                             tint = White,
                             modifier = Modifier.size(32.dp)
                         )
@@ -74,7 +74,7 @@ fun CustomAdminBottomNavigationBar(
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.clickable { onNavigate("profile") }
+                    modifier = Modifier.clickable { onNavigate("admin_profile") }
                 ) {
                     Box(
                         modifier = Modifier
@@ -84,7 +84,7 @@ fun CustomAdminBottomNavigationBar(
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.user),
-                            contentDescription = "profile",
+                            contentDescription = "admin_profile",
                             tint = White,
                             modifier = Modifier.size(32.dp)
                         )
@@ -116,12 +116,12 @@ fun CustomAdminBottomNavigationBar(
                 .padding(6.dp)
                 .clip(CircleShape)
                 .background(purple)
-                .clickable { onNavigate("calendar") },
+                .clickable { onNavigate("announcment") },
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.megafon),
-                contentDescription = "Takvim",
+                contentDescription = "Duyuru",
                 tint = Color.White,
                 modifier = Modifier.size(50.dp)
             )

@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.yurt360.R
-import com.example.yurt360.admin.mainScreen.ProfilePhotoSection
 import com.example.yurt360.common.components.CustomBottomNavigationBar
 import com.example.yurt360.common.model.User
 
@@ -68,7 +67,6 @@ fun ProfileScreen(
                 .padding(top = 110.dp)
                 .zIndex(1f)
         ) {
-            ProfilePhotoSection(user.image_url)
         }
 
         // 3. Ana İçerik (Kartlar)
