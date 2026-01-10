@@ -1,16 +1,19 @@
 package com.example.yurt360.admin.mainScreen
 
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,13 +22,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.yurt360.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnnouncementDialog(
     onDismiss: () -> Unit,
@@ -34,46 +41,77 @@ fun AnnouncementDialog(
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
 
-    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
+    val backgroundColor = Color(0xFFF5F5F5)
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false) // Ekran genişliğini kullanabilmek için
+    ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(30.dp))
-                .background(Color.White)
-                .padding(20.dp),
+                .fillMaxWidth(0.9f) // Ekranın %90'ı kadar genişle
+                .clip(RoundedCornerShape(50.dp))
+                .background(backgroundColor)
+                .padding(16.dp), // Yüksekliği azaltmak için padding düşürüldü (20->16)
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("Duyuru Yayınla", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp)) // Boşluk azaltıldı (16->10)
 
             // Başlık Alanı
-            androidx.compose.material3.OutlinedTextField(
+            TextField(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text("Başlık") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(elevation = 6.dp, shape = RoundedCornerShape(20.dp))
+                    .background(Color.White, RoundedCornerShape(20.dp)),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                ),
+                shape = RoundedCornerShape(20.dp)
             )
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(10.dp)) // Boşluk azaltıldı (16->10)
 
             // Açıklama Alanı
-            androidx.compose.material3.OutlinedTextField(
+            TextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Duyuru Detayı") },
-                modifier = Modifier.fillMaxWidth().height(120.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp) // Yükseklik azaltıldı (120->100)
+                    .shadow(elevation = 6.dp, shape = RoundedCornerShape(20.dp))
+                    .background(Color.White, RoundedCornerShape(20.dp)),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                ),
+                shape = RoundedCornerShape(20.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp)) // Boşluk azaltıldı (16->10)
 
             // Gönder Butonu
-            androidx.compose.material3.IconButton(
+            IconButton(
                 onClick = { if(title.isNotBlank()) onConfirm(title, description) },
-                modifier = Modifier.align(Alignment.End).background(Color(0xFF7B7BFF), CircleShape)
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .size(50.dp)
             ) {
                 Icon(
                     painterResource(id = R.drawable.arrowdowncircle),
                     contentDescription = null,
-                    tint = Color.Unspecified
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(40.dp)
                 )
             }
         }
