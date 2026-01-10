@@ -155,12 +155,13 @@ fun RootNavigation() {
                 } ?: NavigateToLogin(navController)
             }
 
-            composable(Routes.ADMIN_PROFILE) {
+            composable(Routes.ADMIN_HOME) {
                 currentAdmin?.let { admin ->
-                    AdminProfileScreen(
-                        user = admin,
+                    AdminHomeScreen(
+                        admin = admin,
+                        viewModel = announcementViewModel,
                         onMenuClick = { isMenuOpen = true },
-                        onNavigate = { route -> handleNavigation(navController, route, isAdmin = true) }
+                        onNavigation = { route -> handleNavigation(navController, route, isAdmin = true) }
                     )
                 } ?: NavigateToLogin(navController)
             }
