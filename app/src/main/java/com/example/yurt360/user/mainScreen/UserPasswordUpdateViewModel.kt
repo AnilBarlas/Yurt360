@@ -2,20 +2,15 @@ package com.example.yurt360.user.mainScreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
+import com.example.yurt360.common.model.PasswordUpdateUiState
+import com.example.yurt360.data.api.SupabaseClient
+import io.github.jan.supabase.gotrue.auth
+import io.github.jan.supabase.gotrue.providers.builtin.Email
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-data class PasswordUpdateUiState(
-    val currentPassword: String = "",
-    val newPassword: String = "",
-    val isLoading: Boolean = false,
-    val errorMessage: String? = null,
-    val isSuccess: Boolean = false
-)
 
 class UserPasswordUpdateViewModel : ViewModel() {
 
@@ -33,8 +28,14 @@ class UserPasswordUpdateViewModel : ViewModel() {
     fun updatePassword() {
         val currentState = _uiState.value
 
+        // Basit validasyonlar
         if (currentState.newPassword.length < 6) {
             _uiState.update { it.copy(errorMessage = "Şifre en az 6 karakter olmalıdır.") }
+            return
+        }
+
+        if (currentState.currentPassword.isBlank()) {
+            _uiState.update { it.copy(errorMessage = "Lütfen mevcut şifrenizi giriniz.") }
             return
         }
 
@@ -42,13 +43,38 @@ class UserPasswordUpdateViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-                delay(1500)
+                val auth = SupabaseClient.client.auth
+                val currentUser = auth.currentUserOrNull()
+                val userEmail = currentUser?.email
+
+                if (userEmail == null) {
+                    _uiState.update {
+                        it.copy(isLoading = false, errorMessage = "Kullanıcı oturumu bulunamadı.")
+                    }
+                    return@launch
+                }
+
+                try {
+                    auth.signInWith(Email) {
+                        email = userEmail
+                        password = currentState.currentPassword
+                    }
+                } catch (e: Exception) {
+                    _uiState.update {
+                        it.copy(isLoading = false, errorMessage = "Mevcut şifre hatalı.")
+                    }
+                    return@launch
+                }
+
+                auth.updateUser {
+                    password = currentState.newPassword
+                }
 
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }
 
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "Bir hata oluştu")
+                    it.copy(isLoading = false, errorMessage = e.message ?: "Şifre güncellenirken bir hata oluştu")
                 }
             }
         }

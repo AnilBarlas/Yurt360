@@ -120,10 +120,10 @@ fun UserPasswordUpdateScreen(
         }
 
         if (!uiState.isSuccess) {
-            // Geri butonu için tıklama alanı genişletilmiş kapsayıcı
+            // Geri butonu
             Box(
                 modifier = Modifier
-                    .padding(top = 26.dp, start = 6.dp) // Görsel konumu korumak için ayarlandı (40-14, 20-14)
+                    .padding(top = 26.dp, start = 6.dp)
                     .size(48.dp)
                     .clickable { onNavigateBack() },
                 contentAlignment = Alignment.Center
