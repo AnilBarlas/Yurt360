@@ -1,7 +1,6 @@
 package com.example.yurt360
 
 import org.junit.Test
-
 import org.junit.Assert.*
 
 /**

@@ -1,4 +1,4 @@
-package com.example.yurt360.common.components
+package com.example.yurt360.common.passwordScreens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -21,52 +21,31 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yurt360.R
-import com.example.yurt360.common.model.TopUser
-import kotlinx.coroutines.delay
 import com.example.yurt360.common.utils.OrangePrimary
-import com.example.yurt360.common.utils.Orange
+import com.example.yurt360.common.passwordScreens.ResetPasswordViewModel
 
-val TextGray = Color(0xFF4A4A4A)
+import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(
-    viewModel: LoginViewModel = viewModel(),
-    onLoginSuccess: (TopUser) -> Unit,
-    onForgotPasswordClick: () -> Unit
+fun ResetPasswordScreen(
+    viewModel: ResetPasswordViewModel = viewModel(),
+    onSendClick: (String) -> Unit,
+    onBackClick: () -> Unit
 ) {
-    val username by viewModel.username.collectAsState()
-    val password by viewModel.password.collectAsState()
-    val loginState by viewModel.loginState.collectAsState()
-
-    var notificationMessage by remember { mutableStateOf<String?>(null) }
+    val email = viewModel.email
+    val isLoading = viewModel.isLoading
+    val notificationMessage = viewModel.notificationMessage
 
     LaunchedEffect(notificationMessage) {
         if (notificationMessage != null) {
             delay(2000)
-            notificationMessage = null
-        }
-    }
-
-    LaunchedEffect(loginState) {
-        when (val state = loginState) {
-            is LoginState.Success -> {
-                notificationMessage = "Giriş Başarılı!"
-                delay(500)
-                onLoginSuccess(state.user)
-                viewModel.resetLoginState()
-            }
-            is LoginState.Error -> {
-                notificationMessage = state.message
-                viewModel.resetLoginState()
-            }
-            else -> {}
+            viewModel.clearNotification()
         }
     }
 
@@ -75,7 +54,6 @@ fun LoginScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-
         Image(
             painter = painterResource(id = R.drawable.loginscreen),
             contentDescription = "Bina Görseli",
@@ -109,50 +87,65 @@ fun LoginScreen(
                     .offset(y = (-100).dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Text(
-                    text = "KULLANICI GİRİŞİ",
+                    text = "Parolamı Unuttum",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = TextGray,
+                    color = Color.Black,
                     letterSpacing = 1.sp
                 )
 
                 Spacer(modifier = Modifier.height(30.dp))
 
-                CustomLoginTextField(
-                    value = username,
-                    onValueChange = { viewModel.onUsernameChange(it) },
-                    placeholder = "Kullanıcı Maili"
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                CustomLoginTextField(
-                    value = password,
-                    onValueChange = { viewModel.onPasswordChange(it) },
-                    placeholder = "Parola",
-                    isPassword = true
-                )
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth(0.85f)
+                        .height(55.dp)
+                        .shadow(4.dp, RoundedCornerShape(20.dp)),
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.White
+                ) {
+                    TextField(
+                        value = email,
+                        onValueChange = { viewModel.onEmailChange(it) },
+                        placeholder = {
+                            Text(text = "Kullanıcı Maili", color = Color.Gray, fontSize = 14.sp)
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        singleLine = true,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            cursorColor = OrangePrimary
+                        ),
+                        modifier = Modifier.fillMaxSize(),
+                        textStyle = androidx.compose.ui.text.TextStyle(
+                            fontSize = 16.sp,
+                            color = Color.Black
+                        )
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(30.dp))
 
                 Button(
                     onClick = {
-                        if (loginState !is LoginState.Loading) {
-                            viewModel.onLoginClick()
+                        if (!isLoading) {
+                            viewModel.sendResetLink(onSuccess = onSendClick)
                         }
                     },
                     modifier = Modifier
-                        .width(200.dp)
+                        .width(230.dp)
                         .height(50.dp)
                         .shadow(8.dp, RoundedCornerShape(20.dp)),
                     colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
                     shape = RoundedCornerShape(20.dp)
                 ) {
                     Text(
-                        text = if (loginState is LoginState.Loading) "Giriş Yapılıyor..." else "Giriş",
-                        fontSize = 18.sp,
+                        text = if (isLoading) "Gönderiliyor..." else "Sıfırlama Bağlantısı Gönder",
+                        fontSize = 14.sp,
                         color = Color.White
                     )
                 }
@@ -160,18 +153,17 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Parolamı Unuttum",
-                    color = Orange,
+                    text = "Parolanı Hatırladın Mı?",
+                    color = OrangePrimary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.clickable {
-                        onForgotPasswordClick()
+                        onBackClick()
                     }
                 )
             }
         }
 
-        // Bildirim kutusu
         AnimatedVisibility(
             visible = notificationMessage != null,
             enter = fadeIn(),
@@ -200,46 +192,5 @@ fun LoginScreen(
                 }
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CustomLoginTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    isPassword: Boolean = false
-) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth(0.80f)
-            .height(55.dp)
-            .shadow(4.dp, RoundedCornerShape(20.dp)),
-        shape = RoundedCornerShape(20.dp),
-        color = Color.White
-    ) {
-        TextField(
-            value = value,
-            onValueChange = onValueChange,
-            placeholder = {
-                Text(text = placeholder, color = Color.Gray, fontSize = 14.sp)
-            },
-            visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
-            keyboardOptions = if (isPassword) KeyboardOptions(keyboardType = KeyboardType.Password) else KeyboardOptions.Default,
-            singleLine = true,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = OrangePrimary
-            ),
-            modifier = Modifier.fillMaxSize(),
-            textStyle = androidx.compose.ui.text.TextStyle(
-                fontSize = 16.sp,
-                color = Color.Black
-            )
-        )
     }
 }
