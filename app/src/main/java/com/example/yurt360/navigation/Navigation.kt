@@ -1,11 +1,20 @@
 package com.example.yurt360.navigation
 
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -14,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
+import com.example.yurt360.R
 import com.example.yurt360.admin.mainScreen.*
 import com.example.yurt360.common.components.*
 import com.example.yurt360.common.model.Admin
@@ -22,6 +32,12 @@ import com.example.yurt360.common.passwordScreens.NewPasswordScreen
 import com.example.yurt360.common.passwordScreens.ResetPasswordScreen
 import com.example.yurt360.user.mainScreen.*
 import com.example.yurt360.user.refectory.MenuScreen
+// Supabase ve Deep Link işlemleri için gerekli importlar
+import com.example.yurt360.data.api.SupabaseClient
+import io.github.jan.supabase.gotrue.auth
+import io.github.jan.supabase.gotrue.handleDeeplinks
+import io.github.jan.supabase.gotrue.user.UserSession
+import kotlinx.coroutines.launch
 
 object Routes {
     const val LOGIN = "login"
@@ -55,9 +71,17 @@ object Routes {
 }
 
 @Composable
-fun RootNavigation() {
+fun RootNavigation(currentIntent: Intent?) {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    // Intent verisini kontrol et (Deep Link var mı?)
+    // MainActivity'den gelen currentIntent parametresini kullanıyoruz.
+    val intentData = currentIntent?.data
+
+    // Linkin "new_password" hostuna sahip olup olmadığını kontrol ediyoruz
+    val isPasswordResetLink = intentData?.scheme == "yurt360" && intentData?.host == "new_password"
 
     var currentUser by remember { mutableStateOf<User?>(null) }
     var currentAdmin by remember { mutableStateOf<Admin?>(null) }
@@ -65,7 +89,6 @@ fun RootNavigation() {
 
     val loginViewModel: LoginViewModel = viewModel()
     val announcementViewModel: AnnouncementViewModel = viewModel()
-
 
     val isSessionChecked by loginViewModel.isSessionChecked.collectAsState()
     val loginState by loginViewModel.loginState.collectAsState()
@@ -92,15 +115,78 @@ fun RootNavigation() {
         }
     }
 
-    if (!isSessionChecked) return
+    // Uygulama açıkken yeni bir Intent gelirse (onNewIntent) ve bu bir şifre sıfırlama linkiyse,
+    // Supabase session işlemini başlat ve yönlendirme yap.
+    LaunchedEffect(currentIntent) {
+        currentIntent?.let { intent ->
+            try {
+                // 1. Önce standart kütüphane yöntemini dene
+                SupabaseClient.client.handleDeeplinks(intent)
 
-    val startRoute = when {
-        currentAdmin != null -> Routes.ADMIN_HOME
-        currentUser != null -> Routes.USER_HOME
-        else -> Routes.LOGIN
+                // 2. Eğer kütüphane otomatik alamazsa (Android Fragment sorunu için) manuel parse et
+                val data = intent.data
+                // Oturum yoksa veya sadece deep link ile gelindiyse kontrol et
+                if (data != null) {
+                    // URL içindeki fragment (#) kısmını al: access_token=...&refresh_token=...
+                    val fragment = data.fragment
+                    if (!fragment.isNullOrEmpty() && fragment.contains("access_token")) {
+                        // Basit bir parametre ayıklama işlemi
+                        val params = fragment.split("&").associate {
+                            val parts = it.split("=")
+                            if (parts.size == 2) parts[0] to parts[1] else "" to ""
+                        }
+
+                        val accessToken = params["access_token"]
+                        val refreshToken = params["refresh_token"] ?: ""
+
+                        if (!accessToken.isNullOrEmpty()) {
+                            // Token'ı bulduk, oturumu manuel olarak içeri aktar (import)
+                            SupabaseClient.client.auth.importSession(
+                                UserSession(
+                                    accessToken = accessToken,
+                                    refreshToken = refreshToken,
+                                    expiresIn = 3600, // Varsayılan süre
+                                    tokenType = "bearer",
+                                    user = null // User objesi başta null
+                                )
+                            )
+
+                            // CRITICAL FIX: Oturumu "user" objesiyle tam doğrulamak için kullanıcıyı çek
+                            // Bu işlem "requires a valid Bearer Token" hatasını önler.
+                            try {
+                                SupabaseClient.client.auth.retrieveUserForCurrentSession(updateSession = true)
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        if (isPasswordResetLink) {
+            // Eğer zaten oradaysak tekrar yönlendirme yapma
+            if (navController.currentDestination?.route != Routes.NEW_PASSWORD) {
+                navController.navigate(Routes.NEW_PASSWORD) {
+                    launchSingleTop = true
+                }
+            }
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+
+        // Start route hesaplaması: Deep Link varsa EN YÜKSEK ÖNCELİK verilir.
+        // Kullanıcı giriş yapmış olsa bile link ile geldiyse şifre ekranı açılmalı.
+        val startRoute = when {
+            isPasswordResetLink -> Routes.NEW_PASSWORD
+            currentAdmin != null -> Routes.ADMIN_HOME
+            currentUser != null -> Routes.USER_HOME
+            else -> Routes.LOGIN
+        }
+
         NavHost(
             navController = navController,
             startDestination = startRoute,
@@ -135,7 +221,6 @@ fun RootNavigation() {
             composable(Routes.FORGOT_PASSWORD) {
                 ResetPasswordScreen(
                     onSendClick = { email ->
-                        // İsteğinize uygun olarak işlem bitince Login ekranına yönlendiriyoruz.
                         Toast.makeText(context, "Sıfırlama bağlantısı gönderildi. Lütfen e-postanızı kontrol edin.", Toast.LENGTH_LONG).show()
                         navController.navigate(Routes.LOGIN) {
                             popUpTo(Routes.LOGIN) { inclusive = true }
@@ -145,14 +230,12 @@ fun RootNavigation() {
                 )
             }
 
-            // DEEP LINK EKLENMİŞ ALAN
+            // GÜNCELLENMİŞ DEEP LINK ALANI
             composable(
                 route = Routes.NEW_PASSWORD,
                 deepLinks = listOf(
                     navDeepLink {
-                        // Maildeki link formatınız: https://www.yurt360.com/new_password
-                        // Bu linke tıklandığında uygulama açılacak ve bu ekrana düşecektir.
-                        uriPattern = "https://www.yurt360.com/new_password"
+                        uriPattern = "yurt360://new_password"
                     }
                 )
             ) {
@@ -244,7 +327,6 @@ fun RootNavigation() {
                 } ?: NavigateToLogin(navController)
             }
 
-            // Duyuru Ekleme Ekranı/Dialog'u
             dialog(Routes.ADD_ANNOUNCEMENT) {
                 AnnouncementDialog(
                     onDismiss = {
@@ -283,12 +365,21 @@ fun RootNavigation() {
             }
         }
 
-        // --- YAN MENÜLER ---
+        // --- LOADING SCREEN ve MENÜLER (Overlay) ---
+        if (!isSessionChecked) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(2f)
+            ) {
+                LoadingScreen()
+            }
+        }
+
         if (currentAdmin != null) {
-            val adminToUser = User(id = currentAdmin!!.id, name = currentAdmin!!.name, surname = currentAdmin!!.surname, email = currentAdmin!!.email, phone = "", tc = "", gender = "", bloodType = "", birthDate = "", address = "", location = "", roomNo = "", image_url = "")
             AdminSideMenuView(
                 isOpen = isMenuOpen,
-                user = adminToUser,
+                user = User(id = currentAdmin!!.id, name = currentAdmin!!.name, surname = currentAdmin!!.surname, email = currentAdmin!!.email, phone = "", tc = "", gender = "", bloodType = "", birthDate = "", address = "", location = "", roomNo = "", image_url = ""),
                 onClose = { isMenuOpen = false },
                 onNavigate = { handleAdminNavigation(navController, it); isMenuOpen = false },
                 onLogout = {
@@ -315,7 +406,22 @@ fun RootNavigation() {
     }
 }
 
-// --- NAVİGASYON YÖNETİCİLERİ ---
+@Composable
+fun LoadingScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
+        contentAlignment = Alignment.Center
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.loadingscreen),
+            contentDescription = "Loading",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+    }
+}
 
 fun handleUserNavigation(navController: NavController, route: String) {
     val target = when (route) {

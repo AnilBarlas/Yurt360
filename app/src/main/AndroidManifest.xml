@@ -13,7 +13,8 @@
         android:theme="@style/Theme.Yurt360">
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTop">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,7 +26,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="https" android:host="www.yurt360.com" android:pathPrefix="/new_password" />
+                <!-- Deep link şeması -->
+                <data android:scheme="yurt360" android:host="new_password" />
             </intent-filter>
         </activity>
     </application>

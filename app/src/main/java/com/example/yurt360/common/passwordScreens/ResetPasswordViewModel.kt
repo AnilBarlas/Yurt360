@@ -5,7 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
+import com.example.yurt360.data.api.SupabaseClient
+import io.github.jan.supabase.gotrue.auth
 import kotlinx.coroutines.launch
 
 class ResetPasswordViewModel : ViewModel() {
@@ -32,13 +33,17 @@ class ResetPasswordViewModel : ViewModel() {
         viewModelScope.launch {
             isLoading = true
             try {
-                delay(1500)
+                SupabaseClient.client.auth.resetPasswordForEmail(
+                    email = email.trim(),
+                    redirectUrl = "yurt360://new_password"
+                )
+
                 isLoading = false
                 notificationMessage = "Sıfırlama bağlantısı gönderildi"
                 onSuccess(email.trim())
             } catch (e: Exception) {
                 isLoading = false
-                notificationMessage = "Bir hata oluştu"
+                notificationMessage = "Hata: ${e.localizedMessage ?: "Bir sorun oluştu"}"
             }
         }
     }

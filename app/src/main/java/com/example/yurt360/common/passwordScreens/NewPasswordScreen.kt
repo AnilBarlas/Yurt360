@@ -88,7 +88,7 @@ fun NewPasswordScreen(
                     text = "YENİ ŞİFRE BELİRLE",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.Gray,
+                    color = Color.Black,
                     letterSpacing = 1.sp
                 )
 
