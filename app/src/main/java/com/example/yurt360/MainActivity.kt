@@ -23,8 +23,6 @@ class MainActivity : ComponentActivity() {
     private var intentState by mutableStateOf<Intent?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // YENİ EKLENEN: Splash ekranı bittikten sonra normal uygulama temasına geri dönüyoruz.
-        // Bunu super.onCreate'den ÖNCE çağırmak çok önemlidir.
         setTheme(R.style.Theme_Yurt360)
 
         super.onCreate(savedInstanceState)
