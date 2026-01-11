@@ -46,6 +46,7 @@ object Routes {
 
     // User Rotaları
     const val USER_HOME = "user_home"
+    const val WORK_SPACE= "work_space"
     const val USER_PROFILE = "user_profile"
     const val USER_MENU = "user_menu"
     const val USER_CALENDAR = "calendar"
@@ -140,7 +141,6 @@ fun RootNavigation(currentIntent: Intent?) {
                         val refreshToken = params["refresh_token"] ?: ""
 
                         if (!accessToken.isNullOrEmpty()) {
-                            // Token'ı bulduk, oturumu manuel olarak içeri aktar (import)
                             SupabaseClient.client.auth.importSession(
                                 UserSession(
                                     accessToken = accessToken,
@@ -151,8 +151,6 @@ fun RootNavigation(currentIntent: Intent?) {
                                 )
                             )
 
-                            // CRITICAL FIX: Oturumu "user" objesiyle tam doğrulamak için kullanıcıyı çek
-                            // Bu işlem "requires a valid Bearer Token" hatasını önler.
                             try {
                                 SupabaseClient.client.auth.retrieveUserForCurrentSession(updateSession = true)
                             } catch (e: Exception) {
@@ -178,8 +176,7 @@ fun RootNavigation(currentIntent: Intent?) {
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // Start route hesaplaması: Deep Link varsa EN YÜKSEK ÖNCELİK verilir.
-        // Kullanıcı giriş yapmış olsa bile link ile geldiyse şifre ekranı açılmalı.
+
         val startRoute = when {
             isPasswordResetLink -> Routes.NEW_PASSWORD
             currentAdmin != null -> Routes.ADMIN_HOME
@@ -260,6 +257,7 @@ fun RootNavigation(currentIntent: Intent?) {
                     )
                 } ?: NavigateToLogin(navController)
             }
+
 
             composable(Routes.USER_PROFILE) {
                 currentUser?.let { user ->
