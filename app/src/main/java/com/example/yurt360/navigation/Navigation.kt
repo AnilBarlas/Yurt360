@@ -295,14 +295,15 @@ fun RootNavigation(currentIntent: Intent?) {
                         location.contains("kuzey") && location.contains("1") -> {
                             WorkSpace1_Kuzey1(
                                 onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
-                                onNavigation = { handleUserNavigation(navController, it) }
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
                             )
                         }
                         else -> {
-                            // Eşleşme bulunamadıysa varsayılan olarak yine Kuzey1'i veya bir hata ekranını gösterin.
                             WorkSpace1_Kuzey1(
                                 onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
-                                onNavigation = { handleUserNavigation(navController, it) }
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
                             )
                         }
                     }

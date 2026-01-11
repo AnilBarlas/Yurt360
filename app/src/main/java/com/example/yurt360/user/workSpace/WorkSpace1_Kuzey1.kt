@@ -41,7 +41,7 @@ import kotlinx.coroutines.launch
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import kotlinx.coroutines.isActive
 import com.example.yurt360.R
-import com.example.yurt360.common.components.UserBottomNavigationBar
+import com.example.yurt360.common.model.User
 import kotlinx.serialization.Serializable
 
 // Renkler
@@ -76,7 +76,10 @@ data class AjandaInsert(
 )
 
 @Composable
-fun WorkSpace1_Kuzey1( onNavigateHome: () -> Unit = {},onNavigation: (String) -> Unit ) {
+fun WorkSpace1_Kuzey1( onNavigateHome: () -> Unit = {}, onNavigation: (String) -> Unit, user: User ) {
+
+    val currentUserID by rememberUpdatedState(user.id)
+
     val client = SupabaseClient.client
     val scope = rememberCoroutineScope()
 
@@ -295,7 +298,7 @@ fun WorkSpace1_Kuzey1( onNavigateHome: () -> Unit = {},onNavigation: (String) ->
                                 client.auth.refreshCurrentSession()
                                 val response = client.from("workSpace_kuzey1_reservations")
                                     .update(mapOf(
-                                        "user_id" to "efffe411-62fa-4e11-ad42-07aadda51165",
+                                        "user_id" to currentUserID,
                                         "status" to "reserved"
                                     )) {
                                         select()
@@ -310,8 +313,8 @@ fun WorkSpace1_Kuzey1( onNavigateHome: () -> Unit = {},onNavigation: (String) ->
                                     // --- AJANDA'YA EKLEME (Serializable sınıf kullanılarak; user_id zorunlu) ---
                                     try {
                                         // Oturumdan user id al (zorunlu)
-                                        val currentUser = client.auth.retrieveUserForCurrentSession(updateSession = true)
-                                        val userId = currentUser?.id
+                                        //val currentUser = client.auth.retrieveUserForCurrentSession(updateSession = true)
+                                        val userId = currentUserID
                                         if (userId == null) {
                                             Log.e("AjandaInsert", "Kullanıcı oturumu bulunamadı — ajanda'ya insert yapılmadı.")
                                         } else {
@@ -624,8 +627,8 @@ fun WorkSpace1_Kuzey1( onNavigateHome: () -> Unit = {},onNavigation: (String) ->
                                 scope.launch {
                                     try {
                                         // 1) Kullanıcıyı Supabase'den çek
-                                        val user = client.auth.retrieveUserForCurrentSession(updateSession = true)
-                                        val userId = user?.id
+                                        //val user = client.auth.retrieveUserForCurrentSession(updateSession = true)
+                                        val userId = currentUserID
 
                                         if (userId == null) {
                                             Log.e("SupabaseAuth", "Kullanıcı oturumu bulunamadı")
@@ -861,7 +864,7 @@ fun GradientButton(
         Modifier
     }
 
-    val alpha = if (enabled) 1f else 0.5f
+    val alpha = 1f
 
     Box(
         modifier = modifier

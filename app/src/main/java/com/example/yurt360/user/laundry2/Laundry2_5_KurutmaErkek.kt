@@ -1,4 +1,4 @@
-package com.example.yurt360.user.laundry
+package com.example.yurt360.user.laundry2
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -27,6 +27,10 @@ import androidx.compose.ui.zIndex
 import com.example.yurt360.common.components.UserBottomNavigationBar
 import com.example.yurt360.data.api.SupabaseClient
 import com.example.yurt360.R
+import com.example.yurt360.common.model.User
+//import com.example.yurt360.user.laundry.ThinBorderColor
+//import com.example.yurt360.user.laundry.TopSquare
+//import com.example.yurt360.user.laundry.DB_TABLE
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.TextStyle
@@ -48,7 +52,7 @@ private val DayTextColor = Color.White
 
 private val TopDefaultBg = Color(0xFFF0EAE1)
 
-// Mor tonları
+// Mor tonları (ilk verdiğin koddaki palet)
 private val LightPurple = Color(0xFFB6BCFE)
 private val MidPurple = Color(0xFFA4ABF3)
 private val DarkPurple = Color(0xFF929AE9)
@@ -57,22 +61,22 @@ private val ReservedBorderColor = Color(0xFFBDBDBD)
 private val DefaultHourTextColor = Color.Black
 
 // DB tablo adı ve alan adı
-private const val DB_TABLE = "laundryA_kuzey1_machines"
+private const val DB_TABLE = "laundryB_erkekyurdu_machines"
 private const val DB_ID_COLUMN = "machine_id"
 
 @Serializable
-data class ReservationRow(
+data class ReservationRow5(
     val machine_id: Int,
     val status: String,
     val user_id: String? = null
 )
 
 @Serializable
-data class AjandaInsert(
+data class AjandaInsert5(
     val ref_id: Int,
     val ref_type: String,
-    val date: String,   // format: "yyyy-MM-dd"
-    val time: String,   // format: "HH:mm:ss"
+    val date: String,   // "yyyy-MM-dd"
+    val time: String,   // "HH:mm:ss"
     val user_id: String
 )
 
@@ -84,7 +88,10 @@ data class AjandaInsert(
  * - Toplam satır sayısı: 3 × 120 = 360
  */
 @Composable
-fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> Unit) {
+fun Laundry2_5_KurutmaErkek(onNavigateHome: () -> Unit = {},onNavigation: (String) -> Unit, user: User) {
+
+    val currentUserID by rememberUpdatedState(user.id)
+
     val client = SupabaseClient.client
     val scope = rememberCoroutineScope()
 
@@ -96,7 +103,7 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
             val date = today.plusDays(offset.toLong())
             val shortEn = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
             val fullEn = date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
-            DayInfo(number = date.dayOfMonth, short = shortEn, full = fullEn)
+            DayInfo5(number = date.dayOfMonth, short = shortEn, full = fullEn)
         }
     }
 
@@ -131,7 +138,7 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
     )
 
     // --- DB Sync helpers ---
-    fun updateReservedStatusFromList(list: List<ReservationRow>) {
+    fun updateReservedStatusFromList(list: List<ReservationRow5>) {
         // önce hepsini available yap
         topStates.forEachIndexed { dayIndex, hours ->
             hours.forEachIndexed { hourIndex, tops ->
@@ -144,7 +151,7 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
         list.forEach { row ->
             val machineId = row.machine_id
             if (machineId <= 0) return@forEach
-            val (dayIndex, hourIndex, topIndex) = parseMachineIdToDayHourTop(machineId)
+            val (dayIndex, hourIndex, topIndex) = parseMachineIdToDayHourTop5(machineId)
             if (dayIndex in 0 until topStates.size &&
                 hourIndex in 0 until topStates[dayIndex].size &&
                 topIndex in 0 until topStates[dayIndex][hourIndex].size
@@ -162,16 +169,16 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
             var lastRefreshTime = 0L
 
             while (isActive) {
-                Log.d("LaundryPolling", "Polling db for reserved status… (backoff=${backoff}ms)")
+                Log.d("DryerPolling", "Polling db for reserved status… (backoff=${backoff}ms)")
                 try {
                     val now = System.currentTimeMillis()
                     if (now - lastRefreshTime > refreshInterval) {
                         try {
                             client.auth.refreshCurrentSession()
                             lastRefreshTime = System.currentTimeMillis()
-                            Log.d("LaundryPolling", "Session refreshed (periodic).")
+                            Log.d("DryerPolling", "Session refreshed (periodic).")
                         } catch (refreshEx: Exception) {
-                            Log.w("LaundryPolling", "Periodic refresh failed: ${refreshEx.localizedMessage}", refreshEx)
+                            Log.w("DryerPolling", "Periodic refresh failed: ${refreshEx.localizedMessage}", refreshEx)
                         }
                     }
 
@@ -180,19 +187,19 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
                         .select {
                             filter { eq("status", "reserved") }
                         }
-                        .decodeList<ReservationRow>()
+                        .decodeList<ReservationRow5>()
 
-                    Log.d("LaundryPollingQuery", "Reserved rows: $response")
+                    Log.d("DryerPollingQuery", "Reserved rows: $response")
                     updateReservedStatusFromList(response)
 
                     backoff = 2000L
                 } catch (e: Exception) {
-                    Log.e("LaundryPolling", "Polling error: ${e.localizedMessage}", e)
+                    Log.e("DryerPolling", "Polling error: ${e.localizedMessage}", e)
                     if (e is ConnectTimeoutException) {
                         backoff = (backoff * 2).coerceAtMost(maxBackoff)
                     } else {
                         try {
-                            Log.d("LaundryPolling", "Attempting on-demand session refresh due to error...")
+                            Log.d("DryerPolling", "Attempting on-demand session refresh due to error...")
                             client.auth.refreshCurrentSession()
                             lastRefreshTime = System.currentTimeMillis()
 
@@ -201,15 +208,15 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
                                 .select {
                                     filter { eq("status", "reserved") }
                                 }
-                                .decodeList<ReservationRow>()
+                                .decodeList<ReservationRow5>()
 
-                            Log.d("LaundryPollingQuery", "Reserved rows (after refresh): $retryResponse")
+                            Log.d("DryerPollingQuery", "Reserved rows (after refresh): $retryResponse")
                             updateReservedStatusFromList(retryResponse)
 
                             backoff = 2000L
                             continue
                         } catch (innerEx: Exception) {
-                            Log.e("LaundryPolling", "Retry after refresh failed: ${innerEx.localizedMessage}", innerEx)
+                            Log.e("DryerPolling", "Retry after refresh failed: ${innerEx.localizedMessage}", innerEx)
                             backoff = (backoff * 2).coerceAtMost(maxBackoff)
                         }
                     }
@@ -224,15 +231,15 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
 
     // Rezervasyon yapma (DB'ye yazma)
     fun reserveMachine(dayIndex: Int, hourIndex: Int, topIndex: Int) {
-        val machineId = getGlobalTableId(dayIndex, hourIndex, topIndex)
+        val machineId = getGlobalTableId5(dayIndex, hourIndex, topIndex)
         scope.launch {
             try {
                 client.auth.refreshCurrentSession()
 
-                val user = client.auth.retrieveUserForCurrentSession(updateSession = true)
-                val userId = user?.id
+                //val user = client.auth.retrieveUserForCurrentSession(updateSession = true)
+                val userId = currentUserID
                 if (userId == null) {
-                    Log.e("LaundryReserve", "User session not found")
+                    Log.e("DryerReserve", "User session not found")
                     return@launch
                 }
 
@@ -245,51 +252,51 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
                         }
                     }
 
-                Log.d("LaundryReserve", "Update response: ${response.data}")
+                Log.d("DryerReserve", "Update response: ${response.data}")
                 if (response.data != null && response.data.isNotEmpty()) {
                     topStates[dayIndex][hourIndex][topIndex] = "reserved"
                     // --- AJANDA'YA EKLEME ---
                     try {
-                        // userId zaten fonksiyon başında alındı
-                        val userIdLocal = userId // veya mevcut kullanımdaki değişken adı
+                        // userId fonksiyon başında alınıyor
+                        val userIdLocal = userId
+                        if (userIdLocal == null) {
+                            Log.e("AjandaInsert5", "Kullanıcı oturumu bulunamadı — ajanda'ya insert yapılmadı.")
+                        } else {
+                            // reservationDate: today değişkeni dosyada LocalDate olarak tanımlı (zone ile)
+                            val reservationDate = today.plusDays(dayIndex.toLong()) // dayIndex: 0 -> today, 1 -> today+1, ...
 
-                        // tarih: today değişkeni Laundry1_1 içinde tanımlı (LocalDate.now(zone))
-                        // burada dayIndex 0..2 -> today, today+1, today+2
-                        val reservationDate = today.plusDays(dayIndex.toLong())
+                            // ISO format yyyy-MM-dd (Postgres date uyumlu)
+                            val dateString = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE.format(reservationDate)
 
-                        // ISO format: yyyy-MM-dd (DB date tipine uygun)
-                        val dateString = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE.format(reservationDate)
-                        // veya explicit: java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault()).format(reservationDate)
+                            // time: hourIndex 0..11 => gerçek saat = 9 + hourIndex
+                            val hour24 = 9 + hourIndex
+                            val timeString24 = String.format("%02d:00:00", hour24) // ör. "17:00:00"
 
-                        // time: hourIndex 0..11 -> saat = 9 + hourIndex
-                        val hour24 = 9 + hourIndex
-                        val timeString24 = String.format("%02d:00:00", hour24) // ör: "17:00:00"
+                            // Ajanda nesnesi (Serializable)
+                            val ajandaRow = AjandaInsert5(
+                                ref_id = machineId,
+                                ref_type = DB_TABLE,
+                                date = dateString,
+                                time = timeString24,
+                                user_id = userIdLocal
+                            )
 
-                        // Ajanda nesnesi (Serializable)
-                        val ajandaRow = AjandaInsert(
-                            ref_id = machineId,
-                            ref_type = DB_TABLE,
-                            date = dateString,
-                            time = timeString24,
-                            user_id = userIdLocal
-                        )
+                            // Insert: bazı wrapperlar tek obje, bazıları liste bekler. Önce tek obje dene; hata alırsan liste olarak dene.
+                            val insertResponse = try {
+                                client.from("ajanda").insert(ajandaRow) { select() }
+                            } catch (e: Exception) {
+                                client.from("ajanda").insert(listOf(ajandaRow)) { select() }
+                            }
 
-                        // insert (bazı wrapperlar tek obje, bazıları liste bekleyebilir; ikisini de test et)
-                        val insertResponse = try {
-                            client.from("ajanda").insert(ajandaRow) { select() }
-                        } catch (e: Exception) {
-                            // eğer tek obje hata verirse, liste olarak dene
-                            client.from("ajanda").insert(listOf(ajandaRow)) { select() }
+                            Log.d("AjandaInsert5", "Inserted ajanda row: ${insertResponse.data}")
                         }
-
-                        Log.d("AjandaInsert", "Inserted ajanda row: ${insertResponse.data}")
                     } catch (ex: Exception) {
-                        Log.e("AjandaInsert", "Ajanda insert failed: ${ex.localizedMessage}", ex)
+                        Log.e("AjandaInsert5", "Ajanda insert failed: ${ex.localizedMessage}", ex)
                     }
                     // --- /AJANDA'YA EKLEME ---
                 }
             } catch (e: Exception) {
-                Log.e("LaundryReserve", "Exception reserveMachine: ${e.localizedMessage}", e)
+                Log.e("DryerReserve", "Exception reserveMachine: ${e.localizedMessage}", e)
             }
         }
     }
@@ -298,10 +305,10 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
     fun removeUserReservations() {
         scope.launch {
             try {
-                val user = client.auth.retrieveUserForCurrentSession(updateSession = true)
-                val userId = user?.id
+                //val user = client.auth.retrieveUserForCurrentSession(updateSession = true)
+                val userId = currentUserID
                 if (userId == null) {
-                    Log.e("LaundryRemove", "User session not found")
+                    Log.e("DryerRemove", "User session not found")
                     return@launch
                 }
 
@@ -310,7 +317,7 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
                         filter { eq("user_id", userId) }
                     }
 
-                Log.d("LaundryRemove", "Removed reservations: ${response.data}")
+                Log.d("DryerRemove", "Removed reservations: ${response.data}")
 
                 // --- AJANDA'DAN SİLME ---
                 try {
@@ -337,7 +344,7 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
                 }
 
             } catch (e: Exception) {
-                Log.e("LaundryRemove", "Exception removeUserReservations: ${e.localizedMessage}", e)
+                Log.e("DryerRemove", "Exception removeUserReservations: ${e.localizedMessage}", e)
             }
         }
     }
@@ -406,13 +413,13 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     // Saatler
-                    val hoursList = generateHourlyList(9, 21)
+                    val hoursList = generateHourlyList5(9, 21)
                     Column {
                         for (row in 0..2) {
                             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 for (col in 0..3) {
                                     val idx = row * 4 + col
-                                    HourBox(hour = hoursList[idx], isSelected = selectedHour == idx, modifier = Modifier.weight(1f).height(42.dp)) {
+                                    HourBox5(hour = hoursList[idx], isSelected = selectedHour == idx, modifier = Modifier.weight(1f).height(42.dp)) {
                                         selectedHour = idx
                                         activeTop = null
                                     }
@@ -424,9 +431,9 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Başlık
+                    // Başlık (Kurutma Makinesi Doluluğu)
                     Box(modifier = Modifier.fillMaxWidth(0.94f).height(56.dp).clip(RoundedCornerShape(12.dp)).background(Color.White).border(width = 1.dp, color = ThinBorderColor, shape = RoundedCornerShape(12.dp)).padding(12.dp).align(Alignment.CenterHorizontally), contentAlignment = Alignment.Center) {
-                        Text(text = "Çamaşır Makinesi Doluluğu", color = Color.Black, fontSize = 16.sp)
+                        Text(text = "Kurutma Makinesi Doluluğu", color = Color.Black, fontSize = 16.sp)
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -460,7 +467,7 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
                                 ) {
                                     topStates[dayIndex][selectedHour].chunked(5)[row].forEachIndexed { colIndex, state ->
                                         val topIndex = row * 5 + colIndex
-                                        TopSquare(
+                                        TopSquare5(
                                             index = topIndex + 1,
                                             state = state,
                                             isSelected = (activeTop == topIndex)
@@ -501,17 +508,17 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
 
                     // İki buton: Rezervasyon Oluştur / Kaldır
                     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 0.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        SolidButton(modifier = Modifier.weight(1f).height(36.dp), color = ActiveColor, shape = RoundedCornerShape(24.dp), enabled = true, onClick = {
+                        SolidButton5(modifier = Modifier.weight(1f).height(36.dp), color = ActiveColor, shape = RoundedCornerShape(24.dp), enabled = true, onClick = {
                             val top = activeTop
-                            if (top == null) return@SolidButton
+                            if (top == null) return@SolidButton5
                             val dayIndex = (selectedDay - 2).coerceIn(0, 2)
-                            if (topStates[dayIndex][selectedHour][top] == "reserved") return@SolidButton
+                            if (topStates[dayIndex][selectedHour][top] == "reserved") return@SolidButton5
                             dialogState = "confirm_plan"
                         }) { Text("Rezervasyon Oluştur", color = Color.White, fontSize = 16.sp) }
 
-                        SolidButton(modifier = Modifier.weight(1f).height(36.dp), color = ActiveColor, shape = RoundedCornerShape(24.dp), enabled = true, onClick = {
+                        SolidButton5(modifier = Modifier.weight(1f).height(36.dp), color = ActiveColor, shape = RoundedCornerShape(24.dp), enabled = true, onClick = {
                             val hasAnyReservation = topStates.any { day -> day.any { hourList -> hourList.any { it == "reserved" } } }
-                            if (!hasAnyReservation) return@SolidButton
+                            if (!hasAnyReservation) return@SolidButton5
                             removeUserReservations()
                             dialogState = "removed"
                             activeTop = null
@@ -534,16 +541,16 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
                             Text(text = "Rezervasyonunuz planlanmıştır. Onaylıyor musunuz?", color = Color.Black, fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
 
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                ThinButton(modifier = Modifier.weight(1f).height(44.dp), onClick = {
+                                ThinButton5(modifier = Modifier.weight(1f).height(44.dp), onClick = {
                                     val top = activeTop
-                                    if (top == null) { dialogState = null; return@ThinButton }
+                                    if (top == null) { dialogState = null; return@ThinButton5 }
                                     val dayIndex = (selectedDay - 2).coerceIn(0, 2)
                                     reserveMachine(dayIndex, selectedHour, top)
                                     activeTop = null
                                     dialogState = "created"
                                 }) { Text("Evet") }
 
-                                ThinButton(modifier = Modifier.weight(1f).height(44.dp), onClick = { dialogState = null }) { Text("Hayır") }
+                                ThinButton5(modifier = Modifier.weight(1f).height(44.dp), onClick = { dialogState = null }) { Text("Hayır") }
                             }
                         }
                     }
@@ -553,7 +560,7 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
                     Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).wrapContentHeight().align(Alignment.Center).clip(RoundedCornerShape(12.dp)).background(Color.White).border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(12.dp)).padding(18.dp)) {
                         Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text(text = "Rezervasyonunuz oluşturulmuştur. Ajandanızdan teslim alma saatinizi kontrol edebilirsiniz.", color = Color.Black, fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                            ThinButton(modifier = Modifier.fillMaxWidth().height(44.dp), onClick = { dialogState = null }) { Text("Devam Et") }
+                            ThinButton5(modifier = Modifier.fillMaxWidth().height(44.dp), onClick = { dialogState = null }) { Text("Devam Et") }
                         }
                     }
                 }
@@ -562,7 +569,7 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
                     Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).wrapContentHeight().align(Alignment.Center).clip(RoundedCornerShape(12.dp)).background(Color.White).border(width = 1.dp, color = Color.Black, shape = RoundedCornerShape(12.dp)).padding(18.dp)) {
                         Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text(text = "Rezervasyonunuz kaldırılmıştır.", color = Color.Black, fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                            ThinButton(modifier = Modifier.fillMaxWidth().height(44.dp), onClick = { dialogState = null }) { Text("Devam Et") }
+                            ThinButton5(modifier = Modifier.fillMaxWidth().height(44.dp), onClick = { dialogState = null }) { Text("Devam Et") }
                         }
                     }
                 }
@@ -573,10 +580,10 @@ fun Laundry1_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> 
 
 /* Yardımcılar */
 
-private data class DayInfo(val number: Int, val short: String, val full: String)
+private data class DayInfo5(val number: Int, val short: String, val full: String)
 
 @Composable
-fun HourBox(hour: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun HourBox5(hour: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val shape = RoundedCornerShape(12.dp)
     val bg = if (isSelected) ActiveColor else Color.White
     val textColor = if (isSelected) Color.White else DefaultHourTextColor
@@ -588,7 +595,7 @@ fun HourBox(hour: String, isSelected: Boolean, modifier: Modifier = Modifier, on
 }
 
 @Composable
-fun TopSquare(index: Int, state: String, isSelected: Boolean, onClick: () -> Unit) {
+fun TopSquare5(index: Int, state: String, isSelected: Boolean, onClick: () -> Unit) {
     val shape = RoundedCornerShape(8.dp)
 
     // Duruma göre renkler ve border'ı ayarla
@@ -618,7 +625,7 @@ fun TopSquare(index: Int, state: String, isSelected: Boolean, onClick: () -> Uni
 }
 
 @Composable
-fun GradientButton(modifier: Modifier = Modifier, gradient: Brush, shape: Shape = RoundedCornerShape(12.dp), enabled: Boolean = true, onClick: () -> Unit, content: @Composable BoxScope.() -> Unit) {
+fun GradientButton5(modifier: Modifier = Modifier, gradient: Brush, shape: Shape = RoundedCornerShape(12.dp), enabled: Boolean = true, onClick: () -> Unit, content: @Composable BoxScope.() -> Unit) {
     val clickableModifier = if (enabled) Modifier.clickable { onClick() } else Modifier
     val alpha = if (enabled) 1f else 0.5f
 
@@ -628,7 +635,7 @@ fun GradientButton(modifier: Modifier = Modifier, gradient: Brush, shape: Shape 
 }
 
 @Composable
-fun SolidButton(modifier: Modifier = Modifier, color: Color, shape: Shape = RoundedCornerShape(12.dp), enabled: Boolean = true, onClick: () -> Unit, content: @Composable BoxScope.() -> Unit) {
+fun SolidButton5(modifier: Modifier = Modifier, color: Color, shape: Shape = RoundedCornerShape(12.dp), enabled: Boolean = true, onClick: () -> Unit, content: @Composable BoxScope.() -> Unit) {
     val clickableModifier = if (enabled) Modifier.clickable { onClick() } else Modifier
     val alpha = if (enabled) 1f else 0.5f
     Box(modifier = modifier.clip(shape).background(color = color, shape = shape).then(clickableModifier).alpha(alpha), contentAlignment = Alignment.Center) {
@@ -637,14 +644,14 @@ fun SolidButton(modifier: Modifier = Modifier, color: Color, shape: Shape = Roun
 }
 
 @Composable
-fun ThinButton(modifier: Modifier = Modifier, onClick: () -> Unit, content: @Composable BoxScope.() -> Unit) {
+fun ThinButton5(modifier: Modifier = Modifier, onClick: () -> Unit, content: @Composable BoxScope.() -> Unit) {
     val shape = RoundedCornerShape(10.dp)
     Box(modifier = modifier.clip(shape).background(Color.White, shape = shape).border(width = 1.dp, color = Color.Black, shape = shape).clickable { onClick() }.padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
         Box(modifier = Modifier.padding(horizontal = 4.dp), content = content)
     }
 }
 
-fun generateHourlyList(startHour: Int, endHour: Int): List<String> {
+fun generateHourlyList5(startHour: Int, endHour: Int): List<String> {
     return (startHour until endHour).map { hour ->
         val amPm = if (hour < 12) "AM" else "PM"
         val hour12 = if (hour % 12 == 0) 12 else hour % 12
@@ -657,13 +664,13 @@ private const val TOPS_PER_HOUR = 10
 private const val HOURS_PER_DAY = 12
 private const val ROWS_PER_DAY = HOURS_PER_DAY * TOPS_PER_HOUR // 120
 
-fun getGlobalTableId(dayIndex: Int, hourIndex: Int, topIndex: Int): Int {
+fun getGlobalTableId5(dayIndex: Int, hourIndex: Int, topIndex: Int): Int {
     // dayIndex: 0..2
     val dayOffset = dayIndex * ROWS_PER_DAY
     return dayOffset + hourIndex * TOPS_PER_HOUR + topIndex + 1 // 1-based (machine_id)
 }
 
-fun parseMachineIdToDayHourTop(machineId: Int): Triple<Int, Int, Int> {
+fun parseMachineIdToDayHourTop5(machineId: Int): Triple<Int, Int, Int> {
     val zeroBased = machineId - 1
     val dayBlock = zeroBased / ROWS_PER_DAY // 0..2
     val dayIndex = dayBlock
