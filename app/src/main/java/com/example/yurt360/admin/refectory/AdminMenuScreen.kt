@@ -2,37 +2,38 @@ package com.example.yurt360.admin.refectory
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.yurt360.R
 import com.example.yurt360.common.model.Menu
 import com.example.yurt360.user.refectory.AdminMenuViewModel
+import com.example.yurt360.common.components.CustomAdminBottomNavigationBar
 
-// --- RENK TANIMLARI (User Tarafıyla Uyumlu) ---
+// --- RENKLER ---
 private val OrangePrimary = Color(0xFFF27A39)
 private val BackgroundColor = Color(0xFFF9F9F9)
-private val TextDark = Color(0xFF333333)
-private val RedDelete = Color(0xFFE53935)
-private val RedBackground = Color(0xFFFFEBEE)
+private val TextDarkGray = Color(0xFF333333) // Siyah/Koyu Gri (Kapalı liste için)
+private val LightBlueIcon = Color(0xFF7B85D8) // Mavimsi (Seçili olan ve İkonlar için)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,151 +45,56 @@ fun AdminMenuScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val context = LocalContext.current
 
-    // Input state
-    var dateInput by remember { mutableStateOf("") }
-    var foodsInput by remember { mutableStateOf("") }
+    var expandedMenuId by remember { mutableStateOf<Long?>(null) }
+    var editedFoods by remember { mutableStateOf("") }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Menü Yönetimi",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { onNavigateBack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Geri",
-                            tint = Color.White
-                        )
+        containerColor = BackgroundColor,
+        bottomBar = {
+            CustomAdminBottomNavigationBar(
+                onNavigate = { route ->
+                    when (route) {
+                        "home" -> onNavigateBack()
+                        "calendar" -> {
+                            Toast.makeText(context, "Duyuru Paneli", Toast.LENGTH_SHORT).show()
+                        }
+                        "profile" -> { /* Profil */ }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = OrangePrimary
-                )
+                }
             )
-        },
-        containerColor = BackgroundColor
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(bottom = innerPadding.calculateBottomPadding())
         ) {
 
-            // --- 1. EKLEME BÖLÜMÜ (Üst Turuncu Alan ve Kart) ---
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(OrangePrimary)
-                    .padding(horizontal = 20.dp, vertical = 10.dp)
-                    .padding(bottom = 20.dp) // Alt kavis efekti için boşluk
-            ) {
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(8.dp),
-                    modifier = Modifier.fillMaxWidth()
+            // --- ÜST KISIM ---
+            Box(modifier = Modifier.fillMaxWidth()) {
+                UserStyleTopHeader()
+
+                IconButton(
+                    onClick = onNavigateBack,
+                    modifier = Modifier
+                        .padding(top = 40.dp, start = 16.dp)
+                        .align(Alignment.TopStart)
                 ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                            Icon(Icons.Default.Add, contentDescription = null, tint = OrangePrimary)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Yeni Menü Oluştur",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = TextDark
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Tarih Input
-                        OutlinedTextField(
-                            value = dateInput,
-                            onValueChange = { dateInput = it },
-                            label = { Text("Tarih (Örn: 14 Ekim Pazartesi)") },
-                            leadingIcon = { Icon(Icons.Default.DateRange, contentDescription = null, tint = OrangePrimary) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = OrangePrimary,
-                                focusedLabelColor = OrangePrimary,
-                                cursorColor = OrangePrimary
-                            )
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Yemekler Input
-                        OutlinedTextField(
-                            value = foodsInput,
-                            onValueChange = { foodsInput = it },
-                            label = { Text("Yemek Listesi") },
-                            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null, tint = OrangePrimary) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            maxLines = 4,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = OrangePrimary,
-                                focusedLabelColor = OrangePrimary,
-                                cursorColor = OrangePrimary
-                            )
-                        )
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        // Ekle Butonu
-                        Button(
-                            onClick = {
-                                if (dateInput.isNotBlank() && foodsInput.isNotBlank()) {
-                                    viewModel.addMenu(dateInput, foodsInput) {
-                                        Toast.makeText(context, "Menü Başarıyla Eklendi", Toast.LENGTH_SHORT).show()
-                                        dateInput = ""
-                                        foodsInput = ""
-                                    }
-                                } else {
-                                    Toast.makeText(context, "Lütfen tarih ve yemek giriniz", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth().height(50.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
-                            shape = RoundedCornerShape(12.dp),
-                            enabled = !isLoading
-                        ) {
-                            if (isLoading) {
-                                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                            } else {
-                                Text("LİSTEYE EKLE", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        contentDescription = "Geri",
+                        tint = TextDarkGray,
+                        modifier = Modifier.size(32.dp)
+                    )
                 }
             }
 
-            // --- 2. LİSTE BAŞLIĞI ---
-            Text(
-                text = "EKLİ OLAN MENÜLER",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Gray,
-                modifier = Modifier
-                    .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 8.dp)
-            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // --- 3. MENÜ LİSTESİ ---
+            // --- LİSTE ---
             if (menuList.isEmpty() && !isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Henüz hiç menü eklenmemiş.", color = Color.Gray)
+                    Text("Henüz menü eklenmemiş.", color = Color.Gray)
                 }
             } else {
                 LazyColumn(
@@ -196,87 +102,188 @@ fun AdminMenuScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(menuList) { menu ->
-                        AdminMenuCardItem(
-                            menu = menu,
-                            onDelete = {
-                                viewModel.deleteMenu(menu.id)
-                                Toast.makeText(context, "Menü Silindi", Toast.LENGTH_SHORT).show()
-                            }
-                        )
+                        if (menu.id == expandedMenuId) {
+                            // --- SEÇİLİ (Expanded) ---
+                            AdminMenuItemExpanded(
+                                menu = menu,
+                                currentFoods = editedFoods,
+                                onFoodsChange = { editedFoods = it },
+                                onSave = {
+                                    viewModel.addMenu(menu.date, editedFoods) {
+                                        Toast.makeText(context, "Menü Güncellendi", Toast.LENGTH_SHORT).show()
+                                        expandedMenuId = null
+                                    }
+                                },
+                                onDelete = {
+                                    viewModel.deleteMenu(menu.id)
+                                    Toast.makeText(context, "Menü Silindi", Toast.LENGTH_SHORT).show()
+                                    expandedMenuId = null
+                                },
+                                onCollapse = { expandedMenuId = null }
+                            )
+                        } else {
+                            // --- SEÇİLİ DEĞİL (Collapsed) ---
+                            AdminMenuItemCollapsed(
+                                menu = menu,
+                                onExpand = {
+                                    expandedMenuId = menu.id
+                                    editedFoods = menu.foods
+                                }
+                            )
+                        }
                     }
-                    item { Spacer(modifier = Modifier.height(50.dp)) } // Liste sonu boşluk
+                    item { Spacer(modifier = Modifier.height(20.dp)) }
                 }
             }
         }
     }
 }
 
+// --- BİLEŞENLER ---
+
 @Composable
-fun AdminMenuCardItem(
+fun UserStyleTopHeader() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(220.dp)
+            .shadow(elevation = 10.dp, shape = RoundedCornerShape(bottomStart = 50.dp, bottomEnd = 50.dp))
+            .background(Color.White, shape = RoundedCornerShape(bottomStart = 50.dp, bottomEnd = 50.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "BUGÜNÜN MENÜSÜ",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextDarkGray
+            )
+            Text(
+                text = "Yönetim Paneli",
+                fontSize = 14.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider(modifier = Modifier.width(200.dp), thickness = 1.dp, color = Color.LightGray)
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Menüleri düzenlemek için\nlütfen listeden bir tarih seçiniz.",
+                fontSize = 14.sp,
+                color = TextDarkGray,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 32.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun AdminMenuItemCollapsed(menu: Menu, onExpand: () -> Unit) {
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onExpand() }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // DEĞİŞİKLİK BURADA: Seçili olmadığı için renk TextDarkGray (Siyah)
+            Text(
+                text = menu.date,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextDarkGray
+            )
+
+            Icon(
+                painter = painterResource(id = R.drawable.edit_icon),
+                contentDescription = "Düzenle",
+                tint = LightBlueIcon,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun AdminMenuItemExpanded(
     menu: Menu,
-    onDelete: () -> Unit
+    currentFoods: String,
+    onFoodsChange: (String) -> Unit,
+    onSave: () -> Unit,
+    onDelete: () -> Unit,
+    onCollapse: () -> Unit
 ) {
     Card(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(4.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Sol Çizgi (Estetik vurgu)
-            Box(
-                modifier = Modifier
-                    .width(4.dp)
-                    .height(60.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(OrangePrimary)
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            // Orta Kısım: Tarih ve Yemekler
-            Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // DEĞİŞİKLİK BURADA: Seçili olduğu için renk LightBlueIcon (Mavi)
                 Text(
                     text = menu.date,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = TextDark
+                    color = LightBlueIcon
                 )
-
-                HorizontalDivider(
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
-                        .width(40.dp),
-                    thickness = 2.dp,
-                    color = Color.LightGray.copy(alpha = 0.5f)
-                )
-
-                Text(
-                    text = menu.foods,
-                    fontSize = 14.sp,
-                    color = Color.DarkGray,
-                    lineHeight = 20.sp
-                )
+                IconButton(onClick = onCollapse, modifier = Modifier.size(24.dp)) {
+                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Kapat", tint = Color.Gray)
+                }
             }
-
-            // Sağ Kısım: Silme Butonu
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .background(RedBackground, CircleShape) // Kırmızımsı hafif arka plan
-                    .size(44.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Sil",
-                    tint = RedDelete
-                )
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = currentFoods,
+                onValueChange = onFoodsChange,
+                modifier = Modifier.fillMaxWidth().height(180.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = OrangePrimary,
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedContainerColor = Color(0xFFFAFAFA),
+                    unfocusedContainerColor = Color(0xFFFAFAFA)
+                ),
+                textStyle = LocalTextStyle.current.copy(fontSize = 15.sp, lineHeight = 22.sp)
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(
+                    onClick = onDelete,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFEBEE)),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        tint = Color.Red,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Sil", color = Color.Red)
+                }
+                Button(
+                    onClick = onSave,
+                    colors = ButtonDefaults.buttonColors(containerColor = OrangePrimary),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.weight(2f)
+                ) {
+                    Text("Menüyü Kaydet", fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
