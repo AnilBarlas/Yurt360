@@ -21,7 +21,7 @@ class CalendarViewModel : ViewModel() {
     val uiState: StateFlow<CalendarUiState> = _uiState.asStateFlow()
 
     init {
-        // ViewModel ilk açıldığında bugünün verilerini çek
+
         fetchEventsForDate(LocalDate.now())
     }
 
@@ -35,7 +35,6 @@ class CalendarViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(isLoading = true)
 
             try {
-                // 1. Giriş yapan kullanıcının ID'sini kontrol et
                 val currentUser = SupabaseClient.client.auth.currentUserOrNull()
                 val userId = currentUser?.id
 
@@ -45,11 +44,9 @@ class CalendarViewModel : ViewModel() {
                     return@launch
                 }
 
-                // Tarihi 'YYYY-MM-DD' formatına çevir
                 val dateString = date.format(DateTimeFormatter.ISO_LOCAL_DATE)
                 println("CalendarViewModel: Veri çekiliyor... Tablo: 'ajanda', UserID: $userId, Tarih: $dateString")
 
-                // 2. Supabase Sorgusu - Tablo ismi "ajanda" olarak güncellendi
                 val result = SupabaseClient.client.from("ajanda").select {
                     filter {
                         eq("user_id", userId)
@@ -59,9 +56,7 @@ class CalendarViewModel : ViewModel() {
 
                 println("CalendarViewModel: ${result.size} adet etkinlik bulundu.")
 
-                // 3. Veriyi UI Modelini (Event) Dönüştür
                 val uiEvents = result.map { dto ->
-                    // Saat formatlama (HH:mm:ss -> HH:mm)
                     val parsedTime = try {
                         LocalTime.parse(dto.time)
                     } catch (e: Exception) {
@@ -74,7 +69,7 @@ class CalendarViewModel : ViewModel() {
                         time = parsedTime.format(DateTimeFormatter.ofPattern("HH:mm")),
                         isSelected = false
                     )
-                }.sortedBy { it.time } // Saate göre sırala
+                }.sortedBy { it.time }
 
                 _uiState.value = _uiState.value.copy(
                     events = uiEvents,
@@ -82,7 +77,6 @@ class CalendarViewModel : ViewModel() {
                 )
 
             } catch (e: Exception) {
-                // Hata durumunda log bas
                 e.printStackTrace()
                 println("CalendarViewModel HATA: ${e.message}")
 
@@ -107,9 +101,9 @@ class CalendarViewModel : ViewModel() {
     private fun mapRefTypeToSubtitle(refType: String): String {
         val type = refType.lowercase()
         return when {
-            type.contains("work") -> "Çalışma Rezervasyonu"
-            type.contains("laundry") -> "Yıkama/Kurutma Randevusu"
-            type.contains("menu") -> "Yemekhane Menüsü"
+            type.contains("work") -> "Rezervation"
+            type.contains("laundry") -> "Rezervation"
+            type.contains("menu") -> "What the Food!"
             else -> "Planlanmış Etkinlik"
         }
     }

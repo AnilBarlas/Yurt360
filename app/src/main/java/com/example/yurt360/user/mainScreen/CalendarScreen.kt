@@ -28,13 +28,10 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.*
-
-// Renk Tanımları
 val LightBackground = Color(0xFFF8F9FA)
 val SelectedBlue = Color(0xFF8E99F3)
 val LinePurple = Color(0xFFB0B7FF)
 
-// UI Modeli
 data class Event(
     val title: String,
     val subtitle: String,
@@ -46,9 +43,9 @@ data class Event(
 fun CalendarScreen(
     onNavigate: (String) -> Unit,
     onBackClick: () -> Unit,
-    viewModel: CalendarViewModel = viewModel() // ViewModel Enjekte Edildi
+    viewModel: CalendarViewModel = viewModel()
 ) {
-    // ViewModel'den gelen State'i dinle
+
     val uiState by viewModel.uiState.collectAsState()
 
     val currentMonthName = uiState.selectedDate.month.getDisplayName(TextStyle.FULL, Locale("tr")).uppercase()
@@ -62,8 +59,7 @@ fun CalendarScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState()),
+                .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(30.dp))
@@ -82,7 +78,7 @@ fun CalendarScreen(
                         .offset(y = (-35).dp)
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.arrow), // Arrow ikonu kontrol edilmeli
+                        painter = painterResource(id = R.drawable.arrow),
                         contentDescription = "Geri",
                         tint = Color(0xFF2D2D2D),
                         modifier = Modifier.size(28.dp)
@@ -101,7 +97,6 @@ fun CalendarScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Dekoratif Çizgi
             Box(
                 modifier = Modifier
                     .width(150.dp)
@@ -112,7 +107,6 @@ fun CalendarScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 2. Takvim Kartı
             Box(modifier = Modifier.padding(horizontal = 20.dp)) {
                 CalendarGridCard(
                     selectedDate = uiState.selectedDate,
@@ -124,13 +118,11 @@ fun CalendarScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 3. Today Paneli (Dinamik Veri ile)
             TodayUnifiedCard(
                 events = uiState.events,
-                isLoading = uiState.isLoading
+                isLoading = uiState.isLoading,
+                modifier = Modifier.weight(1f)
             )
-
-            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }
@@ -140,12 +132,10 @@ fun CalendarGridCard(
     selectedDate: LocalDate,
     onDateClick: (LocalDate) -> Unit
 ) {
-    // Ayın günlerini hesapla
     val yearMonth = YearMonth.of(selectedDate.year, selectedDate.month)
     val daysInMonth = yearMonth.lengthOfMonth()
     val firstDayOfMonth = selectedDate.withDayOfMonth(1)
 
-    // Basitlik için 1'den başlayıp gün sayısına kadar liste (Gerçek takvim hizalaması için dayOfWeek kullanılabilir)
     val calendarDays = (1..daysInMonth).chunked(7)
 
     Surface(
@@ -184,7 +174,7 @@ fun CalendarGridCard(
                                     if (isSelected) Modifier.border(4.dp, OrangePrimary, CircleShape)
                                     else Modifier
                                 )
-                                .clickable { onDateClick(currentDateInLoop) }, // Tıklanabilirlik eklendi
+                                .clickable { onDateClick(currentDateInLoop) },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -195,7 +185,6 @@ fun CalendarGridCard(
                             )
                         }
                     }
-                    // Satırı doldurmak için boşluk
                     if (week.size < 7) {
                         repeat(7 - week.size) { Spacer(modifier = Modifier.size(34.dp)) }
                     }
@@ -206,7 +195,7 @@ fun CalendarGridCard(
 }
 
 @Composable
-fun TodayUnifiedCard(events: List<Event>, isLoading: Boolean) {
+fun TodayUnifiedCard(events: List<Event>, isLoading: Boolean, modifier: Modifier = Modifier) {
     val specialShape = RoundedCornerShape(
         topStart = 90.dp,
         topEnd = 90.dp,
@@ -215,9 +204,8 @@ fun TodayUnifiedCard(events: List<Event>, isLoading: Boolean) {
     )
 
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .wrapContentHeight()
             .shadow(
                 elevation = 15.dp,
                 shape = specialShape,
@@ -227,10 +215,12 @@ fun TodayUnifiedCard(events: List<Event>, isLoading: Boolean) {
         shape = specialShape
     ) {
         Column(
-            modifier = Modifier.padding(24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp)
         ) {
             Text(
-                text = "Ajanda", // Başlık güncellendi
+                text = "Today",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
@@ -241,7 +231,6 @@ fun TodayUnifiedCard(events: List<Event>, isLoading: Boolean) {
             Spacer(modifier = Modifier.height(20.dp))
 
             if (isLoading) {
-                // Yükleniyor Göstergesi
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = OrangePrimary)
                 }
@@ -263,6 +252,8 @@ fun TodayUnifiedCard(events: List<Event>, isLoading: Boolean) {
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }
