@@ -220,6 +220,7 @@ fun ContactInfoContent(user: User) {
 @Composable
 fun PersonalInfoContent(user: User) {
     ProfileInfoRow(label = "Kimlik No", value = user.tc)
+    ProfileInfoRow(label = "Öğrenci No", value = user.studentNumber)
     ProfileInfoRow(label = "Ad", value = user.name)
     ProfileInfoRow(label = "Soyad", value = user.surname)
     ProfileInfoRow(label = "Cinsiyet", value = user.gender)

@@ -447,7 +447,7 @@ fun RootNavigation(currentIntent: Intent?) {
         if (currentAdmin != null) {
             AdminSideMenuView(
                 isOpen = isMenuOpen,
-                user = User(id = currentAdmin!!.id, name = currentAdmin!!.name, surname = currentAdmin!!.surname, email = currentAdmin!!.email, phone = "", tc = "", gender = "", bloodType = "", birthDate = "", address = "", location = "", roomNo = "", image_url = ""),
+                user = User(id = currentAdmin!!.id, name = currentAdmin!!.name, surname = currentAdmin!!.surname, email = currentAdmin!!.email, studentNumber = "",phone = "", tc = "", gender = "", bloodType = "", birthDate = "", address = "", location = "", roomNo = "", image_url = ""),
                 onClose = { isMenuOpen = false },
                 onNavigate = { handleAdminNavigation(navController, it); isMenuOpen = false },
                 onLogout = {

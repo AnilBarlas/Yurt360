@@ -7,6 +7,7 @@ data class User(
     override val name: String,
     override val surname: String,
     override val email: String,
+    val studentNumber: String,
     val phone: String,
     val tc: String,
     val gender: String,
