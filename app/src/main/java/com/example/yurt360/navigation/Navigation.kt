@@ -24,6 +24,7 @@ import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import com.example.yurt360.R
+import com.example.yurt360.admin.changeRoom.AdminApplicationsScreen
 import com.example.yurt360.admin.mainScreen.*
 import com.example.yurt360.admin.refectory.AdminMenuScreen
 import com.example.yurt360.common.components.*
@@ -33,7 +34,10 @@ import com.example.yurt360.common.passwordScreens.NewPasswordScreen
 import com.example.yurt360.common.passwordScreens.ResetPasswordScreen
 import com.example.yurt360.user.mainScreen.*
 import com.example.yurt360.user.refectory.MenuScreen
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.yurt360.admin.changeRoom.AdminApplicationsViewModel
+import com.example.yurt360.admin.changeRoom.AdminApplicationsScreen
+import com.example.yurt360.admin.changeRoom.AdminApplicationDetailScreen
 
 // Supabase ve Deep Link işlemleri için gerekli importlar
 import com.example.yurt360.data.api.SupabaseClient
@@ -190,7 +194,7 @@ fun RootNavigation(currentIntent: Intent?) {
             currentUser != null -> Routes.USER_HOME
             else -> Routes.LOGIN
         }
-
+        val adminViewModel: AdminApplicationsViewModel = viewModel()
         NavHost(
             navController = navController,
             startDestination = startRoute,
@@ -407,7 +411,27 @@ fun RootNavigation(currentIntent: Intent?) {
                     onNavigate = { handleAdminNavigation(navController, it) }
                 )
             }
+
+            composable("admin_applications") {
+                AdminApplicationsScreen(
+                    onNavigate = { route -> navController.navigate(route) }
+                )
+            }
+
+            composable("admin_application_detail") {
+                // Read the data from the shared ViewModel
+                val selectedApp = adminViewModel.selectedApplication
+
+                // Only show screen if data exists (safety check)
+                if (selectedApp != null) {
+                    AdminApplicationDetailScreen(
+                        application = selectedApp,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+            }
         }
+
 
         // --- LOADING SCREEN ve MENÜLER (Overlay) ---
         if (!isSessionChecked) {
