@@ -21,7 +21,7 @@ data class ProfileDto(
 
     @SerialName("type")
     val isAdmin: Boolean = false,
-
+    val studentNumber: String? = null,
     val phone: String? = null,
     val tc: String? = null,
     val gender: String? = null,
@@ -37,9 +37,20 @@ data class ProfileDto(
             Admin(id, name ?: "", surname ?: "", email ?: "")
         } else {
             User(
-                id, name ?: "", surname ?: "", email ?: "",
-                phone ?: "", tc ?: "", gender ?: "", bloodType ?: "",
-                birthDate ?: "", address ?: "", location ?: "", roomNo ?: "", image_url ?: ""
+                id = id,
+                name = name ?: "",
+                surname = surname ?: "",
+                email = email ?: "",
+                studentNumber = studentNumber ?: "",
+                phone = phone ?: "",
+                tc = tc ?: "",
+                gender = gender ?: "",
+                bloodType = bloodType ?: "",
+                birthDate = birthDate ?: "",
+                address = address ?: "",
+                location = location ?: "",
+                roomNo = roomNo ?: "",
+                image_url = image_url ?: ""
             )
         }
     }
