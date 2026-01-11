@@ -61,7 +61,7 @@ data class ReservationRow2(
 )
 
 @Composable
-fun WorkSpace2() {
+fun WorkSpace2_Kuzey2() {
     val client = SupabaseClient.client
     val scope = rememberCoroutineScope()
 

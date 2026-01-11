@@ -41,7 +41,6 @@ import kotlinx.coroutines.launch
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import kotlinx.coroutines.isActive
 import com.example.yurt360.R
-import com.example.yurt360.common.components.UserBottomNavigationBar
 import kotlinx.serialization.Serializable
 
 // Renkler
@@ -76,7 +75,7 @@ data class AjandaInsert(
 )
 
 @Composable
-fun WorkSpace1( onNavigateHome: () -> Unit = {},onNavigation: (String) -> Unit ) {
+fun WorkSpace1_Kuzey1( onNavigateHome: () -> Unit = {} ) {
     val client = SupabaseClient.client
     val scope = rememberCoroutineScope()
 
@@ -122,10 +121,16 @@ fun WorkSpace1( onNavigateHome: () -> Unit = {},onNavigation: (String) -> Unit )
         Scaffold(
             modifier = Modifier.matchParentSize(),
             bottomBar = {
-                UserBottomNavigationBar(
-                    onNavigate = onNavigation
+                CustomBottomNavigationBar(
+                    onNavigate = { route ->
+                        when (route) {
+                            "home" -> { /* navController.navigate("home") */ }
+                            "calendar" -> { /* navController.navigate("calendar") */ }
+                            "profile" -> { /* navController.navigate("profile") */ }
+                        }
+                    }
                 )
-            },
+            }
         ) { paddingVals ->
             // İçerik
             Box(

@@ -61,7 +61,7 @@ data class ReservationRow3(
 )
 
 @Composable
-fun WorkSpace3() {
+fun WorkSpace3_Meydan() {
     val client = SupabaseClient.client
     val scope = rememberCoroutineScope()
 
