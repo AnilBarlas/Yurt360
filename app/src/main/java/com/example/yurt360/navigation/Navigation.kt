@@ -38,6 +38,9 @@ import com.example.yurt360.user.refectory.MenuScreen
 // Supabase ve Deep Link işlemleri için gerekli importlar
 import com.example.yurt360.data.api.SupabaseClient
 import com.example.yurt360.user.workSpace.WorkSpace1_Kuzey1
+// ApplicationsScreen import edildi
+import com.example.yurt360.user.changeRoom.ApplicationsScreen
+
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.handleDeeplinks
 import io.github.jan.supabase.gotrue.user.UserSession
@@ -305,6 +308,14 @@ fun RootNavigation(currentIntent: Intent?) {
                     }
                 } ?: NavigateToLogin(navController)
             }
+
+            // --- YENİ EKLENEN KISIM: Başvurular Ekranı ---
+            composable(Routes.USER_APPLICATIONS) {
+                ApplicationsScreen(
+                    onNavigate = { handleUserNavigation(navController, it) }
+                )
+            }
+            // ---------------------------------------------
 
             composable(Routes.USER_SETTINGS) {
                 UserSettingsScreen(
