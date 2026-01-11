@@ -25,6 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import com.example.yurt360.R
 import com.example.yurt360.admin.mainScreen.*
+import com.example.yurt360.admin.refectory.AdminMenuScreen
 import com.example.yurt360.common.components.*
 import com.example.yurt360.common.model.Admin
 import com.example.yurt360.common.model.User
@@ -359,6 +360,12 @@ fun RootNavigation(currentIntent: Intent?) {
                             navController.popBackStack()
                         }
                     }
+                )
+            }
+
+            composable(Routes.ADMIN_MENU) {
+                AdminMenuScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
 
