@@ -2,18 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@drawable/mainlogo"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/mainlogo"
         android:supportsRtl="true"
         android:theme="@style/Theme.Yurt360">
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:theme="@style/Theme.App.Starting"
             android:launchMode="singleTop">
 
             <intent-filter>
@@ -26,7 +26,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <!-- Deep link şeması -->
                 <data android:scheme="yurt360" android:host="new_password" />
             </intent-filter>
         </activity>

@@ -6,4 +6,14 @@
     </style>
 
     <style name="Theme.Yurt360" parent="Base.Theme.Yurt360" />
+
+    <!-- YENİ EKLENEN: Başlangıç (Splash) Teması -->
+    <!-- Bu tema uygulama açılır açılmaz devreye girer -->
+    <style name="Theme.App.Starting" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Arka planı sizin yüklediğiniz resim yapıyoruz -->
+        <item name="android:windowBackground">@drawable/loadingscreen</item>
+        <!-- Durum çubuğunu (saat, pil vb.) şeffaf yapıp resmin tam ekran görünmesini sağlarız -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
 </resources>

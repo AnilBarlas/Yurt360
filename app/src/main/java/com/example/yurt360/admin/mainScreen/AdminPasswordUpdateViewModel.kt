@@ -28,7 +28,6 @@ class AdminPasswordUpdateViewModel : ViewModel() {
     fun updatePassword() {
         val currentState = _uiState.value
 
-        // Basit validasyonlar
         if (currentState.newPassword.length < 6) {
             _uiState.update { it.copy(errorMessage = "Şifre en az 6 karakter olmalıdır.") }
             return
