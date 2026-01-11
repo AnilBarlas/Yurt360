@@ -1,4 +1,4 @@
-package com.example.yurt360.user.laundry
+package com.example.yurt360.user.laundry2
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -30,6 +30,9 @@ import androidx.compose.ui.zIndex
 import com.example.yurt360.common.components.CustomBottomNavigationBar
 import com.example.yurt360.data.api.SupabaseClient
 import com.example.yurt360.R
+//import com.example.yurt360.user.laundry.ThinBorderColor
+import com.example.yurt360.user.laundry.TopSquare
+//import com.example.yurt360.user.laundry.DB_TABLE
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.TextStyle
@@ -51,7 +54,7 @@ private val DayTextColor = Color.White
 
 private val TopDefaultBg = Color(0xFFF0EAE1)
 
-// Mor tonları
+// Mor tonları (ilk verdiğin koddaki palet)
 private val LightPurple = Color(0xFFB6BCFE)
 private val MidPurple = Color(0xFFA4ABF3)
 private val DarkPurple = Color(0xFF929AE9)
@@ -60,7 +63,7 @@ private val ReservedBorderColor = Color(0xFFBDBDBD)
 private val DefaultHourTextColor = Color.Black
 
 // DB tablo adı ve alan adı
-private const val DB_TABLE = "laundryA_kuzey1_machines"
+private const val DB_TABLE = "laundryB_kuzey1_machines"
 private const val DB_ID_COLUMN = "machine_id"
 
 @Serializable
@@ -74,8 +77,8 @@ data class ReservationRow(
 data class AjandaInsert(
     val ref_id: Int,
     val ref_type: String,
-    val date: String,   // format: "yyyy-MM-dd"
-    val time: String,   // format: "HH:mm:ss"
+    val date: String,   // "yyyy-MM-dd"
+    val time: String,   // "HH:mm:ss"
     val user_id: String
 )
 
@@ -87,7 +90,7 @@ data class AjandaInsert(
  * - Toplam satır sayısı: 3 × 120 = 360
  */
 @Composable
-fun Laundry1_1(onNavigateHome: () -> Unit = {}) {
+fun Laundry2_1(onNavigateHome: () -> Unit = {}) {
     val client = SupabaseClient.client
     val scope = rememberCoroutineScope()
 
@@ -165,16 +168,16 @@ fun Laundry1_1(onNavigateHome: () -> Unit = {}) {
             var lastRefreshTime = 0L
 
             while (isActive) {
-                Log.d("LaundryPolling", "Polling db for reserved status… (backoff=${backoff}ms)")
+                Log.d("DryerPolling", "Polling db for reserved status… (backoff=${backoff}ms)")
                 try {
                     val now = System.currentTimeMillis()
                     if (now - lastRefreshTime > refreshInterval) {
                         try {
                             client.auth.refreshCurrentSession()
                             lastRefreshTime = System.currentTimeMillis()
-                            Log.d("LaundryPolling", "Session refreshed (periodic).")
+                            Log.d("DryerPolling", "Session refreshed (periodic).")
                         } catch (refreshEx: Exception) {
-                            Log.w("LaundryPolling", "Periodic refresh failed: ${refreshEx.localizedMessage}", refreshEx)
+                            Log.w("DryerPolling", "Periodic refresh failed: ${refreshEx.localizedMessage}", refreshEx)
                         }
                     }
 
@@ -185,17 +188,17 @@ fun Laundry1_1(onNavigateHome: () -> Unit = {}) {
                         }
                         .decodeList<ReservationRow>()
 
-                    Log.d("LaundryPollingQuery", "Reserved rows: $response")
+                    Log.d("DryerPollingQuery", "Reserved rows: $response")
                     updateReservedStatusFromList(response)
 
                     backoff = 2000L
                 } catch (e: Exception) {
-                    Log.e("LaundryPolling", "Polling error: ${e.localizedMessage}", e)
+                    Log.e("DryerPolling", "Polling error: ${e.localizedMessage}", e)
                     if (e is ConnectTimeoutException) {
                         backoff = (backoff * 2).coerceAtMost(maxBackoff)
                     } else {
                         try {
-                            Log.d("LaundryPolling", "Attempting on-demand session refresh due to error...")
+                            Log.d("DryerPolling", "Attempting on-demand session refresh due to error...")
                             client.auth.refreshCurrentSession()
                             lastRefreshTime = System.currentTimeMillis()
 
@@ -206,13 +209,13 @@ fun Laundry1_1(onNavigateHome: () -> Unit = {}) {
                                 }
                                 .decodeList<ReservationRow>()
 
-                            Log.d("LaundryPollingQuery", "Reserved rows (after refresh): $retryResponse")
+                            Log.d("DryerPollingQuery", "Reserved rows (after refresh): $retryResponse")
                             updateReservedStatusFromList(retryResponse)
 
                             backoff = 2000L
                             continue
                         } catch (innerEx: Exception) {
-                            Log.e("LaundryPolling", "Retry after refresh failed: ${innerEx.localizedMessage}", innerEx)
+                            Log.e("DryerPolling", "Retry after refresh failed: ${innerEx.localizedMessage}", innerEx)
                             backoff = (backoff * 2).coerceAtMost(maxBackoff)
                         }
                     }
@@ -235,7 +238,7 @@ fun Laundry1_1(onNavigateHome: () -> Unit = {}) {
                 val user = client.auth.retrieveUserForCurrentSession(updateSession = true)
                 val userId = user?.id
                 if (userId == null) {
-                    Log.e("LaundryReserve", "User session not found")
+                    Log.e("DryerReserve", "User session not found")
                     return@launch
                 }
 
@@ -248,51 +251,51 @@ fun Laundry1_1(onNavigateHome: () -> Unit = {}) {
                         }
                     }
 
-                Log.d("LaundryReserve", "Update response: ${response.data}")
+                Log.d("DryerReserve", "Update response: ${response.data}")
                 if (response.data != null && response.data.isNotEmpty()) {
                     topStates[dayIndex][hourIndex][topIndex] = "reserved"
                     // --- AJANDA'YA EKLEME ---
                     try {
-                        // userId zaten fonksiyon başında alındı
-                        val userIdLocal = userId // veya mevcut kullanımdaki değişken adı
+                        // userId fonksiyon başında alınıyor
+                        val userIdLocal = userId
+                        if (userIdLocal == null) {
+                            Log.e("AjandaInsert", "Kullanıcı oturumu bulunamadı — ajanda'ya insert yapılmadı.")
+                        } else {
+                            // reservationDate: today değişkeni dosyada LocalDate olarak tanımlı (zone ile)
+                            val reservationDate = today.plusDays(dayIndex.toLong()) // dayIndex: 0 -> today, 1 -> today+1, ...
 
-                        // tarih: today değişkeni Laundry1_1 içinde tanımlı (LocalDate.now(zone))
-                        // burada dayIndex 0..2 -> today, today+1, today+2
-                        val reservationDate = today.plusDays(dayIndex.toLong())
+                            // ISO format yyyy-MM-dd (Postgres date uyumlu)
+                            val dateString = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE.format(reservationDate)
 
-                        // ISO format: yyyy-MM-dd (DB date tipine uygun)
-                        val dateString = java.time.format.DateTimeFormatter.ISO_LOCAL_DATE.format(reservationDate)
-                        // veya explicit: java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault()).format(reservationDate)
+                            // time: hourIndex 0..11 => gerçek saat = 9 + hourIndex
+                            val hour24 = 9 + hourIndex
+                            val timeString24 = String.format("%02d:00:00", hour24) // ör. "17:00:00"
 
-                        // time: hourIndex 0..11 -> saat = 9 + hourIndex
-                        val hour24 = 9 + hourIndex
-                        val timeString24 = String.format("%02d:00:00", hour24) // ör: "17:00:00"
+                            // Ajanda nesnesi (Serializable)
+                            val ajandaRow = AjandaInsert(
+                                ref_id = machineId,
+                                ref_type = DB_TABLE,
+                                date = dateString,
+                                time = timeString24,
+                                user_id = userIdLocal
+                            )
 
-                        // Ajanda nesnesi (Serializable)
-                        val ajandaRow = AjandaInsert(
-                            ref_id = machineId,
-                            ref_type = DB_TABLE,
-                            date = dateString,
-                            time = timeString24,
-                            user_id = userIdLocal
-                        )
+                            // Insert: bazı wrapperlar tek obje, bazıları liste bekler. Önce tek obje dene; hata alırsan liste olarak dene.
+                            val insertResponse = try {
+                                client.from("ajanda").insert(ajandaRow) { select() }
+                            } catch (e: Exception) {
+                                client.from("ajanda").insert(listOf(ajandaRow)) { select() }
+                            }
 
-                        // insert (bazı wrapperlar tek obje, bazıları liste bekleyebilir; ikisini de test et)
-                        val insertResponse = try {
-                            client.from("ajanda").insert(ajandaRow) { select() }
-                        } catch (e: Exception) {
-                            // eğer tek obje hata verirse, liste olarak dene
-                            client.from("ajanda").insert(listOf(ajandaRow)) { select() }
+                            Log.d("AjandaInsert", "Inserted ajanda row: ${insertResponse.data}")
                         }
-
-                        Log.d("AjandaInsert", "Inserted ajanda row: ${insertResponse.data}")
                     } catch (ex: Exception) {
                         Log.e("AjandaInsert", "Ajanda insert failed: ${ex.localizedMessage}", ex)
                     }
                     // --- /AJANDA'YA EKLEME ---
                 }
             } catch (e: Exception) {
-                Log.e("LaundryReserve", "Exception reserveMachine: ${e.localizedMessage}", e)
+                Log.e("DryerReserve", "Exception reserveMachine: ${e.localizedMessage}", e)
             }
         }
     }
@@ -304,7 +307,7 @@ fun Laundry1_1(onNavigateHome: () -> Unit = {}) {
                 val user = client.auth.retrieveUserForCurrentSession(updateSession = true)
                 val userId = user?.id
                 if (userId == null) {
-                    Log.e("LaundryRemove", "User session not found")
+                    Log.e("DryerRemove", "User session not found")
                     return@launch
                 }
 
@@ -313,7 +316,7 @@ fun Laundry1_1(onNavigateHome: () -> Unit = {}) {
                         filter { eq("user_id", userId) }
                     }
 
-                Log.d("LaundryRemove", "Removed reservations: ${response.data}")
+                Log.d("DryerRemove", "Removed reservations: ${response.data}")
 
                 // --- AJANDA'DAN SİLME ---
                 try {
@@ -340,7 +343,7 @@ fun Laundry1_1(onNavigateHome: () -> Unit = {}) {
                 }
 
             } catch (e: Exception) {
-                Log.e("LaundryRemove", "Exception removeUserReservations: ${e.localizedMessage}", e)
+                Log.e("DryerRemove", "Exception removeUserReservations: ${e.localizedMessage}", e)
             }
         }
     }
@@ -425,9 +428,9 @@ fun Laundry1_1(onNavigateHome: () -> Unit = {}) {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Başlık
+                    // Başlık (Kurutma Makinesi Doluluğu)
                     Box(modifier = Modifier.fillMaxWidth(0.94f).height(56.dp).clip(RoundedCornerShape(12.dp)).background(Color.White).border(width = 1.dp, color = ThinBorderColor, shape = RoundedCornerShape(12.dp)).padding(12.dp).align(Alignment.CenterHorizontally), contentAlignment = Alignment.Center) {
-                        Text(text = "Çamaşır Makinesi Doluluğu", color = Color.Black, fontSize = 16.sp)
+                        Text(text = "Kurutma Makinesi Doluluğu", color = Color.Black, fontSize = 16.sp)
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
