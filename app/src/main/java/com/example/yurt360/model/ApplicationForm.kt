@@ -8,5 +8,6 @@ data class ApplicationForm(
     @SerialName("user_id") val userId: String,
     @SerialName("type") val type: String,
     @SerialName("message") val message: String,
-    @SerialName("isApproved") val isApproved: Boolean = false
+    @SerialName("isApproved") val isApproved: Boolean? = null,
+    @SerialName("created_at") val createdAt: String? = null
 )
