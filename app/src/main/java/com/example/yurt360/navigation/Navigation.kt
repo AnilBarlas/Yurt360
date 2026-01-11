@@ -32,12 +32,16 @@ import com.example.yurt360.common.passwordScreens.NewPasswordScreen
 import com.example.yurt360.common.passwordScreens.ResetPasswordScreen
 import com.example.yurt360.user.mainScreen.*
 import com.example.yurt360.user.refectory.MenuScreen
+
+
 // Supabase ve Deep Link işlemleri için gerekli importlar
 import com.example.yurt360.data.api.SupabaseClient
+import com.example.yurt360.user.workSpace.WorkSpace1_Kuzey1
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.handleDeeplinks
 import io.github.jan.supabase.gotrue.user.UserSession
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 object Routes {
     const val LOGIN = "login"
@@ -140,7 +144,6 @@ fun RootNavigation(currentIntent: Intent?) {
                         val refreshToken = params["refresh_token"] ?: ""
 
                         if (!accessToken.isNullOrEmpty()) {
-                            // Token'ı bulduk, oturumu manuel olarak içeri aktar (import)
                             SupabaseClient.client.auth.importSession(
                                 UserSession(
                                     accessToken = accessToken,
@@ -151,8 +154,6 @@ fun RootNavigation(currentIntent: Intent?) {
                                 )
                             )
 
-                            // CRITICAL FIX: Oturumu "user" objesiyle tam doğrulamak için kullanıcıyı çek
-                            // Bu işlem "requires a valid Bearer Token" hatasını önler.
                             try {
                                 SupabaseClient.client.auth.retrieveUserForCurrentSession(updateSession = true)
                             } catch (e: Exception) {
@@ -178,8 +179,7 @@ fun RootNavigation(currentIntent: Intent?) {
 
     Box(modifier = Modifier.fillMaxSize()) {
 
-        // Start route hesaplaması: Deep Link varsa EN YÜKSEK ÖNCELİK verilir.
-        // Kullanıcı giriş yapmış olsa bile link ile geldiyse şifre ekranı açılmalı.
+
         val startRoute = when {
             isPasswordResetLink -> Routes.NEW_PASSWORD
             currentAdmin != null -> Routes.ADMIN_HOME
@@ -261,6 +261,7 @@ fun RootNavigation(currentIntent: Intent?) {
                 } ?: NavigateToLogin(navController)
             }
 
+
             composable(Routes.USER_PROFILE) {
                 currentUser?.let { user ->
                     ProfileScreen(
@@ -277,6 +278,27 @@ fun RootNavigation(currentIntent: Intent?) {
 
             composable(Routes.USER_CALENDAR) {
                 CalendarScreen(onNavigate = { handleUserNavigation(navController, it) })
+            }
+
+            composable(Routes.USER_STUDY) {
+                currentUser?.let { user ->
+                    val location = user.location.lowercase(Locale("tr", "TR"))
+                    when {
+                        location.contains("kuzey") && location.contains("1") -> {
+                            WorkSpace1_Kuzey1(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) }
+                            )
+                        }
+                        else -> {
+                            // Eşleşme bulunamadıysa varsayılan olarak yine Kuzey1'i veya bir hata ekranını gösterin.
+                            WorkSpace1_Kuzey1(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) }
+                            )
+                        }
+                    }
+                } ?: NavigateToLogin(navController)
             }
 
             composable(Routes.USER_SETTINGS) {
