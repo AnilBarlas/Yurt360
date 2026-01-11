@@ -1,6 +1,5 @@
 package com.example.yurt360.navigation
 
-import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.yurt360.admin.mainScreen.AdminHomeScreen
-import com.example.yurt360.admin.mainScreen.AdminProfileScreen
+import com.example.yurt360.admin.refectory.AdminMenuScreen // <-- YENİ EKRANI IMPORT ETTİK
 import com.example.yurt360.common.components.*
 import com.example.yurt360.common.model.Admin
 import com.example.yurt360.common.model.User
@@ -57,8 +56,8 @@ fun RootNavigation() {
     val loginViewModel: LoginViewModel = viewModel()
 
     val isSessionChecked by loginViewModel.isSessionChecked.collectAsState()
-    val loginState by loginViewModel.loginState.collectAsState()
 
+    // AnnouncementViewModel hem User hem Admin home screen'de kullanılıyor
     val announcementViewModel: AnnouncementViewModel = viewModel()
 
     LaunchedEffect(Unit) {
@@ -81,7 +80,7 @@ fun RootNavigation() {
             startDestination = startRoute,
             modifier = Modifier.fillMaxSize()
         ) {
-            // login
+            // --- LOGIN ---
             composable(Routes.LOGIN) {
                 LoginScreen(
                     viewModel = loginViewModel,
@@ -121,7 +120,7 @@ fun RootNavigation() {
                 )
             }
 
-            // User
+            // --- USER SCREENS ---
             composable(Routes.HOME) {
                 currentUser?.let { user ->
                     UserHomeScreen(
@@ -143,7 +142,7 @@ fun RootNavigation() {
                 } ?: NavigateToLogin(navController)
             }
 
-            // Admin
+            // --- ADMIN SCREENS ---
             composable(Routes.ADMIN_HOME) {
                 currentAdmin?.let { admin ->
                     AdminHomeScreen(
@@ -155,18 +154,10 @@ fun RootNavigation() {
                 } ?: NavigateToLogin(navController)
             }
 
-            composable(Routes.ADMIN_HOME) {
-                currentAdmin?.let { admin ->
-                    AdminHomeScreen(
-                        admin = admin,
-                        viewModel = announcementViewModel,
-                        onMenuClick = { isMenuOpen = true },
-                        onNavigation = { route -> handleNavigation(navController, route, isAdmin = true) }
-                    )
-                } ?: NavigateToLogin(navController)
-            }
+            // Not: Senin kodunda ADMIN_PROFILE import edilmiş ama NavHost'ta yoktu.
+            // Eğer Admin Profil sayfan varsa buraya ekleyebilirsin, yoksa şimdilik atladım.
 
-            // Ortak
+            // --- ORTAK SCREENS ---
             composable(Routes.CALENDAR) {
                 CalendarScreen(
                     onNavigate = { route ->
@@ -224,16 +215,27 @@ fun RootNavigation() {
                 )
             }
 
+            // --- MENÜ EKRANI (DEĞİŞİKLİK BURADA) ---
             composable(Routes.MENU) {
-                MenuScreen(
-                    onNavigate = { route ->
-                        val isAdmin = currentAdmin != null
-                        handleNavigation(navController, route, isAdmin)
-                    }
-                )
+                // Eğer yönetici giriş yaptıysa Admin Menü ekranını aç
+                if (currentAdmin != null) {
+                    AdminMenuScreen(
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+                // Eğer normal kullanıcı ise User Menü ekranını aç
+                else {
+                    MenuScreen(
+                        onNavigate = { route ->
+                            val isAdmin = currentAdmin != null
+                            handleNavigation(navController, route, isAdmin)
+                        }
+                    )
+                }
             }
         }
 
+        // Yan Menü için Kullanıcı Bilgisi Hazırlama
         val menuUser = currentUser ?: currentAdmin?.let { admin ->
             User(id = admin.id, name = admin.name, surname = admin.surname, email = admin.email, phone = "", tc = "", gender = "", bloodType = "", birthDate = "", address = "", location = "", roomNo = "", image_url = "")
         }
@@ -246,7 +248,7 @@ fun RootNavigation() {
                 isMenuOpen = false
                 val isAdmin = currentAdmin != null
                 val target = when(route) {
-                    "profile" -> "profile"
+                    "profile" -> "profile" // handleNavigation bunu admin/user'a göre ayırır
                     "about_us" -> Routes.ABOUT_US
                     "settings" -> Routes.SETTINGS
                     "update_password" -> Routes.UPDATE_PASSWORD
