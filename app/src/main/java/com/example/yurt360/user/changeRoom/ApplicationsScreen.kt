@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yurt360.common.components.UserBottomNavigationBar
 import com.example.yurt360.common.utils.Geologica
+import com.example.yurt360.model.ApplicationForm
+import androidx.compose.foundation.background
 
 enum class ActiveSection {
     NONE, CREATE, CURRENT, PAST
@@ -32,38 +34,66 @@ enum class ActiveForm {
 }
 
 @Composable
-fun ApplicationsScreen(onNavigate: (String) -> Unit) {
+fun ApplicationsScreen(
+    onNavigate: (String) -> Unit,
+    viewModel: ApplicationsViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
     var activeForm by remember { mutableStateOf(ActiveForm.NONE) }
     var activeSection by remember { mutableStateOf(ActiveSection.NONE) }
+
+    // Dropdown states
+    var showRoomChangeDropdown by remember { mutableStateOf(false) }
+    var showComplaintDropdown by remember { mutableStateOf(false) }
+    var showSuggestionDropdown by remember { mutableStateOf(false) }
+
+    val applications by viewModel.applications.collectAsState()
+
+    fun closeAllDropdowns() {
+        showRoomChangeDropdown = false
+        showComplaintDropdown = false
+        showSuggestionDropdown = false
+    }
 
     fun getContainerColor(isActive: Boolean) = if (isActive) Color(0xFF7E87E0) else Color.White
     fun getContentColor(isActive: Boolean) = if (isActive) Color.White else Color.Black
 
-    // Decide which screen to show
+    // Wrapper for the Dropdown Box
+    @Composable
+    fun ApplicationDropdownContainer(
+        list: List<ApplicationForm>,
+        emptyMessage: String,
+        isPastSection: Boolean
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp)
+                .padding(top = 8.dp)
+                .background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp))
+                .padding(16.dp)
+        ) {
+            if (list.isEmpty()) {
+                Text(emptyMessage, fontSize = 14.sp, color = Color.Gray)
+            } else {
+                list.forEach { app ->
+                    // Use the new Item Composable here
+                    ApplicationItem(app = app, isPastSection = isPastSection)
+
+                    // Optional: Add space between items
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
+    }
+
     when (activeForm) {
-        ActiveForm.ROOM_CHANGE -> {
-            RoomChangeFormScreen(
-                onNavigate = onNavigate,
-                onBack = { activeForm = ActiveForm.NONE }
-            )
-        }
-        ActiveForm.COMPLAINT -> {
-            ComplaintFormScreen(
-                onNavigate = onNavigate,
-                onBack = { activeForm = ActiveForm.NONE }
-            )
-        }
-        ActiveForm.SUGGESTION -> {
-            SuggestionFormScreen(
-                onNavigate = onNavigate,
-                onBack = { activeForm = ActiveForm.NONE }
-            )
-        }
+        ActiveForm.ROOM_CHANGE -> RoomChangeFormScreen(onNavigate, onBack = { activeForm = ActiveForm.NONE; viewModel.fetchUserApplications() })
+        ActiveForm.COMPLAINT -> ComplaintFormScreen(onNavigate, onBack = { activeForm = ActiveForm.NONE; viewModel.fetchUserApplications() })
+        ActiveForm.SUGGESTION -> SuggestionFormScreen(onNavigate, onBack = { activeForm = ActiveForm.NONE; viewModel.fetchUserApplications() })
+
         ActiveForm.NONE -> {
             Scaffold(
-                bottomBar = {
-                    UserBottomNavigationBar(onNavigate = onNavigate)
-                }
+                bottomBar = { UserBottomNavigationBar(onNavigate = onNavigate) }
             ) { innerPadding ->
                 Column(
                     modifier = Modifier
@@ -71,112 +101,77 @@ fun ApplicationsScreen(onNavigate: (String) -> Unit) {
                         .padding(innerPadding)
                         .verticalScroll(rememberScrollState())
                         .animateContentSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.height(236.dp))
-
-                    // TITLE
-                    Text(
-                        text = "BAŞVURULAR",
-                        modifier = Modifier.padding(horizontal = 12.dp),
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Normal,
-                        fontFamily = Geologica,
-                        color = Color.DarkGray,
-                        letterSpacing = 1.sp
-                    )
-
+                    Text("BAŞVURULAR", modifier = Modifier.padding(horizontal = 12.dp), fontSize = 24.sp, fontWeight = FontWeight.Normal, fontFamily = Geologica, color = Color.DarkGray, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.height(42.dp))
 
-                    // CREATE APPLICATION BUTTON
-                    MenuButton(
-                        text = "Başvuru Oluştur",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp),
-                        containerColor = getContainerColor(activeSection == ActiveSection.CREATE),
-                        contentColor = getContentColor(activeSection == ActiveSection.CREATE)
-                    ) {
-                        activeSection =
-                            if (activeSection == ActiveSection.CREATE) ActiveSection.NONE else ActiveSection.CREATE
+                    // Buttons Logic (Same as before)
+                    MenuButton("Başvuru Oluştur", Modifier.fillMaxWidth().padding(horizontal = 12.dp), getContainerColor(activeSection == ActiveSection.CREATE), getContentColor(activeSection == ActiveSection.CREATE)) {
+                        activeSection = if (activeSection == ActiveSection.CREATE) ActiveSection.NONE else ActiveSection.CREATE
+                        if (activeSection == ActiveSection.CREATE) closeAllDropdowns()
                     }
 
-                    // LOGIC SPLIT
                     if (activeSection == ActiveSection.CREATE) {
                         Spacer(modifier = Modifier.height(16.dp))
-                        val subMenuModifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp)
-
-                        MenuButton(
-                            text = "Oda Değişim Talebi Formları",
-                            modifier = subMenuModifier
-                        ) {
-                            activeForm = ActiveForm.ROOM_CHANGE
-                        }
-
+                        val subMenuModifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+                        MenuButton("Oda Değişim Talebi Formları", subMenuModifier) { activeForm = ActiveForm.ROOM_CHANGE }
                         Spacer(modifier = Modifier.height(10.dp))
-                        MenuButton(
-                            text = "Şikayet Formları",
-                            modifier = subMenuModifier
-                        ) {
-                            activeForm = ActiveForm.COMPLAINT
-                        }
-
+                        MenuButton("Şikayet Formları", subMenuModifier) { activeForm = ActiveForm.COMPLAINT }
                         Spacer(modifier = Modifier.height(10.dp))
-                        MenuButton(
-                            text = "Öneri Formları",
-                            modifier = subMenuModifier
-                        ) {
-                            activeForm = ActiveForm.SUGGESTION
-                        }
-
+                        MenuButton("Öneri Formları", subMenuModifier) { activeForm = ActiveForm.SUGGESTION }
                     } else {
                         Spacer(modifier = Modifier.height(16.dp))
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            MenuButton(
-                                text = "Güncel Başvurular",
-                                modifier = Modifier.weight(1f),
-                                containerColor = getContainerColor(activeSection == ActiveSection.CURRENT),
-                                contentColor = getContentColor(activeSection == ActiveSection.CURRENT)
-                            ) {
-                                activeSection =
-                                    if (activeSection == ActiveSection.CURRENT) ActiveSection.NONE else ActiveSection.CURRENT
+                        Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            MenuButton("Güncel Başvurular", Modifier.weight(1f), getContainerColor(activeSection == ActiveSection.CURRENT), getContentColor(activeSection == ActiveSection.CURRENT)) {
+                                activeSection = if (activeSection == ActiveSection.CURRENT) ActiveSection.NONE else ActiveSection.CURRENT
+                                closeAllDropdowns()
                             }
-
-                            MenuButton(
-                                text = "Geçmiş Başvurular",
-                                modifier = Modifier.weight(1f),
-                                containerColor = getContainerColor(activeSection == ActiveSection.PAST),
-                                contentColor = getContentColor(activeSection == ActiveSection.PAST)
-                            ) {
-                                activeSection =
-                                    if (activeSection == ActiveSection.PAST) ActiveSection.NONE else ActiveSection.PAST
+                            MenuButton("Geçmiş Başvurular", Modifier.weight(1f), getContainerColor(activeSection == ActiveSection.PAST), getContentColor(activeSection == ActiveSection.PAST)) {
+                                activeSection = if (activeSection == ActiveSection.PAST) ActiveSection.NONE else ActiveSection.PAST
+                                closeAllDropdowns()
                             }
                         }
 
-                        // DROPDOWNS FOR OTHER SECTIONS
                         if (activeSection == ActiveSection.CURRENT || activeSection == ActiveSection.PAST) {
                             Spacer(modifier = Modifier.height(16.dp))
-                            val subMenuModifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp)
+                            val subMenuModifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+                            val isPast = activeSection == ActiveSection.PAST
 
-                            MenuButton(
-                                text = "Oda Değişim Talebi Formları",
-                                modifier = subMenuModifier
-                            ) {}
+                            // 1. Oda Değişimi
+                            MenuButton("Oda Değişim Talebi Formları", subMenuModifier) {
+                                showRoomChangeDropdown = !showRoomChangeDropdown
+                                showComplaintDropdown = false; showSuggestionDropdown = false
+                            }
+                            if (showRoomChangeDropdown) {
+                                val filtered = applications.filter { it.type == "Oda Değişimi" && (if (isPast) it.isApproved != null else it.isApproved == null) }
+                                ApplicationDropdownContainer(filtered, if (isPast) "Geçmiş başvurunuz bulunmamaktadır." else "Bekleyen başvurunuz bulunmamaktadır.", isPast)
+                            }
+
                             Spacer(modifier = Modifier.height(10.dp))
-                            MenuButton(text = "Şikayet Formları", modifier = subMenuModifier) {}
+
+                            // 2. Şikayet
+                            MenuButton("Şikayet Formları", subMenuModifier) {
+                                showComplaintDropdown = !showComplaintDropdown
+                                showRoomChangeDropdown = false; showSuggestionDropdown = false
+                            }
+                            if (showComplaintDropdown) {
+                                val filtered = applications.filter { it.type == "Şikayet" && (if (isPast) it.isApproved != null else it.isApproved == null) }
+                                ApplicationDropdownContainer(filtered, if (isPast) "Geçmiş şikayetiniz bulunmamaktadır." else "Bekleyen şikayetiniz bulunmamaktadır.", isPast)
+                            }
+
                             Spacer(modifier = Modifier.height(10.dp))
-                            MenuButton(text = "Öneri Formları", modifier = subMenuModifier) {}
+
+                            // 3. Öneri
+                            MenuButton("Öneri Formları", subMenuModifier) {
+                                showSuggestionDropdown = !showSuggestionDropdown
+                                showRoomChangeDropdown = false; showComplaintDropdown = false
+                            }
+                            if (showSuggestionDropdown) {
+                                val filtered = applications.filter { it.type == "Öneri" && (if (isPast) it.isApproved != null else it.isApproved == null) }
+                                ApplicationDropdownContainer(filtered, if (isPast) "Geçmiş öneriniz bulunmamaktadır." else "Bekleyen öneriniz bulunmamaktadır.", isPast)
+                            }
                         }
                     }
                     Spacer(modifier = Modifier.height(50.dp))
