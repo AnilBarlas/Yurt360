@@ -25,12 +25,19 @@ fun AdminApplicationDetailScreen(
     application: ApplicationForm,
     onBack: () -> Unit
 ) {
-    // 1. Determine Title based on Type
+
     val titleText = when (application.type) {
         "Oda Değişimi" -> "ODA DEĞİŞİM TALEBİ FORMU"
         "Şikayet" -> "ŞİKAYET FORMU"
         "Öneri" -> "ÖNERİ FORMU"
         else -> "BAŞVURU FORMU"
+    }
+
+    val messageTitle = when (application.type) {
+        "Oda Değişimi" -> "Oda Değiştirme Talebi Sebebi"
+        "Şikayet" -> "Şikayet Detayı"
+        "Öneri" -> "Öneri Detayı"
+        else -> "Mesaj İçeriği"
     }
 
     // 2. Prepare Data
@@ -78,7 +85,7 @@ fun AdminApplicationDetailScreen(
 
             // --- MESSAGE SECTION ---
             Text(
-                text = "Oda Değiştirme Talebi Sebebi", // Fixed title as requested
+                text = messageTitle,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.DarkGray,
@@ -101,7 +108,12 @@ fun AdminApplicationDetailScreen(
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
 
+            DetailRow(label = "E-mail:", value = p?.email ?: "-")
+            DetailRow(label = "Telefon Numarası:", value = p?.phone ?: "-")
+
+            Spacer(modifier = Modifier.height(32.dp))
             Spacer(modifier = Modifier.height(32.dp))
         }
     }

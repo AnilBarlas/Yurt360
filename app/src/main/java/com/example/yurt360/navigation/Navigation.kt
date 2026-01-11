@@ -414,7 +414,8 @@ fun RootNavigation(currentIntent: Intent?) {
 
             composable("admin_applications") {
                 AdminApplicationsScreen(
-                    onNavigate = { route -> navController.navigate(route) }
+                    onNavigate = { route -> navController.navigate(route) },
+                    viewModel = adminViewModel
                 )
             }
 
@@ -428,6 +429,13 @@ fun RootNavigation(currentIntent: Intent?) {
                         application = selectedApp,
                         onBack = { navController.popBackStack() }
                     )
+                } else {
+                    // debug
+                    androidx.compose.material3.Surface(modifier = androidx.compose.ui.Modifier.fillMaxSize()) {
+                        androidx.compose.foundation.layout.Box(contentAlignment = androidx.compose.ui.Alignment.Center) {
+                            androidx.compose.material3.Text("HATA: Seçilen başvuru verisi bulunamadı (Null).")
+                        }
+                    }
                 }
             }
         }

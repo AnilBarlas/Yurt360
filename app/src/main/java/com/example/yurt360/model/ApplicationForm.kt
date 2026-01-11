@@ -9,7 +9,9 @@ data class Profile(
     @SerialName("surname") val lastName: String? = "",
     @SerialName("studentNumber") val studentNumber: String? = "",
     @SerialName("roomNo") val roomNumber: String? = "",
-    @SerialName("location") val location: String? = ""
+    @SerialName("location") val location: String? = "",
+    @SerialName("email") val email: String? = "",
+    @SerialName("phone") val phone: String? = ""
 )
 
 @Serializable

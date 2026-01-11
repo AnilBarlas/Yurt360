@@ -25,6 +25,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yurt360.model.ApplicationForm
 import com.example.yurt360.common.components.CustomAdminBottomNavigationBar
 import com.example.yurt360.common.utils.Geologica
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Text
+import androidx.compose.ui.window.Dialog
 
 enum class AdminActiveSection {
     NONE, CURRENT, PAST
@@ -33,7 +38,7 @@ enum class AdminActiveSection {
 @Composable
 fun AdminApplicationsScreen(
     onNavigate: (String) -> Unit,
-    viewModel: AdminApplicationsViewModel = viewModel()
+    viewModel: AdminApplicationsViewModel
 ) {
     var activeSection by remember { mutableStateOf(AdminActiveSection.NONE) }
 
@@ -94,49 +99,184 @@ fun AdminApplicationsScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp)
                 .padding(top = 8.dp)
-                .background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp))
-                .padding(16.dp)
         ) {
+            // Local state for the popup
+            var showMatchDialog by remember { mutableStateOf(false) }
+
             if (list.isEmpty()) {
-                Text(emptyMessage, fontSize = 14.sp, color = Color.Gray)
+                Text(emptyMessage, fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(16.dp))
             } else {
                 // HEADER ROW
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.spacedBy(21.dp, Alignment.CenterHorizontally)
                 ) {
                     Surface(
-                        modifier = Modifier.width(236.dp).height(40.dp).shadow(4.dp, RoundedCornerShape(10.dp), false),
-                        shape = RoundedCornerShape(10.dp), color = Color(0xFFEEEEFD)
+                        modifier = Modifier.width(236.dp).height(47.dp).shadow(4.dp, RoundedCornerShape(12.dp), false),
+                        shape = RoundedCornerShape(12.dp), color = Color(0xFFE6E7FD)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text("Başvuran Öğrenci", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                            Text("Başvuran Öğrenci", fontSize = 15.sp, fontWeight = FontWeight.Medium, fontFamily = Geologica)
                         }
                     }
                     Surface(
-                        modifier = Modifier.width(111.dp).height(40.dp).shadow(4.dp, RoundedCornerShape(10.dp), false),
-                        shape = RoundedCornerShape(10.dp), color = Color(0xFFEEEEFD)
+                        modifier = Modifier.width(111.dp).height(47.dp).shadow(4.dp, RoundedCornerShape(12.dp), false),
+                        shape = RoundedCornerShape(12.dp), color = Color(0xFFE6E7FD)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text("Tarih", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                            Text("Tarih", fontSize = 15.sp, fontWeight = FontWeight.Medium, fontFamily = Geologica)
                         }
                     }
                 }
-                // LIST
-                // ... inside ApplicationDropdownContainer ...
 
+                // LIST ITEMS
                 list.forEach { app ->
+                    val isSelected = viewModel.selectedForMatching.contains(app)
+
                     AdminApplicationItem(
                         app = app,
+                        isSelected = isSelected,
                         onClick = {
-                            // 1. Save the clicked application
-                            viewModel.selectedApplication = app
-
-                            // 2. Navigate to the detail page
-                            onNavigate("admin_application_detail")
+                            if (viewModel.isSelectionMode) {
+                                viewModel.toggleSelection(app)
+                            } else {
+                                viewModel.selectedApplication = app
+                                onNavigate("admin_application_detail")
+                            }
                         }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                // --- CHECK: IS THIS A ROOM CHANGE LIST? ---
+                val isRoomChangeList = list.firstOrNull()?.type == "Oda Değişimi"
+
+                if (isRoomChangeList) {
+                    // --- SEÇ BUTTON (Only for Room Change) ---
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    val buttonColor = if (viewModel.isSelectionMode) Color(0xFFAEB5FC) else Color.White
+                    val buttonTextColor = Color.Black
+
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Surface(
+                            modifier = Modifier
+                                .width(70.dp)
+                                .height(47.dp)
+                                .shadow(2.dp, RoundedCornerShape(12.dp), clip = false),
+                            shape = RoundedCornerShape(12.dp),
+                            color = buttonColor
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clickable {
+                                        if (!viewModel.isSelectionMode) {
+                                            viewModel.toggleSelectionMode()
+                                        } else {
+                                            if (viewModel.selectedForMatching.size == 2) {
+                                                showMatchDialog = true
+                                            } else {
+                                                viewModel.toggleSelectionMode()
+                                            }
+                                        }
+                                    }
+                            ) {
+                                Text(
+                                    text = "Seç",
+                                    fontSize = 15.sp,
+                                    fontFamily = Geologica,
+                                    color = buttonTextColor
+                                )
+                            }
+                        }
+                    }
+
+                    // --- CONFIRMATION DIALOG ---
+                    if (showMatchDialog) {
+                        Dialog(onDismissRequest = { showMatchDialog = false }) {
+                            Surface(
+                                modifier = Modifier
+                                    .width(380.dp)
+                                    .height(202.dp)
+                                    .shadow(8.dp, RoundedCornerShape(60.dp), clip = false),
+                                shape = RoundedCornerShape(60.dp),
+                                color = Color(0xFFFFFDFD).copy(alpha = 0.92f)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = "Seçtiğiniz başvurular eşleşecektir.\nOnaylıyor musunuz?",
+                                        fontSize = 15.sp,
+                                        fontFamily = Geologica,
+                                        color = Color.Black,
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                    )
+
+                                    Spacer(modifier = Modifier.height(24.dp))
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        // 1. YES (Evet)
+                                        Surface(
+                                            modifier = Modifier
+                                                .width(137.dp)
+                                                .height(54.dp)
+                                                .shadow(4.dp, RoundedCornerShape(18.dp), clip = false)
+                                                .clickable {
+                                                    showMatchDialog = false
+                                                    viewModel.toggleSelectionMode()
+                                                    // TODO: Add database logic here
+                                                },
+                                            shape = RoundedCornerShape(18.dp),
+                                            color = Color(0xFFFFFFFF)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Text(
+                                                    text = "Evet",
+                                                    fontSize = 16.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontFamily = Geologica,
+                                                    color = Color(0xFF0056D2) // Keeping blue text
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.width(16.dp))
+
+                                        // 2. NO (Hayır)
+                                        Surface(
+                                            modifier = Modifier
+                                                .width(137.dp)
+                                                .height(54.dp)
+                                                .shadow(4.dp, RoundedCornerShape(18.dp), clip = false)
+                                                .clickable { showMatchDialog = false },
+                                            shape = RoundedCornerShape(18.dp),
+                                            color = Color(0xFFFFFFFF)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Text(
+                                                    text = "Hayır",
+                                                    fontSize = 16.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontFamily = Geologica,
+                                                    color = Color.Gray // Keeping gray text
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
