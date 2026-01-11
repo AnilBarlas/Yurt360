@@ -52,7 +52,7 @@ fun ApplicationItem(
             if (isPastSection && app.isApproved != null) {
                 // Past Applications: Approved/Denied
                 Text(
-                    text = if (app.isApproved == true) "ONAYLANDI" else "REDDEDİLDİ",
+                    text = if (app.isApproved == true) "Onaylandı" else "Reddedildi",
                     color = if (app.isApproved == true) Color(0xFF4CAF50) else Color(0xFFE53935), // Green vs Red
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
@@ -60,7 +60,7 @@ fun ApplicationItem(
             } else {
                 // Current Applications: Pending
                 Text(
-                    text = "BEKLEMEDE",
+                    text = "Beklemede",
                     color = Color(0xFFFFA000), // Orange for pending
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold

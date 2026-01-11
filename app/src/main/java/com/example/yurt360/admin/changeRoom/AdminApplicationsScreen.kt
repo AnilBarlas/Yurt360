@@ -1,0 +1,278 @@
+package com.example.yurt360.admin.changeRoom
+
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.yurt360.model.ApplicationForm
+import com.example.yurt360.common.components.CustomAdminBottomNavigationBar
+import com.example.yurt360.common.utils.Geologica
+
+enum class AdminActiveSection {
+    NONE, CURRENT, PAST
+}
+
+@Composable
+fun AdminApplicationsScreen(
+    onNavigate: (String) -> Unit,
+    viewModel: AdminApplicationsViewModel = viewModel()
+) {
+    var activeSection by remember { mutableStateOf(AdminActiveSection.NONE) }
+
+    // Dropdown states
+    var showRoomChangeDropdown by remember { mutableStateOf(false) }
+    var showComplaintDropdown by remember { mutableStateOf(false) }
+    var showSuggestionDropdown by remember { mutableStateOf(false) }
+
+    val applications by viewModel.applications.collectAsState()
+
+    fun closeAllDropdowns() {
+        showRoomChangeDropdown = false
+        showComplaintDropdown = false
+        showSuggestionDropdown = false
+    }
+
+    fun getContainerColor(isActive: Boolean) = if (isActive) Color(0xFF7E87E0) else Color.White
+    fun getContentColor(isActive: Boolean) = if (isActive) Color.White else Color.Black
+
+    // Helper: Left-Aligned Button for Categories
+    @Composable
+    fun CategoryHeaderButton(text: String, onClick: () -> Unit) {
+        val buttonShape = RoundedCornerShape(20.dp)
+        Button(
+            onClick = onClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .shadow(elevation = 8.dp, shape = buttonShape, clip = false),
+            shape = buttonShape,
+            colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
+            elevation = null
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.CenterStart // Align Left
+            ) {
+                Text(
+                    text = text,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = Geologica,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun ApplicationDropdownContainer(
+        list: List<ApplicationForm>,
+        emptyMessage: String,
+        isPastSection: Boolean
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp)
+                .padding(top = 8.dp)
+                .background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp))
+                .padding(16.dp)
+        ) {
+            if (list.isEmpty()) {
+                Text(emptyMessage, fontSize = 14.sp, color = Color.Gray)
+            } else {
+                // HEADER ROW
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Surface(
+                        modifier = Modifier.width(236.dp).height(40.dp).shadow(4.dp, RoundedCornerShape(10.dp), false),
+                        shape = RoundedCornerShape(10.dp), color = Color(0xFFEEEEFD)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text("Başvuran Öğrenci", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                        }
+                    }
+                    Surface(
+                        modifier = Modifier.width(111.dp).height(40.dp).shadow(4.dp, RoundedCornerShape(10.dp), false),
+                        shape = RoundedCornerShape(10.dp), color = Color(0xFFEEEEFD)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text("Tarih", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                        }
+                    }
+                }
+                // LIST
+                // ... inside ApplicationDropdownContainer ...
+
+                list.forEach { app ->
+                    AdminApplicationItem(
+                        app = app,
+                        onClick = {
+                            // 1. Save the clicked application
+                            viewModel.selectedApplication = app
+
+                            // 2. Navigate to the detail page
+                            onNavigate("admin_application_detail")
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
+    }
+
+    Scaffold(
+        bottomBar = { CustomAdminBottomNavigationBar(onNavigate = onNavigate) }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .animateContentSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = if (activeSection == AdminActiveSection.NONE) Arrangement.Center else Arrangement.Top
+        ) {
+            if (activeSection != AdminActiveSection.NONE) {
+                Spacer(modifier = Modifier.height(100.dp))
+            }
+
+            Text(
+                text = "BAŞVURULAR",
+                modifier = Modifier.padding(horizontal = 12.dp),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Normal,
+                fontFamily = Geologica,
+                color = Color.DarkGray,
+                letterSpacing = 1.sp
+            )
+
+            Spacer(modifier = Modifier.height(42.dp))
+
+            // TOP BUTTONS (Güncel / Geçmiş)
+            if (activeSection == AdminActiveSection.NONE) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    MenuButton("Güncel Başvurular", Modifier.width(181.dp), getContainerColor(false), getContentColor(false)) {
+                        activeSection = AdminActiveSection.CURRENT; closeAllDropdowns()
+                    }
+                    MenuButton("Geçmiş Başvurular", Modifier.width(181.dp), getContainerColor(false), getContentColor(false)) {
+                        activeSection = AdminActiveSection.PAST; closeAllDropdowns()
+                    }
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    MenuButton("Güncel Başvurular", Modifier.weight(1f), getContainerColor(activeSection == AdminActiveSection.CURRENT), getContentColor(activeSection == AdminActiveSection.CURRENT)) {
+                        activeSection = if (activeSection == AdminActiveSection.CURRENT) AdminActiveSection.NONE else AdminActiveSection.CURRENT
+                        closeAllDropdowns()
+                    }
+                    MenuButton("Geçmiş Başvurular", Modifier.weight(1f), getContainerColor(activeSection == AdminActiveSection.PAST), getContentColor(activeSection == AdminActiveSection.PAST)) {
+                        activeSection = if (activeSection == AdminActiveSection.PAST) AdminActiveSection.NONE else AdminActiveSection.PAST
+                        closeAllDropdowns()
+                    }
+                }
+            }
+
+            // --- CATEGORY SECTIONS ---
+            if (activeSection == AdminActiveSection.CURRENT || activeSection == AdminActiveSection.PAST) {
+                Spacer(modifier = Modifier.height(16.dp))
+                val isPast = activeSection == AdminActiveSection.PAST
+
+                // Logic: Check if any category is open to decide visibility
+                val isAnyCategoryOpen = showRoomChangeDropdown || showComplaintDropdown || showSuggestionDropdown
+
+                // Oda Değişimi
+                if (!isAnyCategoryOpen || showRoomChangeDropdown) {
+                    Box(Modifier.padding(horizontal = 12.dp)) {
+                        CategoryHeaderButton("Oda Değişim Talebi Formları") {
+                            showRoomChangeDropdown = !showRoomChangeDropdown
+                            // No need to set others false here because they are hidden anyway
+                        }
+                    }
+                    if (showRoomChangeDropdown) {
+                        val filtered = applications.filter { it.type == "Oda Değişimi" && (if (isPast) it.isApproved != null else it.isApproved == null) }
+                        ApplicationDropdownContainer(filtered, "Bu kategoride başvuru bulunmamaktadır.", isPast)
+                    }
+                }
+
+                if (!showRoomChangeDropdown) Spacer(modifier = Modifier.height(10.dp))
+
+                // Şikayet
+                if (!isAnyCategoryOpen || showComplaintDropdown) {
+                    Box(Modifier.padding(horizontal = 12.dp)) {
+                        CategoryHeaderButton("Şikayet Formları") {
+                            showComplaintDropdown = !showComplaintDropdown
+                        }
+                    }
+                    if (showComplaintDropdown) {
+                        val filtered = applications.filter { it.type == "Şikayet" && (if (isPast) it.isApproved != null else it.isApproved == null) }
+                        ApplicationDropdownContainer(filtered, "Bu kategoride başvuru bulunmamaktadır.", isPast)
+                    }
+                }
+
+                if (!showComplaintDropdown) Spacer(modifier = Modifier.height(10.dp))
+
+                // Öneri
+                if (!isAnyCategoryOpen || showSuggestionDropdown) {
+                    Box(Modifier.padding(horizontal = 12.dp)) {
+                        CategoryHeaderButton("Öneri Formları") {
+                            showSuggestionDropdown = !showSuggestionDropdown
+                        }
+                    }
+                    if (showSuggestionDropdown) {
+                        val filtered = applications.filter { it.type == "Öneri" && (if (isPast) it.isApproved != null else it.isApproved == null) }
+                        ApplicationDropdownContainer(filtered, "Bu kategoride başvuru bulunmamaktadır.", isPast)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(50.dp))
+        }
+    }
+}
+
+@Composable
+fun MenuButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    containerColor: Color = Color.White,
+    contentColor: Color = Color.Black,
+    onClick: () -> Unit
+) {
+    val buttonShape = RoundedCornerShape(20.dp)
+    Button(
+        onClick = onClick,
+        modifier = modifier.height(48.dp).shadow(8.dp, buttonShape, clip = false),
+        shape = buttonShape,
+        colors = ButtonDefaults.buttonColors(containerColor = containerColor, contentColor = contentColor),
+        elevation = null
+    ) {
+        Text(text, fontSize = 15.sp, fontWeight = FontWeight.Medium, fontFamily = Geologica, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+}
