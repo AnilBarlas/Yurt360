@@ -23,6 +23,8 @@ import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navDeepLink
 import com.example.yurt360.R
+import com.example.yurt360.admin.changeRoom.AdminApplicationsScreen
+import com.example.yurt360.admin.changeRoom.AdminApplicationsViewModel
 import com.example.yurt360.admin.mainScreen.*
 import com.example.yurt360.admin.refectory.AdminMenuScreen
 import com.example.yurt360.common.components.*
@@ -517,6 +519,14 @@ fun RootNavigation(currentIntent: Intent?) {
                 AdminAboutUsScreen(
                     onMenuClick = { isMenuOpen = true },
                     onNavigate = { handleAdminNavigation(navController, it) }
+                )
+            }
+
+            composable(Routes.ADMIN_APPLICATIONS) {
+                val viewModel: AdminApplicationsViewModel = viewModel()
+                AdminApplicationsScreen(
+                    onNavigate = { route -> handleAdminNavigation(navController, route) },
+                    viewModel = viewModel
                 )
             }
 

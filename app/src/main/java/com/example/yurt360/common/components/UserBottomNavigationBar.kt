@@ -1,6 +1,7 @@
 package com.example.yurt360.common.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -116,6 +117,7 @@ fun UserBottomNavigationBar(
                 .padding(6.dp)
                 .clip(CircleShape)
                 .background(purple)
+                .border(2.dp, Color.White, CircleShape)
                 .clickable { onNavigate("calendar") },
             contentAlignment = Alignment.Center
         ) {

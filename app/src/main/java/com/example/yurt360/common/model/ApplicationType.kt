@@ -1,4 +1,4 @@
-package com.example.yurt360.data.model
+package com.example.yurt360.common.model
 
 import kotlinx.serialization.Serializable
 
