@@ -28,7 +28,7 @@ import com.example.yurt360.common.components.UserBottomNavigationBar
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun Laundry(onNavigateBottom: (String) -> Unit = {},onNavigation: (String) -> Unit) {
+fun Laundry(onNavigation: (String) -> Unit) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
 
@@ -96,7 +96,7 @@ fun Laundry(onNavigateBottom: (String) -> Unit = {},onNavigation: (String) -> Un
 
                         // Buton kısmı
                         Button(
-                            onClick = { /* OnClick action */ },
+                            onClick = { onNavigation("user_dry")  },
                             modifier = Modifier
                                 .fillMaxSize(),
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), // Arka planı şeffaf yapar
@@ -127,7 +127,7 @@ fun Laundry(onNavigateBottom: (String) -> Unit = {},onNavigation: (String) -> Un
 
                         // Buton kısmı
                         Button(
-                            onClick = { /* OnClick action */ },
+                            onClick = { onNavigation("user_laundry")},
                             modifier = Modifier
                                 .fillMaxSize(),
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), // Arka planı şeffaf yapar

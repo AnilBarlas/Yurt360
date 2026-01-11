@@ -1,7 +1,6 @@
 package com.example.yurt360.navigation
 
 import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,18 +32,26 @@ import com.example.yurt360.common.passwordScreens.NewPasswordScreen
 import com.example.yurt360.common.passwordScreens.ResetPasswordScreen
 import com.example.yurt360.user.mainScreen.*
 import com.example.yurt360.user.refectory.MenuScreen
-
-
-// Supabase ve Deep Link işlemleri için gerekli importlar
 import com.example.yurt360.data.api.SupabaseClient
 import com.example.yurt360.user.workSpace.WorkSpace1_Kuzey1
-// ApplicationsScreen import edildi
 import com.example.yurt360.user.changeRoom.ApplicationsScreen
-
+import com.example.yurt360.user.laundry.Laundry1_1_CamasirKuzey1
+import com.example.yurt360.user.laundry.Laundry1_2_CamasirKuzey2
+import com.example.yurt360.user.laundry.Laundry1_3_CamasirMeydan
+import com.example.yurt360.user.laundry.Laundry1_4_CamasirAltguney
+import com.example.yurt360.user.laundry.Laundry1_5_CamasirErkek
+import com.example.yurt360.user.laundry2.Laundry2_1_KurutmaKuzey1
+import com.example.yurt360.user.laundry2.Laundry2_2_KurutmaKuzey2
+import com.example.yurt360.user.laundry2.Laundry2_3_KurutmaMeydan
+import com.example.yurt360.user.laundry2.Laundry2_4_KurutmaAltguney
+import com.example.yurt360.user.laundry2.Laundry2_5_KurutmaErkek
+import com.example.yurt360.user.workSpace.WorkSpace2_Kuzey2
+import com.example.yurt360.user.workSpace.WorkSpace3_Meydan
+import com.example.yurt360.user.workSpace.WorkSpace4_Altguney
+import com.example.yurt360.user.workSpace.WorkSpace5_Erkek
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.handleDeeplinks
 import io.github.jan.supabase.gotrue.user.UserSession
-import kotlinx.coroutines.launch
 import java.util.Locale
 
 object Routes {
@@ -59,8 +66,9 @@ object Routes {
     const val USER_CALENDAR = "calendar"
     const val USER_STUDY = "user_study_area"
     const val USER_LAUNDRY = "user_laundry"
+    const val USER_DRY = "user_dry"
+    const val USER_LAUNDRYMAIN = "user_laundrymain"
     const val USER_APPLICATIONS = "user_applications"
-
     const val USER_SETTINGS = "user_settings"
     const val USER_ABOUT_US = "user_about_us"
     const val USER_UPDATE_PASSWORD = "user_update_password"
@@ -265,6 +273,99 @@ fun RootNavigation(currentIntent: Intent?) {
                 } ?: NavigateToLogin(navController)
             }
 
+            composable(Routes.USER_LAUNDRYMAIN) {
+                currentUser?.let { user ->
+                    Laundry(
+                        onNavigation = { handleUserNavigation(navController, it) }
+                    )
+                } ?: NavigateToLogin(navController)
+            }
+
+            composable(Routes.USER_LAUNDRY) {
+                currentUser?.let { user ->
+                    val location = user.location.lowercase(Locale("tr", "TR"))
+                    when {
+                        location.contains("kuzey") && location.contains("1") -> {
+                            Laundry1_1_CamasirKuzey1(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
+                            )
+                        }
+                        location.contains("kuzey") && location.contains("2") -> {
+                            Laundry1_2_CamasirKuzey2(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
+                            )
+                        }
+                        location.contains("meydan") -> {
+                            Laundry1_3_CamasirMeydan(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
+                            )
+                        }
+                        location.contains("alt") -> {
+                            Laundry1_4_CamasirAltguney(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
+                            )
+                        }
+                        else -> {
+                            Laundry1_5_CamasirErkek(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
+                            )
+                        }
+                    }
+                } ?: NavigateToLogin(navController)
+            }
+
+            composable(Routes.USER_DRY) {
+                currentUser?.let { user ->
+                    val location = user.location.lowercase(Locale("tr", "TR"))
+                    when {
+                        location.contains("kuzey") && location.contains("1") -> {
+                            Laundry2_1_KurutmaKuzey1(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
+                            )
+                        }
+                        location.contains("kuzey") && location.contains("2") -> {
+                            Laundry2_2_KurutmaKuzey2(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
+                            )
+                        }
+                        location.contains("meydan") -> {
+                            Laundry2_3_KurutmaMeydan(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
+                            )
+                        }
+                        location.contains("alt") -> {
+                            Laundry2_4_KurutmaAltguney(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
+                            )
+                        }
+                        else -> {
+                            Laundry2_5_KurutmaErkek(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
+                            )
+                        }
+                    }
+                } ?: NavigateToLogin(navController)
+            }
 
             composable(Routes.USER_PROFILE) {
                 currentUser?.let { user ->
@@ -299,8 +400,29 @@ fun RootNavigation(currentIntent: Intent?) {
                                 user = user
                             )
                         }
+                        location.contains("kuzey") && location.contains("2") -> {
+                            WorkSpace2_Kuzey2(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
+                            )
+                        }
+                        location.contains("meydan") -> {
+                            WorkSpace3_Meydan(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
+                            )
+                        }
+                        location.contains("alt") -> {
+                            WorkSpace4_Altguney(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) },
+                                user = user
+                            )
+                        }
                         else -> {
-                            WorkSpace1_Kuzey1(
+                            WorkSpace5_Erkek(
                                 onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
                                 onNavigation = { handleUserNavigation(navController, it) },
                                 user = user
@@ -316,7 +438,6 @@ fun RootNavigation(currentIntent: Intent?) {
                     onNavigate = { handleUserNavigation(navController, it) }
                 )
             }
-            // ---------------------------------------------
 
             composable(Routes.USER_SETTINGS) {
                 UserSettingsScreen(
@@ -476,6 +597,8 @@ fun handleUserNavigation(navController: NavController, route: String) {
         "calendar" -> Routes.USER_CALENDAR
         "user_study_area" -> Routes.USER_STUDY
         "user_laundry" -> Routes.USER_LAUNDRY
+        "user_dry" -> Routes.USER_DRY
+        "user_laundrymain" -> Routes.USER_LAUNDRYMAIN
         "user_applications" -> Routes.USER_APPLICATIONS
         "user_settings" -> Routes.USER_SETTINGS
         "user_update_password" -> Routes.USER_UPDATE_PASSWORD

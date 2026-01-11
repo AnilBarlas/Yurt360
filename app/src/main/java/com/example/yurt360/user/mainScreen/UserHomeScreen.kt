@@ -220,7 +220,7 @@ fun UserHomeScreen(
                     Column(modifier = Modifier.matchParentSize()) {
                         Row(modifier = Modifier.weight(1f).fillMaxWidth()) {
                             Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onNavigation("user_study_area") })
-                            Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onNavigation("user_laundry") })
+                            Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onNavigation("user_laundrymain") })
                         }
                         Row(modifier = Modifier.weight(1f).fillMaxWidth()) {
                             Box(modifier = Modifier.weight(1f).fillMaxHeight().clickable { onNavigation("user_applications") })

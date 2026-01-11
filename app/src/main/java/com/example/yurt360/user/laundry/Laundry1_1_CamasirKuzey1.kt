@@ -85,7 +85,7 @@ data class AjandaInsert(
  * - Toplam satır sayısı: 3 × 120 = 360
  */
 @Composable
-fun Laundry1_1_CamasirKuzey1(onNavigateHome: () -> Unit = {}, user: User) {
+fun Laundry1_1_CamasirKuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> Unit, user: User) {
 
     val currentUserID by rememberUpdatedState(user.id)
 
@@ -349,7 +349,9 @@ fun Laundry1_1_CamasirKuzey1(onNavigateHome: () -> Unit = {}, user: User) {
     // --- UI ---
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(modifier = Modifier.matchParentSize(), bottomBar = {
-            UserBottomNavigationBar(onNavigate = { /*...*/ })
+            UserBottomNavigationBar(
+                onNavigate = onNavigation
+            )
         }) { paddingVals ->
             Box(modifier = Modifier.fillMaxSize().padding(paddingVals).padding(16.dp)) {
                 Column(modifier = Modifier.fillMaxSize()) {
