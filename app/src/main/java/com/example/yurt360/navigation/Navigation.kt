@@ -32,12 +32,16 @@ import com.example.yurt360.common.passwordScreens.NewPasswordScreen
 import com.example.yurt360.common.passwordScreens.ResetPasswordScreen
 import com.example.yurt360.user.mainScreen.*
 import com.example.yurt360.user.refectory.MenuScreen
+
+
 // Supabase ve Deep Link işlemleri için gerekli importlar
 import com.example.yurt360.data.api.SupabaseClient
+import com.example.yurt360.user.workSpace.WorkSpace1_Kuzey1
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.handleDeeplinks
 import io.github.jan.supabase.gotrue.user.UserSession
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 object Routes {
     const val LOGIN = "login"
@@ -46,7 +50,6 @@ object Routes {
 
     // User Rotaları
     const val USER_HOME = "user_home"
-    const val WORK_SPACE= "work_space"
     const val USER_PROFILE = "user_profile"
     const val USER_MENU = "user_menu"
     const val USER_CALENDAR = "calendar"
@@ -275,6 +278,27 @@ fun RootNavigation(currentIntent: Intent?) {
 
             composable(Routes.USER_CALENDAR) {
                 CalendarScreen(onNavigate = { handleUserNavigation(navController, it) })
+            }
+
+            composable(Routes.USER_STUDY) {
+                currentUser?.let { user ->
+                    val location = user.location.lowercase(Locale("tr", "TR"))
+                    when {
+                        location.contains("kuzey") && location.contains("1") -> {
+                            WorkSpace1_Kuzey1(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) }
+                            )
+                        }
+                        else -> {
+                            // Eşleşme bulunamadıysa varsayılan olarak yine Kuzey1'i veya bir hata ekranını gösterin.
+                            WorkSpace1_Kuzey1(
+                                onNavigateHome = { handleUserNavigation(navController, Routes.USER_HOME) },
+                                onNavigation = { handleUserNavigation(navController, it) }
+                            )
+                        }
+                    }
+                } ?: NavigateToLogin(navController)
             }
 
             composable(Routes.USER_SETTINGS) {

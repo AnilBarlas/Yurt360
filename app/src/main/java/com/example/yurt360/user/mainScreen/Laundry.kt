@@ -24,11 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.zIndex
 import com.example.yurt360.R
-import com.example.yurt360.common.components.CustomBottomNavigationBar
+import com.example.yurt360.common.components.UserBottomNavigationBar
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun Laundry(onNavigateBottom: (String) -> Unit = {}) {
+fun Laundry(onNavigateBottom: (String) -> Unit = {},onNavigation: (String) -> Unit) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
 
@@ -39,7 +39,9 @@ fun Laundry(onNavigateBottom: (String) -> Unit = {}) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            CustomBottomNavigationBar(onNavigate = onNavigateBottom)
+            UserBottomNavigationBar(
+                onNavigate = onNavigation
+            )
         }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {

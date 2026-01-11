@@ -24,7 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.example.yurt360.common.components.CustomBottomNavigationBar
+import com.example.yurt360.common.components.UserBottomNavigationBar
 import com.example.yurt360.data.api.SupabaseClient
 import com.example.yurt360.R
 //import com.example.yurt360.user.laundry.ThinBorderColor
@@ -87,7 +87,7 @@ data class AjandaInsert(
  * - Toplam satır sayısı: 3 × 120 = 360
  */
 @Composable
-fun Laundry2_1_Kuzey1(onNavigateHome: () -> Unit = {}) {
+fun Laundry2_1_Kuzey1(onNavigateHome: () -> Unit = {},onNavigation: (String) -> Unit) {
     val client = SupabaseClient.client
     val scope = rememberCoroutineScope()
 
@@ -348,7 +348,9 @@ fun Laundry2_1_Kuzey1(onNavigateHome: () -> Unit = {}) {
     // --- UI ---
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(modifier = Modifier.matchParentSize(), bottomBar = {
-            CustomBottomNavigationBar(onNavigate = { /*...*/ })
+            UserBottomNavigationBar(
+                onNavigate = onNavigation
+            )
         }) { paddingVals ->
             Box(modifier = Modifier.fillMaxSize().padding(paddingVals).padding(16.dp)) {
                 Column(modifier = Modifier.fillMaxSize()) {

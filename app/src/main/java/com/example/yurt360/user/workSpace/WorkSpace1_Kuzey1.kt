@@ -27,7 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.example.yurt360.common.components.CustomBottomNavigationBar
+import com.example.yurt360.common.components.UserBottomNavigationBar
 import com.example.yurt360.data.api.SupabaseClient
 import java.time.LocalDate
 import java.time.ZoneId
@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import kotlinx.coroutines.isActive
 import com.example.yurt360.R
+import com.example.yurt360.common.components.UserBottomNavigationBar
 import kotlinx.serialization.Serializable
 
 // Renkler
@@ -75,7 +76,7 @@ data class AjandaInsert(
 )
 
 @Composable
-fun WorkSpace1_Kuzey1( onNavigateHome: () -> Unit = {} ) {
+fun WorkSpace1_Kuzey1( onNavigateHome: () -> Unit = {},onNavigation: (String) -> Unit ) {
     val client = SupabaseClient.client
     val scope = rememberCoroutineScope()
 
@@ -121,14 +122,8 @@ fun WorkSpace1_Kuzey1( onNavigateHome: () -> Unit = {} ) {
         Scaffold(
             modifier = Modifier.matchParentSize(),
             bottomBar = {
-                CustomBottomNavigationBar(
-                    onNavigate = { route ->
-                        when (route) {
-                            "home" -> { /* navController.navigate("home") */ }
-                            "calendar" -> { /* navController.navigate("calendar") */ }
-                            "profile" -> { /* navController.navigate("profile") */ }
-                        }
-                    }
+                UserBottomNavigationBar(
+                    onNavigate = onNavigation
                 )
             }
         ) { paddingVals ->
