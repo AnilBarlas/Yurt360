@@ -277,8 +277,12 @@ fun RootNavigation(currentIntent: Intent?) {
                 MenuScreen(onNavigate = { handleUserNavigation(navController, it) })
             }
 
+            // GÜNCELLENEN KISIM: CalendarScreen'e geri butonu fonksiyonu eklendi
             composable(Routes.USER_CALENDAR) {
-                CalendarScreen(onNavigate = { handleUserNavigation(navController, it) })
+                CalendarScreen(
+                    onNavigate = { handleUserNavigation(navController, it) },
+                    onBackClick = { navController.popBackStack() }
+                )
             }
 
             composable(Routes.USER_STUDY) {
