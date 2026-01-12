@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.example.yurt360.R
+import com.example.yurt360.common.components.CustomAdminBottomNavigationBar
 import com.example.yurt360.common.components.UserBottomNavigationBar
 import com.example.yurt360.data.api.SupabaseClient
 import io.github.jan.supabase.postgrest.from
@@ -68,7 +69,7 @@ private const val DB_TABLE_AJANDA = "ajanda"
 private const val DB_TABLE_USERS = "users"
 
 @Composable
-fun LaundryCamasirAdmin(onNavigateHome: () -> Unit = {}) {
+fun LaundryCamasirAdmin(onNavigateHome: () -> Unit = {}, onNavigation: (String) -> Unit) {
 
     val purple = Color(0xFF8A92E1)
     val lightPurple = Color(0xFFEFEFFE)
@@ -213,7 +214,9 @@ fun LaundryCamasirAdmin(onNavigateHome: () -> Unit = {}) {
     // UI
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(modifier = Modifier.matchParentSize(), bottomBar = {
-            UserBottomNavigationBar(onNavigate = { /*...*/ })
+            CustomAdminBottomNavigationBar(
+                onNavigate = onNavigation
+            )
         }) { paddingVals ->
 
             val extraBottomPadding = 88.dp
