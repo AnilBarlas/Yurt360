@@ -14,7 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.yurt360.common.model.ApplicationForm
+import com.example.yurt360.model.ApplicationForm
 import com.example.yurt360.common.utils.Geologica // Make sure your font import is correct
 import com.example.yurt360.user.changeRoom.formatDate
 
