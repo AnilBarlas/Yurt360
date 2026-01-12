@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.yurt360.common.components.CustomAdminBottomNavigationBar
 import com.example.yurt360.common.utils.Geologica
 import com.example.yurt360.model.ApplicationForm
 
@@ -23,7 +24,8 @@ import com.example.yurt360.model.ApplicationForm
 @Composable
 fun AdminApplicationDetailScreen(
     application: ApplicationForm,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigate: (String) -> Unit
 ) {
 
     val titleText = when (application.type) {
@@ -40,11 +42,12 @@ fun AdminApplicationDetailScreen(
         else -> "Mesaj İçeriği"
     }
 
-    // 2. Prepare Data
+    // Prepare Data
     val p = application.profile
     val fullRoomInfo = "${p?.location ?: ""} ${p?.roomNumber ?: ""}".trim()
 
     Scaffold(
+        containerColor = Color(0xFFF8F9FA), // App Background
         topBar = {
             TopAppBar(
                 title = { },
@@ -55,66 +58,111 @@ fun AdminApplicationDetailScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
-        }
+        },
+        // If you have a global bottom bar, ensure this screen doesn't cover it
+        // or add it here: bottomBar = { YourBottomBar() }
+        bottomBar = { CustomAdminBottomNavigationBar(onNavigate = onNavigate) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- TITLE ---
-            Text(
-                text = titleText,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = Geologica,
-                color = Color.DarkGray,
-                modifier = Modifier.padding(top = 16.dp, bottom = 32.dp)
-            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // --- ROWS ---
-            DetailRow(label = "Ad:", value = p?.firstName ?: "-")
-            DetailRow(label = "Soyad:", value = p?.lastName ?: "-")
-            DetailRow(label = "Öğrenci Numarası:", value = p?.studentNumber ?: "-")
-            DetailRow(label = "Oda Numarası:", value = fullRoomInfo.ifEmpty { "-" })
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // --- MESSAGE SECTION ---
-            Text(
-                text = messageTitle,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.DarkGray,
-                modifier = Modifier.align(Alignment.Start).padding(bottom = 8.dp)
-            )
-
+            // --- BOX 1: OUTER BOX (Covers Title + Inner Box) ---
             Surface(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .defaultMinSize(minHeight = 120.dp)
-                    .shadow(2.dp, RoundedCornerShape(10.dp), clip = false),
-                shape = RoundedCornerShape(10.dp),
-                color = Color(0xFFF8F8F8) // Slightly gray box for message
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp) // 12dp Outer Padding
+                    .shadow(4.dp, RoundedCornerShape(topStart = 36.dp, topEnd = 36.dp), clip = false),
+                shape = RoundedCornerShape(topStart = 36.dp, topEnd = 36.dp),
+                color = Color.White
             ) {
-                Box(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = application.message,
-                        fontSize = 15.sp,
-                        color = Color.Black
-                    )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // --- BIG TITLE ---
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = titleText,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = Geologica,
+                            color = Color.DarkGray
+                        )
+                    }
+
+                    // --- BOX 2: INNER BOX (Covers Details) ---
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 11.dp) // UPDATED: 11dp padding relative to Outer Box
+                            .shadow(4.dp, RoundedCornerShape(topStart = 36.dp, topEnd = 36.dp), clip = false),
+                        shape = RoundedCornerShape(topStart = 36.dp, topEnd = 36.dp),
+                        color = Color.White
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 24.dp)
+                                .verticalScroll(rememberScrollState()),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Spacer(modifier = Modifier.height(32.dp))
+
+                            // --- ROWS ---
+                            DetailRow(label = "Ad:", value = p?.firstName ?: "-")
+                            DetailRow(label = "Soyad:", value = p?.lastName ?: "-")
+                            DetailRow(label = "Öğrenci Numarası:", value = p?.studentNumber ?: "-")
+                            DetailRow(label = "Oda Numarası:", value = fullRoomInfo.ifEmpty { "-" })
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            // --- MESSAGE SECTION ---
+                            Text(
+                                text = messageTitle,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = Geologica,
+                                color = Color(0xFF7E87E2),
+                                modifier = Modifier.align(Alignment.Start).padding(bottom = 8.dp)
+                            )
+
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .defaultMinSize(minHeight = 120.dp)
+                                    .shadow(2.dp, RoundedCornerShape(10.dp), clip = false),
+                                shape = RoundedCornerShape(10.dp),
+                                color = Color(0xFFF8F8F8)
+                            ) {
+                                Box(modifier = Modifier.padding(16.dp)) {
+                                    Text(
+                                        text = application.message,
+                                        fontSize = 15.sp,
+                                        fontFamily = Geologica,
+                                        color = Color.Black
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            // --- EXTRA INFO ---
+                            DetailRow(label = "E-mail:", value = p?.email ?: "-")
+                            DetailRow(label = "Telefon Numarası:", value = p?.phone ?: "-")
+
+                            Spacer(modifier = Modifier.height(32.dp))
+                            Spacer(modifier = Modifier.height(32.dp))
+                        }
+                    }
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
-
-            DetailRow(label = "E-mail:", value = p?.email ?: "-")
-            DetailRow(label = "Telefon Numarası:", value = p?.phone ?: "-")
-
-            Spacer(modifier = Modifier.height(32.dp))
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
@@ -133,7 +181,8 @@ fun DetailRow(label: String, value: String) {
             text = label,
             fontSize = 15.sp,
             fontWeight = FontWeight.Medium,
-            color = Color.Gray,
+            fontFamily = Geologica,
+            color = Color(0xFF7E87E2),
             modifier = Modifier.weight(0.4f)
         )
 
@@ -154,6 +203,7 @@ fun DetailRow(label: String, value: String) {
                     text = value,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
+                    fontFamily = Geologica,
                     color = Color.Black,
                     maxLines = 1
                 )

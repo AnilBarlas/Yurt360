@@ -234,7 +234,6 @@ fun AdminApplicationsScreen(
                                                 .clickable {
                                                     showMatchDialog = false
                                                     viewModel.toggleSelectionMode()
-                                                    // TODO: Add database logic here
                                                     viewModel.swapStudentRooms()
                                                 },
                                             shape = RoundedCornerShape(18.dp),

@@ -427,7 +427,8 @@ fun RootNavigation(currentIntent: Intent?) {
                 if (selectedApp != null) {
                     AdminApplicationDetailScreen(
                         application = selectedApp,
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.popBackStack() },
+                        onNavigate = { route -> navController.navigate(route) }
                     )
                 } else {
                     // debug
