@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.yurt360.model.ApplicationForm
 import com.example.yurt360.common.components.CustomAdminBottomNavigationBar
 import com.example.yurt360.common.utils.Geologica
 import androidx.compose.foundation.clickable
@@ -29,7 +30,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.ui.window.Dialog
-import com.example.yurt360.common.model.ApplicationForm
 
 enum class AdminActiveSection {
     NONE, CURRENT, PAST
@@ -234,7 +234,7 @@ fun AdminApplicationsScreen(
                                                 .clickable {
                                                     showMatchDialog = false
                                                     viewModel.toggleSelectionMode()
-                                                    // TODO: Add database logic here
+                                                    viewModel.swapStudentRooms()
                                                 },
                                             shape = RoundedCornerShape(18.dp),
                                             color = Color(0xFFFFFFFF)
