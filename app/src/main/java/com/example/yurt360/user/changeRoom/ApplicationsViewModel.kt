@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yurt360.data.api.SupabaseClient
-import com.example.yurt360.model.ApplicationForm
+import com.example.yurt360.common.model.ApplicationForm
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.flow.MutableStateFlow
