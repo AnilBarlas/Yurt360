@@ -10,7 +10,7 @@ import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import com.example.yurt360.data.model.ApplicationType
+import com.example.yurt360.common.model.ApplicationType
 class RoomChangeViewModel : ViewModel() {
     private val _submissionStatus = MutableStateFlow<SubmissionState>(SubmissionState.Idle)
     val submissionStatus = _submissionStatus.asStateFlow()

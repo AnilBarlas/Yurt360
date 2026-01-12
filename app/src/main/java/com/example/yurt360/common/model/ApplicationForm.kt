@@ -16,6 +16,7 @@ data class Profile(
 
 @Serializable
 data class ApplicationForm(
+    @SerialName("id") val id: Int = 0,
     @SerialName("user_id") val userId: String,
     @SerialName("type") val type: String,
     @SerialName("message") val message: String,
