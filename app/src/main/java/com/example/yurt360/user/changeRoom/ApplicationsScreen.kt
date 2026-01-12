@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.yurt360.common.components.UserBottomNavigationBar
 import com.example.yurt360.common.utils.Geologica
+import com.example.yurt360.model.ApplicationForm
 import androidx.compose.foundation.background
-import com.example.yurt360.common.model.ApplicationForm
 
 enum class ActiveSection {
     NONE, CREATE, CURRENT, PAST
