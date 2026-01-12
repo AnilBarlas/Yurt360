@@ -55,7 +55,7 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     ksp("androidx.room:room-compiler:2.5.0")
 
-    // Compose
+    implementation("io.coil-kt:coil-compose:2.6.0")
     implementation(platform("androidx.compose:compose-bom:2024.02.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")

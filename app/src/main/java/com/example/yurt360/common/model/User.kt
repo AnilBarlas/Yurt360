@@ -8,15 +8,15 @@ data class User(
     override val surname: String,
     override val email: String,
     val studentNumber: String,
-    val phone: String,
-    val tc: String,
-    val gender: String,
-    val bloodType: String,
-    val birthDate: String,
-    val address: String,
+    override val phone: String,
+    override val tc: String,
+    override val gender: String,
+    override val bloodType: String,
+    override val birthDate: String,
+    override val address: String,
     val location: String,
     val roomNo: String,
-    val image_url: String
+    override val image_url: String
 ) : TopUser(){
 
 }

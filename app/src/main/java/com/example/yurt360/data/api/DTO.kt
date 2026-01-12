@@ -34,7 +34,19 @@ data class ProfileDto(
 ) {
     fun toTopUser(): TopUser {
         return if (isAdmin) {
-            Admin(id, name ?: "", surname ?: "", email ?: "")
+            Admin(
+                id = id,
+                name = name ?: "",
+                surname = surname ?: "",
+                email = email ?: "",
+                image_url = image_url ?: "",
+                phone = phone ?: "",
+                tc = tc ?: "",
+                gender = gender ?: "",
+                bloodType = bloodType ?: "",
+                birthDate = birthDate ?: "",
+                address = address ?: ""
+            )
         } else {
             User(
                 id = id,

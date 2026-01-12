@@ -9,7 +9,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -59,7 +58,6 @@ fun AdminSettingsScreen(
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Dil Seçimi
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -83,7 +81,7 @@ fun AdminSettingsScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(purpleLinear),
+                            .background(brush = purpleLinear),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -98,7 +96,6 @@ fun AdminSettingsScreen(
             SectionHeader(text = "HESAP")
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Parola Değiştir
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -126,8 +123,37 @@ fun AdminSettingsScreen(
                 }
             }
 
-            // Not: Admin ekranında lokasyon/yurt bilgisi genellikle
-            // kullanıcıya özel olduğu için bu kısım isteğe bağlıdır.
+            Spacer(modifier = Modifier.height(75.dp))
+            SectionHeader(text = "YURT")
+            Spacer(modifier = Modifier.height(12.dp))
+
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.door),
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = Color.Black
+                )
+                Spacer(modifier = Modifier.width(20.dp))
+                Surface(
+                    modifier = Modifier
+                        .width(250.dp)
+                        .height(60.dp)
+                        .clickable { /* Yurt detay */ },
+                    color = Color.White,
+                    shape = RoundedCornerShape(12.dp),
+                    shadowElevation = 2.dp
+                ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Admin Panali", fontSize = 16.sp, color = Color.Black)
+                    }
+                }
+            }
         }
 
         CustomAdminBottomNavigationBar(
@@ -135,4 +161,15 @@ fun AdminSettingsScreen(
             onNavigate = onNavigate
         )
     }
+}
+
+@Composable
+fun SectionHeader(text: String) {
+    Text(
+        text = text,
+        fontSize = 15.sp,
+        fontWeight = FontWeight.Medium,
+        color = Color.Black,
+        letterSpacing = 1.sp
+    )
 }

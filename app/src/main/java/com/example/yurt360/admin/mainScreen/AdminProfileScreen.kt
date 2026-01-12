@@ -32,6 +32,7 @@ fun AdminProfileScreen(
 ) {
     var isContactExpanded by remember { mutableStateOf(false) }
 
+    // Animasyon durumları
     val personalInfoOffset by animateDpAsState(
         targetValue = if (isContactExpanded) (-130).dp else (-100).dp,
         label = "personalInfoOffset"
@@ -51,16 +52,17 @@ fun AdminProfileScreen(
                 .padding(top = 15.dp)
         )
 
-        // 2. Profil Fotoğrafı (Admin modelinde image_url olmadığı için varsayılan bir ikon veya boş bırakılabilir)
+        // 2. Profil Fotoğrafı Alanı (Görsel şu an boş, User ekranındaki yapı korundu)
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 110.dp)
                 .zIndex(1f)
         ) {
+            // Buraya profil resmi bileşeni gelebilir
         }
 
-        // 3. Ana İçerik
+        // 3. Ana İçerik (Kartlar)
         Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -83,9 +85,13 @@ fun AdminProfileScreen(
                 contentPaddingBottom = if (isContactExpanded) 150.dp else 100.dp,
                 onHeaderClick = { isContactExpanded = !isContactExpanded }
             ) {
+                // UserProfileScreen ile benzer yapıda telefon ve e-posta
+                ProfileInfoRow(label = "Telefon", value = admin.phone)
+                Spacer(modifier = Modifier.height(12.dp))
                 ProfileInfoRow(label = "E-posta", value = admin.email)
             }
 
+            // --- KİŞİSEL BİLGİLER ---
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -111,10 +117,14 @@ fun AdminProfileScreen(
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                     ) {
-                        // Admin modelinde bulunan sınırlı veriler
+                        // Admin modelindeki eksik veriler eklendi (ID ve ImageURL hariç)
+                        ProfileInfoRow(label = "Kimlik No", value = admin.tc)
                         ProfileInfoRow(label = "Ad", value = admin.name)
                         ProfileInfoRow(label = "Soyad", value = admin.surname)
-                        ProfileInfoRow(label = "Yönetici ID", value = admin.id)
+                        ProfileInfoRow(label = "Cinsiyet", value = admin.gender)
+                        ProfileInfoRow(label = "Kan Grubu", value = admin.bloodType)
+                        ProfileInfoRow(label = "Doğum Tarihi", value = admin.birthDate)
+                        ProfileInfoRow(label = "Adres", value = admin.address)
 
                         Spacer(modifier = Modifier.height(250.dp))
                     }
@@ -122,6 +132,7 @@ fun AdminProfileScreen(
             }
         }
 
+        // Yan Menü İkonu
         Icon(
             painter = painterResource(id = R.drawable.sidebar),
             contentDescription = "Menu",
@@ -133,6 +144,7 @@ fun AdminProfileScreen(
                 .clickable { onMenuClick() }
         )
 
+        // Alt Navigasyon Çubuğu
         Box(modifier = Modifier.align(Alignment.BottomCenter)) {
             CustomAdminBottomNavigationBar(onNavigate = onNavigate)
         }

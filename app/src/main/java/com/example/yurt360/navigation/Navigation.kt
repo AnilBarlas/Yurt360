@@ -480,7 +480,8 @@ fun RootNavigation(currentIntent: Intent?) {
 
             composable(Routes.ADMIN_PROFILE) {
                 currentAdmin?.let { admin ->
-                    val adminUser = Admin(id = admin.id, name = admin.name, surname = admin.surname, email = admin.email)
+                    val adminUser = Admin(id = admin.id, name = admin.name, surname = admin.surname, email = admin.email, image_url = admin.image_url,
+                        phone = admin.phone, tc = admin.tc, gender = admin.gender, bloodType = admin.bloodType, birthDate = admin.birthDate, address = admin.address)
                     AdminProfileScreen(
                         admin = adminUser,
                         onMenuClick = { isMenuOpen = true },
