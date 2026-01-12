@@ -26,6 +26,9 @@ import com.example.yurt360.R
 import com.example.yurt360.admin.changeRoom.AdminApplicationsScreen
 import com.example.yurt360.admin.changeRoom.AdminApplicationsViewModel
 import com.example.yurt360.admin.changeRoom.AdminApplicationDetailScreen
+import com.example.yurt360.admin.laundry.AdminLaundryScreen
+import com.example.yurt360.admin.laundry.LaundryCamasirAdmin
+import com.example.yurt360.admin.laundry.LaundryKurutmaAdmin
 import com.example.yurt360.admin.mainScreen.*
 import com.example.yurt360.admin.refectory.AdminMenuScreen
 import com.example.yurt360.common.components.*
@@ -80,7 +83,9 @@ object Routes {
     const val ADMIN_HOME = "admin_home"
     const val ADMIN_PROFILE = "admin_profile"
     const val ADMIN_MENU = "admin_menu"
+    const val ADMIN_LAUNDRYMAIN = "admin_laundrymain"
     const val ADMIN_LAUNDRY = "admin_laundry"
+    const val ADMIN_LAUNDRYDRY = "admin_laundrydry"
     const val ADMIN_APPLICATIONS = "admin_applications"
     const val ADMIN_APPLICATION_DETAIL = "admin_application_detail" // YENİ ROTA EKLENDİ
     const val ADD_ANNOUNCEMENT = "add_announcement"
@@ -500,6 +505,26 @@ fun RootNavigation(currentIntent: Intent?) {
                 )
             }
 
+            composable(Routes.ADMIN_LAUNDRYMAIN) {
+                AdminLaundryScreen(
+                    onNavigation = { handleAdminNavigation(navController, it) }
+                )
+            }
+
+            composable(Routes.ADMIN_LAUNDRY) {
+                LaundryCamasirAdmin(
+                    onNavigateHome = { handleAdminNavigation(navController, Routes.ADMIN_HOME) },
+                    onNavigation = { handleAdminNavigation(navController, it) }
+                )
+            }
+
+            composable(Routes.ADMIN_LAUNDRYDRY) {
+                LaundryKurutmaAdmin(
+                    onNavigateHome = { handleAdminNavigation(navController, Routes.ADMIN_HOME) },
+                    onNavigation = { handleAdminNavigation(navController, it) }
+                )
+            }
+
             composable(Routes.ADMIN_SETTINGS) {
                 AdminSettingsScreen(
                     onMenuClick = { isMenuOpen = true },
@@ -515,14 +540,13 @@ fun RootNavigation(currentIntent: Intent?) {
             }
 
             composable(Routes.ADMIN_APPLICATIONS) {
-                // ViewModel'ı yukarıda oluşturduğumuz ortak instance olarak veriyoruz
                 AdminApplicationsScreen(
                     onNavigate = { route -> handleAdminNavigation(navController, route) },
                     viewModel = adminApplicationsViewModel
                 )
             }
 
-            // --- YENİ EKLENEN KISIM: DETAY EKRANI ---
+
             composable(Routes.ADMIN_APPLICATION_DETAIL) {
                 val selectedApp = adminApplicationsViewModel.selectedApplication
                 if (selectedApp != null) {
@@ -532,7 +556,6 @@ fun RootNavigation(currentIntent: Intent?) {
                         onNavigate = { route -> handleAdminNavigation(navController, route) }
                     )
                 } else {
-                    // Eğer ViewModel'da seçili bir başvuru yoksa (örn. state kaybı), listeye geri dön
                     LaunchedEffect(Unit) {
                         navController.popBackStack()
                     }
@@ -633,6 +656,8 @@ fun handleAdminNavigation(navController: NavController, route: String) {
         "admin_profile" -> Routes.ADMIN_PROFILE
         "admin_menu" -> Routes.ADMIN_MENU
         "admin_laundry" -> Routes.ADMIN_LAUNDRY
+        "admin_laundrydry" -> Routes.ADMIN_LAUNDRYDRY
+        "admin_laundrymain" -> Routes.ADMIN_LAUNDRYMAIN
         "admin_applications" -> Routes.ADMIN_APPLICATIONS
         "admin_application_detail" -> Routes.ADMIN_APPLICATION_DETAIL // YENİ ROTA EKLENDİ
         "add_announcement" -> Routes.ADD_ANNOUNCEMENT

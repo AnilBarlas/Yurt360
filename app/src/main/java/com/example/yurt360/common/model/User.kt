@@ -1,7 +1,6 @@
 package com.example.yurt360.common.model
 
 
-
 data class User(
     override val id: String,
     override val name: String,

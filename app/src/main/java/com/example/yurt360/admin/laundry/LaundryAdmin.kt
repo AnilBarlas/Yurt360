@@ -1,0 +1,139 @@
+package com.example.yurt360.admin.laundry
+
+import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.zIndex
+import com.example.yurt360.R
+import com.example.yurt360.common.components.CustomAdminBottomNavigationBar
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun AdminLaundryScreen(onNavigation: (String) -> Unit) {
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
+    val imageHeight = screenHeight / 2
+    val extraUp = screenHeight * 0.10f
+    val sheetHeight = imageHeight + extraUp + 30.dp
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            CustomAdminBottomNavigationBar(
+                onNavigate = onNavigation
+            )
+        }
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Üstteki resim (drawable/laundry_bina.png)
+            Image(
+                painter = painterResource(id = R.drawable.laundry_bina),
+                contentDescription = "Laundry building",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(imageHeight)
+                    .align(Alignment.TopCenter)
+            )
+
+            // Alt yarıyı kaplayan beyaz sekme (Card ile köşeleri daha geniş yuvarlak)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(sheetHeight)
+                    .align(Alignment.BottomCenter)
+                    .zIndex(0f),
+                shape = RoundedCornerShape(topStart = 80.dp, topEnd = 80.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    // Çamaşır Makinesi butonu
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(36.dp)
+                            .padding(horizontal = 80.dp)
+                            .offset(y = (-80).dp)
+                    ) {
+                        // PNG'yi arka plana eklemek için
+                        val image = painterResource(id = R.drawable.rectangle_2117)
+                        Image(
+                            painter = image,
+                            contentDescription = "Arkaplan Görseli",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        // Buton kısmı
+                        Button(
+                            onClick = { onNavigation("admin_laundry")  },
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(text = "Çamaşır Makinesi", color = Color.White)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Kurutma Makinesi butonu
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(36.dp)
+                            .padding(horizontal = 80.dp)
+                            .offset(y = (-80).dp)
+                    ) {
+                        // PNG'yi arka plana eklemek için
+                        val image = painterResource(id = R.drawable.rectangle_2117)
+                        Image(
+                            painter = image,
+                            contentDescription = "Arkaplan Görseli",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        // Buton kısmı
+                        Button(
+                            onClick = { onNavigation("admin_laundrydry")},
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(text = "Kurutma Makinesi", color = Color.White)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

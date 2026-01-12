@@ -276,7 +276,7 @@ fun AdminHomeScreen(
                                     modifier = Modifier
                                         .weight(1f)
                                         .fillMaxHeight()
-                                        .clickable { onNavigation("admin_laundry") }
+                                        .clickable { onNavigation("admin_laundrymain") }
                                 )
                                 // Yemek Menüsü
                                 Box(
