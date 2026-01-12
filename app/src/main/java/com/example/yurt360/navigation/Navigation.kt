@@ -25,6 +25,7 @@ import androidx.navigation.navDeepLink
 import com.example.yurt360.R
 import com.example.yurt360.admin.changeRoom.AdminApplicationsScreen
 import com.example.yurt360.admin.changeRoom.AdminApplicationsViewModel
+import com.example.yurt360.admin.changeRoom.AdminApplicationDetailScreen
 import com.example.yurt360.admin.mainScreen.*
 import com.example.yurt360.admin.refectory.AdminMenuScreen
 import com.example.yurt360.common.components.*
@@ -81,6 +82,7 @@ object Routes {
     const val ADMIN_MENU = "admin_menu"
     const val ADMIN_LAUNDRY = "admin_laundry"
     const val ADMIN_APPLICATIONS = "admin_applications"
+    const val ADMIN_APPLICATION_DETAIL = "admin_application_detail" // YENİ ROTA EKLENDİ
     const val ADD_ANNOUNCEMENT = "add_announcement"
 
     const val ADMIN_SETTINGS = "admin_settings"
@@ -95,10 +97,7 @@ fun RootNavigation(currentIntent: Intent?) {
     val scope = rememberCoroutineScope()
 
     // Intent verisini kontrol et (Deep Link var mı?)
-    // MainActivity'den gelen currentIntent parametresini kullanıyoruz.
     val intentData = currentIntent?.data
-
-    // Linkin "new_password" hostuna sahip olup olmadığını kontrol ediyoruz
     val isPasswordResetLink = intentData?.scheme == "yurt360" && intentData?.host == "new_password"
 
     var currentUser by remember { mutableStateOf<User?>(null) }
@@ -107,6 +106,9 @@ fun RootNavigation(currentIntent: Intent?) {
 
     val loginViewModel: LoginViewModel = viewModel()
     val announcementViewModel: AnnouncementViewModel = viewModel()
+
+    // ViewModel'ı burada oluşturuyoruz ki liste ve detay ekranları aynı veriyi paylaşabilsin
+    val adminApplicationsViewModel: AdminApplicationsViewModel = viewModel()
 
     val isSessionChecked by loginViewModel.isSessionChecked.collectAsState()
     val loginState by loginViewModel.loginState.collectAsState()
@@ -133,22 +135,15 @@ fun RootNavigation(currentIntent: Intent?) {
         }
     }
 
-    // Uygulama açıkken yeni bir Intent gelirse (onNewIntent) ve bu bir şifre sıfırlama linkiyse,
-    // Supabase session işlemini başlat ve yönlendirme yap.
     LaunchedEffect(currentIntent) {
         currentIntent?.let { intent ->
             try {
-                // 1. Önce standart kütüphane yöntemini dene
                 SupabaseClient.client.handleDeeplinks(intent)
 
-                // 2. Eğer kütüphane otomatik alamazsa (Android Fragment sorunu için) manuel parse et
                 val data = intent.data
-                // Oturum yoksa veya sadece deep link ile gelindiyse kontrol et
                 if (data != null) {
-                    // URL içindeki fragment (#) kısmını al: access_token=...&refresh_token=...
                     val fragment = data.fragment
                     if (!fragment.isNullOrEmpty() && fragment.contains("access_token")) {
-                        // Basit bir parametre ayıklama işlemi
                         val params = fragment.split("&").associate {
                             val parts = it.split("=")
                             if (parts.size == 2) parts[0] to parts[1] else "" to ""
@@ -162,9 +157,9 @@ fun RootNavigation(currentIntent: Intent?) {
                                 UserSession(
                                     accessToken = accessToken,
                                     refreshToken = refreshToken,
-                                    expiresIn = 3600, // Varsayılan süre
+                                    expiresIn = 3600,
                                     tokenType = "bearer",
-                                    user = null // User objesi başta null
+                                    user = null
                                 )
                             )
 
@@ -182,7 +177,6 @@ fun RootNavigation(currentIntent: Intent?) {
         }
 
         if (isPasswordResetLink) {
-            // Eğer zaten oradaysak tekrar yönlendirme yapma
             if (navController.currentDestination?.route != Routes.NEW_PASSWORD) {
                 navController.navigate(Routes.NEW_PASSWORD) {
                     launchSingleTop = true
@@ -192,7 +186,6 @@ fun RootNavigation(currentIntent: Intent?) {
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-
 
         val startRoute = when {
             isPasswordResetLink -> Routes.NEW_PASSWORD
@@ -244,7 +237,6 @@ fun RootNavigation(currentIntent: Intent?) {
                 )
             }
 
-            // GÜNCELLENMİŞ DEEP LINK ALANI
             composable(
                 route = Routes.NEW_PASSWORD,
                 deepLinks = listOf(
@@ -383,7 +375,6 @@ fun RootNavigation(currentIntent: Intent?) {
                 MenuScreen(onNavigate = { handleUserNavigation(navController, it) })
             }
 
-            // GÜNCELLENEN KISIM: CalendarScreen'e geri butonu fonksiyonu eklendi
             composable(Routes.USER_CALENDAR) {
                 CalendarScreen(
                     onNavigate = { handleUserNavigation(navController, it) },
@@ -434,7 +425,6 @@ fun RootNavigation(currentIntent: Intent?) {
                 } ?: NavigateToLogin(navController)
             }
 
-            // --- YENİ EKLENEN KISIM: Başvurular Ekranı ---
             composable(Routes.USER_APPLICATIONS) {
                 ApplicationsScreen(
                     onNavigate = { handleUserNavigation(navController, it) }
@@ -525,11 +515,28 @@ fun RootNavigation(currentIntent: Intent?) {
             }
 
             composable(Routes.ADMIN_APPLICATIONS) {
-                val viewModel: AdminApplicationsViewModel = viewModel()
+                // ViewModel'ı yukarıda oluşturduğumuz ortak instance olarak veriyoruz
                 AdminApplicationsScreen(
                     onNavigate = { route -> handleAdminNavigation(navController, route) },
-                    viewModel = viewModel
+                    viewModel = adminApplicationsViewModel
                 )
+            }
+
+            // --- YENİ EKLENEN KISIM: DETAY EKRANI ---
+            composable(Routes.ADMIN_APPLICATION_DETAIL) {
+                val selectedApp = adminApplicationsViewModel.selectedApplication
+                if (selectedApp != null) {
+                    AdminApplicationDetailScreen(
+                        application = selectedApp,
+                        onBack = { navController.popBackStack() },
+                        onNavigate = { route -> handleAdminNavigation(navController, route) }
+                    )
+                } else {
+                    // Eğer ViewModel'da seçili bir başvuru yoksa (örn. state kaybı), listeye geri dön
+                    LaunchedEffect(Unit) {
+                        navController.popBackStack()
+                    }
+                }
             }
 
             composable(Routes.ADMIN_UPDATE_PASSWORD) {
@@ -627,6 +634,7 @@ fun handleAdminNavigation(navController: NavController, route: String) {
         "admin_menu" -> Routes.ADMIN_MENU
         "admin_laundry" -> Routes.ADMIN_LAUNDRY
         "admin_applications" -> Routes.ADMIN_APPLICATIONS
+        "admin_application_detail" -> Routes.ADMIN_APPLICATION_DETAIL // YENİ ROTA EKLENDİ
         "add_announcement" -> Routes.ADD_ANNOUNCEMENT
         "admin_settings" -> Routes.ADMIN_SETTINGS
         "admin_update_password" -> Routes.ADMIN_UPDATE_PASSWORD
