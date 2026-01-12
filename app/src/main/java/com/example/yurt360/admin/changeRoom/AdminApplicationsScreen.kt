@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.yurt360.model.ApplicationForm
+import com.example.yurt360.common.model.ApplicationForm
 import com.example.yurt360.common.components.CustomAdminBottomNavigationBar
 import com.example.yurt360.common.utils.Geologica
 import androidx.compose.foundation.clickable
