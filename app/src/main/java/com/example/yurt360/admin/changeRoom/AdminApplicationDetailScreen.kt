@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.yurt360.common.components.CustomAdminBottomNavigationBar
 import com.example.yurt360.common.utils.Geologica
-import com.example.yurt360.model.ApplicationForm
+import com.example.yurt360.common.model.ApplicationForm
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
