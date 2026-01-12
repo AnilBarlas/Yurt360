@@ -60,7 +60,7 @@ fun MenuScreen(
                 modifier = Modifier
                     .size(32.dp)
                     .clickable {
-                        onNavigate("home")
+                        onNavigate("user_home")
                     },
                 tint = Color.Black
             )
