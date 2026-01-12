@@ -39,6 +39,7 @@ private val LightBlueIcon = Color(0xFF7B85D8) // Mavimsi (Seçili olan ve İkonl
 @Composable
 fun AdminMenuScreen(
     onNavigateBack: () -> Unit,
+    onNavigate: (String) -> Unit,
     viewModel: AdminMenuViewModel = viewModel()
 ) {
     val menuList by viewModel.menuList.collectAsState()
@@ -51,17 +52,7 @@ fun AdminMenuScreen(
     Scaffold(
         containerColor = BackgroundColor,
         bottomBar = {
-            CustomAdminBottomNavigationBar(
-                onNavigate = { route ->
-                    when (route) {
-                        "home" -> onNavigateBack()
-                        "calendar" -> {
-                            Toast.makeText(context, "Duyuru Paneli", Toast.LENGTH_SHORT).show()
-                        }
-                        "profile" -> { /* Profil */ }
-                    }
-                }
-            )
+            CustomAdminBottomNavigationBar(onNavigate = onNavigate)
         }
     ) { innerPadding ->
         Column(

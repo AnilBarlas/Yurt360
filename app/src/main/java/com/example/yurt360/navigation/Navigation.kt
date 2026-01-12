@@ -505,7 +505,8 @@ fun RootNavigation(currentIntent: Intent?) {
 
             composable(Routes.ADMIN_MENU) {
                 AdminMenuScreen(
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigate = { handleAdminNavigation(navController, it) }
                 )
             }
 
